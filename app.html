@@ -93,14 +93,17 @@
         const fileInputRef = useRef(null);
 
         // Calculate summary metrics
-        let grossRevenue = 0, netSettlement = 0, totalFees = 0, totalCOGS = 0;
+        let grossRevenue = 0, netSettlement = 0, totalFees = 0, totalCOGS = 0, totalTaxAmount = 0;
         let highFeeCount = 0, refundCount = 0, negativeCount = 0;
 
         orders.forEach(o => {
+          const tax = Math.round((o.grossRevenue || 0) * 0.015);
+          o.taxAmount = tax;
           grossRevenue += o.grossRevenue;
           netSettlement += o.netSettlement;
           totalFees += o.totalFees;
           totalCOGS += o.cogs;
+          totalTaxAmount += tax;
           if (o.feeRatio > feeThreshold) highFeeCount++;
           if ((o.orderStatus === 'returned' || o.orderStatus === 'cancelled') && o.netSettlement < 0) refundCount++;
           if (o.netProfit < 0) negativeCount++;
@@ -108,7 +111,7 @@
 
         const totalOrders = orders.length;
         const totalPackaging = totalOrders * packagingCost;
-        const netProfit = netSettlement - totalCOGS - totalPackaging;
+        const netProfit = netSettlement - totalCOGS - totalPackaging - totalTaxAmount;
         const avgFeeRatio = grossRevenue > 0 ? (totalFees / grossRevenue) * 100 : 0;
         const profitMargin = grossRevenue > 0 ? (netProfit / grossRevenue) * 100 : 0;
 

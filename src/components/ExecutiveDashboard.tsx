@@ -11,6 +11,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Sparkles,
+  Truck,
+  Receipt,
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { AuditSummary, OrderItem } from '../types';
@@ -25,6 +27,7 @@ interface ExecutiveDashboardProps {
   onFeeThresholdChange: (threshold: number) => void;
   onOpenCogsModal: () => void;
   onExportExcel: () => void;
+  onOpenShippingModal?: () => void;
   platform: string;
 }
 
@@ -37,18 +40,19 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   onFeeThresholdChange,
   onOpenCogsModal,
   onExportExcel,
+  onOpenShippingModal,
   platform,
 }) => {
 
   // Bar Chart Data
   const financialData = [
     {
-      name: 'Tổng Doanh Thu',
+      name: 'Doanh Thu',
       Amount: summary.grossRevenue,
       fill: '#38bdf8', // Cyan-400
     },
     {
-      name: 'Thực Nhận Ví',
+      name: 'Thực Nhận',
       Amount: summary.netSettlement,
       fill: '#818cf8', // Indigo-400
     },
@@ -58,7 +62,12 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       fill: '#f43f5e', // Rose-500
     },
     {
-      name: 'Giá Vốn (COGS)',
+      name: 'Thuế 1.5%',
+      Amount: summary.totalTaxAmount || 0,
+      fill: '#a855f7', // Purple-500
+    },
+    {
+      name: 'Giá Vốn',
       Amount: summary.totalCOGS,
       fill: '#fbbf24', // Amber-400
     },
@@ -97,12 +106,22 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             </span>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Tổng cộng: <strong className="text-slate-200">{summary.totalOrders} đơn hàng</strong> đã được phân tích.
+            Tổng cộng: <strong className="text-slate-200">{summary.totalOrders} đơn hàng</strong> đã được phân tích & bóc tách phí.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
+          {onOpenShippingModal && (
+            <button
+              onClick={onOpenShippingModal}
+              className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 font-bold text-xs transition-all shadow-sm"
+            >
+              <Truck className="w-4 h-4 text-cyan-400" />
+              <span>Ghép File Vận Chuyển Excel 🚀</span>
+            </button>
+          )}
+
           <button
             onClick={onOpenCogsModal}
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-navy-950 hover:bg-navy-800 border border-navy-700 text-slate-200 font-semibold text-xs transition-all"
@@ -116,108 +135,124 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 text-navy-950 font-bold text-xs shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
           >
             <FileSpreadsheet className="w-4 h-4 text-navy-950" />
-            <span>Xuất Báo Cáo Excel (.xlsx)</span>
+            <span>Xuất Báo Cáo Tài Chính (.xlsx)</span>
           </button>
         </div>
       </div>
 
-      {/* 6 Executive Financial Metric Cards (Grid 3x2 on desktop) */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      {/* Financial Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* Card 1: Gross Revenue */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-6 shadow-xl group hover:border-cyan-500/50 transition-all">
+        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thẻ 1 - Doanh Thu Hóa Đơn</span>
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
-              <ShoppingBag className="w-5 h-5 text-cyan-400" />
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Doanh Thu Hóa Đơn</span>
+            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
+              <ShoppingBag className="w-4 h-4 text-cyan-400" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl sm:text-3xl font-black font-mono text-white tracking-tight">
+          <div className="mt-3">
+            <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight">
               {formatVND(summary.grossRevenue)}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Tổng tiền khách đã thanh toán cho sàn</p>
+            <p className="text-[10px] text-slate-400 mt-1">Tổng tiền khách thanh toán</p>
           </div>
         </div>
 
         {/* Card 2: Net Settlement */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-6 shadow-xl group hover:border-indigo-500/50 transition-all">
+        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thẻ 2 - Thực Nhận Về Ví Sàn</span>
-            <div className="w-10 h-10 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-              <DollarSign className="w-5 h-5 text-indigo-400" />
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Thực Nhận Ví Sàn</span>
+            <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+              <DollarSign className="w-4 h-4 text-indigo-400" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl sm:text-3xl font-black font-mono text-indigo-300 tracking-tight">
+          <div className="mt-3">
+            <div className="text-xl sm:text-2xl font-black font-mono text-indigo-300 tracking-tight">
               {formatVND(summary.netSettlement)}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Số tiền thực tế sàn đã/sẽ chuyển về ví shop</p>
+            <p className="text-[10px] text-slate-400 mt-1">Số tiền sàn chuyển về ví shop</p>
           </div>
         </div>
 
         {/* Card 3: Total Platform Fees */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-6 shadow-xl group hover:border-rose-500/50 transition-all">
+        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thẻ 3 - Tổng Phí Sàn Đã Thu</span>
-            <div className="w-10 h-10 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-              <TrendingUp className="w-5 h-5 text-rose-400" />
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tổng Phí Sàn Đã Trừ</span>
+            <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
+              <TrendingUp className="w-4 h-4 text-rose-400" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl sm:text-3xl font-black font-mono text-rose-400 tracking-tight">
+          <div className="mt-3">
+            <div className="text-xl sm:text-2xl font-black font-mono text-rose-400 tracking-tight">
               {formatVND(summary.totalFees)}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Gồm phí cố định, phí thanh toán, voucher Xtra, Ads...</p>
+            <p className="text-[10px] text-slate-400 mt-1">Gồm phí cố định, thanh toán, Xtra, Ads...</p>
           </div>
         </div>
 
         {/* Card 4: Fee Ratio % */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-6 shadow-xl group hover:border-amber-500/50 transition-all">
+        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thẻ 4 - Tỷ Lệ Phí Thực Tế</span>
-            <div className="w-10 h-10 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Percent className="w-5 h-5 text-amber-400" />
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tỷ Lệ Phí Thực Tế</span>
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+              <Percent className="w-4 h-4 text-amber-400" />
             </div>
           </div>
-          <div className="mt-4 flex items-baseline justify-between">
-            <div className="text-2xl sm:text-3xl font-black font-mono text-amber-400 tracking-tight">
+          <div className="mt-3 flex items-baseline justify-between">
+            <div className="text-xl sm:text-2xl font-black font-mono text-amber-400 tracking-tight">
               {formatPercent(summary.avgFeeRatio)}
             </div>
-            <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
+            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
               summary.avgFeeRatio > feeThreshold ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'
             }`}>
               {summary.avgFeeRatio > feeThreshold ? 'Phí Cao!' : 'Phí Chuẩn'}
             </span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1">Công thức: (Tổng Phí Sàn / Doanh Thu) × 100%</p>
+          <p className="text-[10px] text-slate-400 mt-1">Công thức: (Tổng Phí Sàn / Doanh Thu) × 100%</p>
         </div>
 
-        {/* Card 5: Total COGS */}
-        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-6 shadow-xl group hover:border-yellow-500/50 transition-all">
+        {/* Card 5: Tax 1.5% E-commerce Policy */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">Thẻ 5 - Tổng Giá Vốn Hàng Bán</span>
-            <div className="w-10 h-10 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
-              <PackageCheck className="w-5 h-5 text-yellow-400" />
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Thuế TMĐT Tạm Tính (1.5%)</span>
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
+              <Receipt className="w-4 h-4 text-purple-400" />
             </div>
           </div>
-          <div className="mt-4">
-            <div className="text-2xl sm:text-3xl font-black font-mono text-yellow-300 tracking-tight">
+          <div className="mt-3">
+            <div className="text-xl sm:text-2xl font-black font-mono text-purple-300 tracking-tight">
+              {formatVND(summary.totalTaxAmount || 0)}
+            </div>
+            <p className="text-[10px] text-slate-400 mt-1">Bốc tách 1.5% Thuế TMĐT theo quy định mới</p>
+          </div>
+        </div>
+
+        {/* Card 6: Total COGS */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tổng Giá Vốn (COGS)</span>
+            <div className="w-8 h-8 rounded-xl bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-center">
+              <PackageCheck className="w-4 h-4 text-yellow-400" />
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="text-xl sm:text-2xl font-black font-mono text-yellow-300 tracking-tight">
               {formatVND(summary.totalCOGS)}
             </div>
-            <p className="text-[11px] text-slate-400 mt-1">Giá vốn tổng các sản phẩm đã bán thành công</p>
+            <p className="text-[10px] text-slate-400 mt-1">Tổng giá vốn sản phẩm đã giao thành công</p>
           </div>
         </div>
 
-        {/* Card 6: NET PROFIT (HERO CARD) */}
-        <div className={`relative overflow-hidden rounded-3xl p-6 shadow-2xl transition-all border ${
+        {/* Card 7: NET PROFIT (HERO CARD - Span 2 cols) */}
+        <div className={`relative overflow-hidden rounded-3xl p-6 shadow-2xl transition-all border md:col-span-2 ${
           summary.netProfit >= 0
             ? 'bg-gradient-to-br from-emerald-950 via-navy-950 to-emerald-900 border-emerald-500/40 shadow-emerald-950/50'
             : 'bg-gradient-to-br from-rose-950 via-navy-950 to-rose-900 border-rose-500/40 shadow-rose-950/50'
         }`}>
           <div className="flex items-center justify-between">
             <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-300 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5" /> Thẻ 6 - LỢI NHUẬN RÒNG (NET PROFIT)
+              <Sparkles className="w-4 h-4" /> LỢI NHUẬN RÒNG THỰC TẾ (NET PROFIT)
             </span>
             <div className={`w-10 h-10 rounded-2xl flex items-center justify-center ${
               summary.netProfit >= 0 ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'
@@ -225,22 +260,22 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               {summary.netProfit >= 0 ? <ArrowUpRight className="w-6 h-6" /> : <ArrowDownRight className="w-6 h-6" />}
             </div>
           </div>
-          <div className="mt-4">
+          <div className="mt-3 flex flex-col sm:flex-row sm:items-baseline justify-between gap-2">
             <div className={`text-3xl sm:text-4xl font-black font-mono tracking-tight ${
               summary.netProfit >= 0 ? 'text-emerald-400 drop-shadow-md' : 'text-rose-400'
             }`}>
               {formatVND(summary.netProfit)}
             </div>
-            <div className="flex items-center justify-between mt-2 text-xs">
-              <span className="text-slate-300">Tỷ suất LN/Doanh Thu:</span>
-              <span className="font-extrabold text-emerald-300 font-mono">{formatPercent(summary.profitMargin)}</span>
+            <div className="text-xs">
+              <span className="text-slate-300">Tỷ suất LN/Doanh Thu: </span>
+              <span className="font-extrabold text-emerald-300 font-mono text-base">{formatPercent(summary.profitMargin)}</span>
             </div>
           </div>
         </div>
 
       </div>
 
-      {/* Adjusters Bar (Packaging Cost & Fee Threshold Slider) */}
+      {/* Adjusters Bar */}
       <div className="bg-navy-900 border border-navy-800 rounded-3xl p-6 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
         
         {/* Packaging cost input */}
@@ -299,7 +334,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           <div className="flex items-center justify-between mb-6">
             <div>
               <h3 className="text-base font-bold text-white">Biểu Đồ Cấu Trúc Dòng Tiền & Lợi Nhuận</h3>
-              <p className="text-xs text-slate-400">So sánh Doanh thu, Thực nhận, Phí sàn, Giá vốn & Lợi nhuận Ròng</p>
+              <p className="text-xs text-slate-400">So sánh Doanh thu, Thực nhận, Phí sàn, Thuế 1.5%, Giá vốn & Lợi nhuận Ròng</p>
             </div>
           </div>
           <div className="h-72 w-full">

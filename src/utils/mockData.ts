@@ -344,6 +344,7 @@ export function calculateSummary(orders: OrderItem[], packagingCost: number, fee
   let netSettlement = 0;
   let totalFees = 0;
   let totalCOGS = 0;
+  let totalTaxAmount = 0;
   
   let highFeeCount = 0;
   let highFeeTotalExcess = 0;
@@ -353,9 +354,13 @@ export function calculateSummary(orders: OrderItem[], packagingCost: number, fee
   let negativeProfitTotalLoss = 0;
 
   orders.forEach(order => {
-    // Recompute packaging cost & net profit based on settings
+    // Compute 1.5% Tax TMDT
+    const taxAmount = Math.round(order.grossRevenue * 0.015);
+    order.taxAmount = taxAmount;
+
+    // Recompute packaging cost & net profit including Tax 1.5%
     const packaging = packagingCost;
-    const netProfit = order.netSettlement - order.cogs - packaging;
+    const netProfit = order.netSettlement - order.cogs - packaging - taxAmount;
     const feeRatio = order.grossRevenue > 0 ? (order.totalFees / order.grossRevenue) * 100 : 0;
     
     order.packagingCost = packaging;
@@ -371,6 +376,7 @@ export function calculateSummary(orders: OrderItem[], packagingCost: number, fee
     netSettlement += order.netSettlement;
     totalFees += order.totalFees;
     totalCOGS += order.cogs;
+    totalTaxAmount += taxAmount;
 
     if (order.isHighFee) {
       highFeeCount++;
@@ -391,7 +397,7 @@ export function calculateSummary(orders: OrderItem[], packagingCost: number, fee
 
   const totalOrders = orders.length;
   const totalPackagingCost = totalOrders * packagingCost;
-  const netProfit = netSettlement - totalCOGS - totalPackagingCost;
+  const netProfit = netSettlement - totalCOGS - totalPackagingCost - totalTaxAmount;
   const avgFeeRatio = grossRevenue > 0 ? (totalFees / grossRevenue) * 100 : 0;
   const profitMargin = grossRevenue > 0 ? (netProfit / grossRevenue) * 100 : 0;
 
@@ -403,6 +409,7 @@ export function calculateSummary(orders: OrderItem[], packagingCost: number, fee
     avgFeeRatio,
     totalCOGS,
     totalPackagingCost,
+    totalTaxAmount,
     netProfit,
     profitMargin,
     highFeeCount,

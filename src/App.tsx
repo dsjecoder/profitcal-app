@@ -5,7 +5,13 @@ import { DemoBanner } from './components/DemoBanner';
 import { FileUpload } from './components/FileUpload';
 import { CogsModal } from './components/CogsModal';
 import { ExecutiveDashboard } from './components/ExecutiveDashboard';
+import { AdPerformanceTable } from './components/AdPerformanceTable';
+import { GrowthComparison } from './components/GrowthComparison';
 import { AnomalyTables } from './components/AnomalyTables';
+import { LowStockAlert } from './components/LowStockAlert';
+import { ShippingExportModal } from './components/ShippingExportModal';
+import { DisputeClaimModal } from './components/DisputeClaimModal';
+import { PricingModal } from './components/PricingModal';
 import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
 
@@ -22,6 +28,7 @@ import { SAMPLE_SHOPEE_ORDERS, SAMPLE_TIKTOK_ORDERS, calculateSummary } from './
 import { parseUploadedFile } from './utils/parser';
 import { exportAuditedExcel } from './utils/export';
 import { trackEventSilent } from './utils/analytics';
+import { saveAuditHistorySnapshot } from './utils/historyTracker';
 
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
@@ -34,6 +41,9 @@ export function App() {
 
   // Modals
   const [showCogsModal, setShowCogsModal] = useState(false);
+  const [showShippingModal, setShowShippingModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [showPricingModal, setShowPricingModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Auto-recalculate summary whenever orders, packagingCost, or feeThreshold change
@@ -46,11 +56,14 @@ export function App() {
 
     orderList.forEach((o) => {
       if (!map.has(o.sku)) {
+        const mockStock = Math.floor(Math.random() * 12) + 1;
         map.set(o.sku, {
           sku: o.sku,
           productName: o.productName,
           cogs: savedCOGS[o.sku] !== undefined ? savedCOGS[o.sku] : Math.round((o.grossRevenue / o.quantity) * 0.45),
           quantitySold: o.quantity,
+          stockCount: mockStock,
+          safetyThreshold: 3,
         });
       } else {
         const existing = map.get(o.sku)!;
@@ -85,8 +98,9 @@ export function App() {
         origin: { y: 0.6 },
       });
 
-      // Track Silent Analytics
+      // Track Silent Analytics & Save Period Snapshot
       const fileSummary = calculateSummary(parsed, settings.packagingCost, settings.feeThreshold);
+      saveAuditHistorySnapshot(file.name, platform, fileSummary);
       trackEventSilent({
         eventName: 'upload_report',
         platform,
@@ -119,6 +133,7 @@ export function App() {
 
     // Track Silent Analytics
     const demoSummary = calculateSummary(cloned, settings.packagingCost, settings.feeThreshold);
+    saveAuditHistorySnapshot(`Demo_${targetPlatform.toUpperCase()}_Data.xlsx`, targetPlatform, demoSummary);
     trackEventSilent({
       eventName: 'load_demo',
       platform: targetPlatform,
@@ -135,11 +150,13 @@ export function App() {
     const updatedOrders = orders.map((o) => {
       const cogsPerUnit = cogsMap[o.sku] !== undefined ? cogsMap[o.sku] : Math.round((o.grossRevenue / o.quantity) * 0.45);
       const totalCogs = cogsPerUnit * o.quantity;
-      const netProfit = o.netSettlement - totalCogs - settings.packagingCost;
+      const taxAmount = Math.round(o.grossRevenue * 0.015);
+      const netProfit = o.netSettlement - totalCogs - settings.packagingCost - taxAmount;
 
       return {
         ...o,
         cogs: totalCogs,
+        taxAmount,
         netProfit,
         isNegativeProfit: netProfit < 0,
       };
@@ -149,7 +166,14 @@ export function App() {
     setShowCogsModal(false);
   };
 
-  // 4. Settings Adjusters
+  // 4. Update SKU Threshold
+  const handleUpdateThreshold = (sku: string, newThreshold: number) => {
+    setExtractedSkus((prev) =>
+      prev.map((item) => (item.sku === sku ? { ...item, safetyThreshold: newThreshold } : item))
+    );
+  };
+
+  // 5. Settings Adjusters
   const handlePackagingCostChange = (cost: number) => {
     const newSettings = { ...settings, packagingCost: cost };
     setSettings(newSettings);
@@ -162,7 +186,7 @@ export function App() {
     saveAppSettings(newSettings);
   };
 
-  // 5. Export Excel Report
+  // 6. Export Excel Report
   const handleExportExcel = () => {
     const filename = `ProfitCal_${platform.toUpperCase()}_BaoCaoLoiNhuan_${new Date().toISOString().split('T')[0]}.xlsx`;
     exportAuditedExcel(orders, filename);
@@ -174,7 +198,7 @@ export function App() {
     });
   };
 
-  // 6. Login Success
+  // 7. Login Success
   const handleLoginSuccess = (email: string, name: string) => {
     const updated: UserState = {
       ...user,
@@ -187,6 +211,26 @@ export function App() {
     setShowAuthModal(false);
   };
 
+  // 8. Confirm Pro Upgrade
+  const handleConfirmUpgrade = () => {
+    const updated: UserState = {
+      ...user,
+      tier: 'pro',
+      tokens: 999,
+    };
+    saveUserState(updated);
+    setUser(updated);
+    setShowPricingModal(false);
+
+    confetti({
+      particleCount: 150,
+      spread: 90,
+      origin: { y: 0.5 },
+    });
+
+    alert('Chúc mừng! Bạn đã nâng cấp thành công gói PROFITCAL PRO Unlimited! 🚀');
+  };
+
   return (
     <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-navy-950 font-sans">
       
@@ -194,6 +238,7 @@ export function App() {
       <Navbar
         user={user}
         onOpenAuth={() => setShowAuthModal(true)}
+        onOpenUpgrade={() => setShowPricingModal(true)}
       />
 
       {/* Security Banner & Quick Demo Loaders */}
@@ -224,16 +269,42 @@ export function App() {
               onFeeThresholdChange={handleFeeThresholdChange}
               onOpenCogsModal={() => setShowCogsModal(true)}
               onExportExcel={handleExportExcel}
+              onOpenShippingModal={() => setShowShippingModal(true)}
               platform={platform}
             />
 
-            {/* Anomalies & Loss Detection Engine Tables */}
-            <AnomalyTables
-              orders={orders}
-              summary={summary}
-              feeThreshold={settings.feeThreshold}
-              onExportExcel={handleExportExcel}
+            {/* Phase 2: Ad ROAS & CIR Performance Table (Module 3.1) */}
+            <AdPerformanceTable orders={orders} />
+
+            {/* Phase 2: Multi-Period Growth Comparison (Module 3.2) */}
+            <GrowthComparison summary={summary} />
+
+            {/* Low-Stock Red Alert (Module 2.1) */}
+            <LowStockAlert
+              skus={extractedSkus}
+              user={user}
+              onUpdateThreshold={handleUpdateThreshold}
+              onOpenUpgradeModal={() => setShowPricingModal(true)}
             />
+
+            {/* Anomalies & Loss Detection Engine Tables (Module 2.2 & Module 3.3) */}
+            <div className="space-y-4">
+              <div className="flex justify-end">
+                <button
+                  onClick={() => setShowDisputeModal(true)}
+                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold text-xs shadow-lg shadow-rose-500/20 hover:scale-105 transition-all"
+                >
+                  <span>Tự Động Lập Hồ Sơ Kháng Nại CSKH Sàn 🚀</span>
+                </button>
+              </div>
+
+              <AnomalyTables
+                orders={orders}
+                summary={summary}
+                feeThreshold={settings.feeThreshold}
+                onExportExcel={handleExportExcel}
+              />
+            </div>
 
           </div>
         )}
@@ -246,6 +317,33 @@ export function App() {
           skus={extractedSkus}
           onConfirm={handleConfirmCOGS}
           onClose={() => setShowCogsModal(false)}
+        />
+      )}
+
+      {showShippingModal && (
+        <ShippingExportModal
+          orders={orders}
+          user={user}
+          onClose={() => setShowShippingModal(false)}
+          onOpenUpgradeModal={() => {
+            setShowShippingModal(false);
+            setShowPricingModal(true);
+          }}
+        />
+      )}
+
+      {showDisputeModal && (
+        <DisputeClaimModal
+          orders={orders}
+          onClose={() => setShowDisputeModal(false)}
+        />
+      )}
+
+      {showPricingModal && (
+        <PricingModal
+          user={user}
+          onClose={() => setShowPricingModal(false)}
+          onConfirmUpgrade={handleConfirmUpgrade}
         />
       )}
 
