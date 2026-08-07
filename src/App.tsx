@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import confetti from 'canvas-confetti';
 import { Navbar } from './components/Navbar';
 import { DemoBanner } from './components/DemoBanner';
@@ -6,7 +6,6 @@ import { FileUpload } from './components/FileUpload';
 import { CogsModal } from './components/CogsModal';
 import { ExecutiveDashboard } from './components/ExecutiveDashboard';
 import { AnomalyTables } from './components/AnomalyTables';
-import { UpgradeModal } from './components/UpgradeModal';
 import { AuthModal } from './components/AuthModal';
 import { Footer } from './components/Footer';
 
@@ -14,7 +13,6 @@ import { OrderItem, PlatformType, SKUData, UserState } from './types';
 import {
   getUserState,
   saveUserState,
-  deductToken,
   getAppSettings,
   saveAppSettings,
   getSavedCOGS,
@@ -36,7 +34,6 @@ export function App() {
 
   // Modals
   const [showCogsModal, setShowCogsModal] = useState(false);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
 
   // Auto-recalculate summary whenever orders, packagingCost, or feeThreshold change
@@ -177,18 +174,7 @@ export function App() {
     });
   };
 
-  // 6. Dev Mode Switcher (Free <-> Pro)
-  const handleToggleTier = () => {
-    const updated: UserState = {
-      ...user,
-      tier: user.tier === 'free' ? 'pro' : 'free',
-      tokens: user.tier === 'free' ? 999 : 2,
-    };
-    saveUserState(updated);
-    setUser(updated);
-  };
-
-  // 7. Login Success
+  // 6. Login Success
   const handleLoginSuccess = (email: string, name: string) => {
     const updated: UserState = {
       ...user,
@@ -201,24 +187,6 @@ export function App() {
     setShowAuthModal(false);
   };
 
-  // 8. Confirm Pro Upgrade
-  const handleConfirmUpgrade = () => {
-    const updated: UserState = {
-      ...user,
-      tier: 'pro',
-      tokens: 999,
-    };
-    saveUserState(updated);
-    setUser(updated);
-    setShowUpgradeModal(false);
-
-    confetti({
-      particleCount: 150,
-      spread: 90,
-      origin: { y: 0.5 },
-    });
-  };
-
   return (
     <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-navy-950 font-sans">
       
@@ -226,8 +194,6 @@ export function App() {
       <Navbar
         user={user}
         onOpenAuth={() => setShowAuthModal(true)}
-        onOpenUpgrade={() => setShowUpgradeModal(true)}
-        onToggleTier={handleToggleTier}
       />
 
       {/* Security Banner & Quick Demo Loaders */}
@@ -242,8 +208,6 @@ export function App() {
           onPlatformChange={setPlatform}
           onFileUpload={handleFileUpload}
           onLoadDemo={handleLoadDemo}
-          user={user}
-          onOpenUpgrade={() => setShowUpgradeModal(true)}
         />
 
         {/* Dashboard Results (Only shown when orders are parsed/loaded) */}
@@ -282,14 +246,6 @@ export function App() {
           skus={extractedSkus}
           onConfirm={handleConfirmCOGS}
           onClose={() => setShowCogsModal(false)}
-        />
-      )}
-
-      {showUpgradeModal && (
-        <UpgradeModal
-          user={user}
-          onClose={() => setShowUpgradeModal(false)}
-          onConfirmUpgrade={handleConfirmUpgrade}
         />
       )}
 

@@ -2,20 +2,17 @@ import React from 'react';
 import {
   TrendingUp,
   DollarSign,
-  PieChart as PieIcon,
   AlertTriangle,
   FileSpreadsheet,
   Settings,
-  ShieldCheck,
   ShoppingBag,
   Percent,
-  CheckCircle2,
   PackageCheck,
   ArrowUpRight,
   ArrowDownRight,
   Sparkles,
 } from 'lucide-react';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, PieChart, Pie, Cell } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { AuditSummary, OrderItem } from '../types';
 import { formatPercent, formatVND } from '../utils/storage';
 

@@ -1,46 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Zap, User, Sparkles, Clock, Crown, CheckCircle2 } from 'lucide-react';
+import React from 'react';
+import { ShieldCheck, Zap, User } from 'lucide-react';
 import { UserState } from '../types';
-import { formatVND } from '../utils/storage';
 
 interface NavbarProps {
   user: UserState;
   onOpenAuth: () => void;
-  onOpenUpgrade: () => void;
-  onToggleTier: () => void; // Dev review mode toggle
+  onOpenUpgrade?: () => void;
+  onToggleTier?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   user,
   onOpenAuth,
-  onOpenUpgrade,
-  onToggleTier,
 }) => {
-  const [countdownStr, setCountdownStr] = useState<string>('');
-
-  useEffect(() => {
-    // Calculate time until next token reset (7 days from last reset)
-    const updateCountdown = () => {
-      const lastReset = new Date(user.lastTokenReset).getTime();
-      const nextReset = lastReset + 7 * 24 * 60 * 60 * 1000;
-      const now = new Date().getTime();
-      const diff = nextReset - now;
-
-      if (diff <= 0) {
-        setCountdownStr('Token đã sẵn sàng!');
-      } else {
-        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        setCountdownStr(`${days} ngày ${hours}h ${mins}m`);
-      }
-    };
-
-    updateCountdown();
-    const timer = setInterval(updateCountdown, 60000);
-    return () => clearInterval(timer);
-  }, [user.lastTokenReset]);
-
   return (
     <header className="sticky top-0 z-40 bg-navy-950/90 backdrop-blur-md border-b border-navy-800/80 shadow-2xl">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">

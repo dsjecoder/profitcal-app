@@ -1,4 +1,4 @@
-import { OrderItem, PlatformType } from '../types';
+import { AuditSummary, OrderItem, PlatformType } from '../types';
 
 export const SAMPLE_SHOPEE_ORDERS: OrderItem[] = [
   {

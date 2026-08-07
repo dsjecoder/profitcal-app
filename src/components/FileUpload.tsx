@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Upload, FileSpreadsheet, AlertCircle, CheckCircle2, ShoppingBag, ArrowRight, Loader2, Sparkles } from 'lucide-react';
+import { Upload, AlertCircle, CheckCircle2, ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import { PlatformType, UserState } from '../types';
 
 interface FileUploadProps {
@@ -7,8 +7,8 @@ interface FileUploadProps {
   onPlatformChange: (platform: PlatformType) => void;
   onFileUpload: (file: File) => void;
   onLoadDemo: (platform: PlatformType) => void;
-  user: UserState;
-  onOpenUpgrade: () => void;
+  user?: UserState;
+  onOpenUpgrade?: () => void;
 }
 
 export const FileUpload: React.FC<FileUploadProps> = ({
@@ -16,8 +16,6 @@ export const FileUpload: React.FC<FileUploadProps> = ({
   onPlatformChange,
   onFileUpload,
   onLoadDemo,
-  user,
-  onOpenUpgrade,
 }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);

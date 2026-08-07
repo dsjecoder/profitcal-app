@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Save, RefreshCw, Layers, DollarSign, CheckCircle2, Sparkles, AlertCircle } from 'lucide-react';
+import { Save, RefreshCw, Layers, CheckCircle2 } from 'lucide-react';
 import { SKUData } from '../types';
-import { formatVND, getSavedCOGS, saveCOGS } from '../utils/storage';
+import { getSavedCOGS, saveCOGS } from '../utils/storage';
 
 interface CogsModalProps {
   skus: SKUData[];
