@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚡</text></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- Primary Meta Tags -->
+    <title>ProfitCal – Ecom Profit & Fee Audit Tool | Soi Phí & Lợi Nhuận Shopee, TikTok Shop</title>
+    <meta name="title" content="ProfitCal – Ecom Profit & Fee Audit Tool | Soi Phí & Lợi Nhuận Shopee, TikTok Shop" />
+    <meta name="description" content="Công cụ tự động phân tích Lợi Nhuận Ròng, Tỷ lệ Phí Sàn thực tế và Phát hiện Đơn hàng bị Thất thoát / Trừ phí sai trên Shopee & TikTok Shop trong vài giây. Bảo mật 100% Client-side." />
+    <meta name="keywords" content="ProfitCal, tagki, soi phí shopee, soi phí tiktok shop, lợi nhuận ròng tmdt, đối soát đơn hàng, tính phí sàn shopee, tính phí tiktok shop, ecom audit" />
+    <meta name="author" content="Tagki ProfitCal Team" />
+
+    <!-- Open Graph / Facebook / Zalo -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://profitcal.tagki.com/" />
+    <meta property="og:title" content="ProfitCal – Soi Phí Sàn & Lợi Nhuận Ròng Shopee / TikTok Shop" />
+    <meta property="og:description" content="Tải file đối soát Excel/CSV lên để tính Lợi Nhuận Ròng chính xác, Tỷ lệ Phí Sàn thực tế và Báo cáo Đơn hàng Thất thoát / Bị lỗ tự động." />
+    <meta property="og:image" content="https://profitcal.tagki.com/og-image.jpg" />
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              navy: {
+                700: '#334155',
+                800: '#1e293b',
+                900: '#0f172a',
+                950: '#070d1e'
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Browser ESM Dependencies -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        background-color: #070d1e;
+        color: #f8fafc;
+      }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #0b1329; }
+      ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    </style>
+  </head>
+  <body class="bg-navy-950 text-slate-100 antialiased font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

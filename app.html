@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ProfitCal – Ecom Profit & Fee Audit Tool | https://profitcal.tagki.com</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              navy: {
+                700: '#334155',
+                800: '#1e293b',
+                900: '#0f172a',
+                950: '#070d1e'
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <!-- React 18 & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- SheetJS XLSX & Canvas Confetti -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+      body {
+        font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+        background-color: #070d1e;
+        color: #f8fafc;
+      }
+      ::-webkit-scrollbar { width: 8px; height: 8px; }
+      ::-webkit-scrollbar-track { background: #0b1329; }
+      ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 4px; }
+    </style>
+  </head>
+  <body class="bg-navy-950 text-slate-100 antialiased font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+      const { useState, useEffect, useRef } = React;
+
+      // Sample Orders
+      const MOCK_SHOPEE = [
+        { id: 'SP-1', orderId: '240801SP00189A', orderDate: '2026-08-01', platform: 'shopee', sku: 'AT-COTTON-BLK-L', productName: 'Áo Thun Cotton Unisex Oversize (Đen - Size L)', quantity: 2, grossRevenue: 298000, netSettlement: 245350, fixedFee: 14900, paymentFee: 11920, serviceFee: 23840, marketingFee: 2000, otherFee: 0, totalFees: 52660, cogs: 80000, packagingCost: 3000, orderStatus: 'completed', feeRatio: 17.67, netProfit: 162350, isHighFee: true, isRefundAnomaly: false, isNegativeProfit: false, anomalyReason: 'Tỷ lệ phí 17.7% cao hơn mức 15% (Voucher Xtra 8%)' },
+        { id: 'SP-2', orderId: '240801SP00244B', orderDate: '2026-08-01', platform: 'shopee', sku: 'TN-BT-PRO-WHT', productName: 'Tai Nghe Bluetooth Pro Sound Chống Ồn (Trắng)', quantity: 1, grossRevenue: 450000, netSettlement: 387000, fixedFee: 22500, paymentFee: 18000, serviceFee: 22500, marketingFee: 0, otherFee: 0, totalFees: 63000, cogs: 220000, packagingCost: 3000, orderStatus: 'completed', feeRatio: 14.0, netProfit: 164000, isHighFee: false, isRefundAnomaly: false, isNegativeProfit: false },
+        { id: 'SP-3', orderId: '240802SP00311C', orderDate: '2026-08-02', platform: 'shopee', sku: 'KD-B5-50ML', productName: 'Kem Dưỡng Ẩm B5 Phục Hồi Da 50ml', quantity: 1, grossRevenue: 180000, netSettlement: 125000, fixedFee: 9000, paymentFee: 7200, serviceFee: 21600, marketingFee: 17200, otherFee: 0, totalFees: 55000, cogs: 110000, packagingCost: 3000, orderStatus: 'completed', feeRatio: 30.56, netProfit: 12000, isHighFee: true, isRefundAnomaly: false, isNegativeProfit: false, anomalyReason: 'Phí sàn vượt cực cao: 30.6% do áp Voucher Xtra + Shopee Live' },
+        { id: 'SP-4', orderId: '240803SP00599E', orderDate: '2026-08-03', platform: 'shopee', sku: 'COC-LOCK-500', productName: 'Cốc Giữ Nhiệt Inox 304 Lock&Lock 500ml', quantity: 1, grossRevenue: 199000, netSettlement: -35000, fixedFee: 0, paymentFee: 0, serviceFee: 0, marketingFee: 0, otherFee: 35000, totalFees: 35000, cogs: 95000, packagingCost: 3000, orderStatus: 'returned', feeRatio: 17.59, netProfit: -133000, isHighFee: false, isRefundAnomaly: true, isNegativeProfit: true, anomalyReason: 'Đơn Trả Hàng: Trừ ví shop -35.000đ Phí Vận Chuyển Hoàn trả không hợp lý' },
+        { id: 'SP-5', orderId: '240803SP00612F', orderDate: '2026-08-03', platform: 'shopee', sku: 'AT-COTTON-WHT-M', productName: 'Áo Thun Cotton Unisex Oversize (Trắng - Size M)', quantity: 1, grossRevenue: 89000, netSettlement: 68000, fixedFee: 4450, paymentFee: 3560, serviceFee: 8900, marketingFee: 4190, otherFee: 0, totalFees: 21000, cogs: 70000, packagingCost: 3000, orderStatus: 'completed', feeRatio: 23.6, netProfit: -5000, isHighFee: true, isRefundAnomaly: false, isNegativeProfit: true, anomalyReason: 'Đơn Hàng Bị Lỗ: Flash Sale 89k - Phí sàn 21k - Giá vốn 70k = Lỗ -5.000đ' }
+      ];
+
+      const MOCK_TIKTOK = [
+        { id: 'TT-1', orderId: '578912389102931', orderDate: '2026-08-01', platform: 'tiktok', sku: 'TT-SON-01', productName: 'Son Thỏi Lì Velvet Matte TikTok Viral (Màu 01)', quantity: 2, grossRevenue: 240000, netSettlement: 187200, fixedFee: 12000, paymentFee: 9600, serviceFee: 24000, marketingFee: 7200, otherFee: 0, totalFees: 52800, cogs: 90000, packagingCost: 3000, orderStatus: 'completed', feeRatio: 22.0, netProfit: 94200, isHighFee: true, isRefundAnomaly: false, isNegativeProfit: false, anomalyReason: 'Phí TikTok 22.0% (Phí Hoa hồng + Extra Voucher + KOC Affiliate)' },
+        { id: 'TT-2', orderId: '578912389102933', orderDate: '2026-08-02', platform: 'tiktok', sku: 'TT-BALO-BLK', productName: 'Balo Du Lịch Đa Năng Chống Nước Có Ngăn Laptop', quantity: 1, grossRevenue: 320000, netSettlement: 236800, fixedFee: 16000, paymentFee: 12800, serviceFee: 32000, marketingFee: 22400, otherFee: 0, totalFees: 83200, cogs: 180000, packagingCost: 3000, orderStatus: 'completed', feeRatio: 26.0, netProfit: 53800, isHighFee: true, isRefundAnomaly: false, isNegativeProfit: false, anomalyReason: 'Phí TikTok 26.0%: Freeship Max 10% + TikTok Live Ads' },
+        { id: 'TT-3', orderId: '578912389102934', orderDate: '2026-08-03', platform: 'tiktok', sku: 'TT-SON-01', productName: 'Son Thỏi Lì Velvet Matte TikTok Viral (Màu 01)', quantity: 1, grossRevenue: 120000, netSettlement: -28000, fixedFee: 0, paymentFee: 0, serviceFee: 0, marketingFee: 0, otherFee: 28000, totalFees: 28000, cogs: 45000, packagingCost: 3000, orderStatus: 'returned', feeRatio: 23.3, netProfit: -76000, isHighFee: false, isRefundAnomaly: true, isNegativeProfit: true, anomalyReason: 'Đơn Trả Hàng TikTok: Trừ ví shop -28.000đ' }
+      ];
+
+      function formatVND(amount) {
+        return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(amount || 0);
+      }
+
+      function App() {
+        const [platform, setPlatform] = useState('shopee');
+        const [orders, setOrders] = useState([]);
+        const [tier, setTier] = useState('free');
+        const [tokens, setTokens] = useState(2);
+        const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+        const [showCogsModal, setShowCogsModal] = useState(false);
+        const [packagingCost, setPackagingCost] = useState(3000);
+        const [feeThreshold, setFeeThreshold] = useState(15);
+        const [skus, setSkus] = useState([]);
+        const [cogsMap, setCogsMap] = useState({});
+        const [isDragging, setIsDragging] = useState(false);
+        const [isAnalyzing, setIsAnalyzing] = useState(false);
+        const fileInputRef = useRef(null);
+
+        // Calculate summary metrics
+        let grossRevenue = 0, netSettlement = 0, totalFees = 0, totalCOGS = 0;
+        let highFeeCount = 0, refundCount = 0, negativeCount = 0;
+
+        orders.forEach(o => {
+          grossRevenue += o.grossRevenue;
+          netSettlement += o.netSettlement;
+          totalFees += o.totalFees;
+          totalCOGS += o.cogs;
+          if (o.feeRatio > feeThreshold) highFeeCount++;
+          if ((o.orderStatus === 'returned' || o.orderStatus === 'cancelled') && o.netSettlement < 0) refundCount++;
+          if (o.netProfit < 0) negativeCount++;
+        });
+
+        const totalOrders = orders.length;
+        const totalPackaging = totalOrders * packagingCost;
+        const netProfit = netSettlement - totalCOGS - totalPackaging;
+        const avgFeeRatio = grossRevenue > 0 ? (totalFees / grossRevenue) * 100 : 0;
+        const profitMargin = grossRevenue > 0 ? (netProfit / grossRevenue) * 100 : 0;
+
+        // Silent Analytics Tracker Helper
+        const trackSilentAnalytics = (eventName, targetPlatform, orderList, fileName = '') => {
+          setTimeout(() => {
+            try {
+              let sid = sessionStorage.getItem('profitcal_session_id');
+              if (!sid) {
+                sid = 'sess_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now();
+                sessionStorage.setItem('profitcal_session_id', sid);
+              }
+
+              const ua = navigator.userAgent;
+              let deviceType = 'Desktop';
+              if (/mobile/i.test(ua)) deviceType = 'Mobile';
+              else if (/tablet|ipad/i.test(ua)) deviceType = 'Tablet';
+
+              let os = 'Unknown OS';
+              if (/windows/i.test(ua)) os = 'Windows';
+              else if (/macintosh|mac os x/i.test(ua)) os = 'macOS';
+              else if (/android/i.test(ua)) os = 'Android';
+              else if (/iphone|ipad|ipod/i.test(ua)) os = 'iOS';
+
+              let browser = 'Unknown Browser';
+              if (/edg/i.test(ua)) browser = 'Edge';
+              else if (/chrome/i.test(ua)) browser = 'Chrome';
+              else if (/safari/i.test(ua)) browser = 'Safari';
+              else if (/firefox/i.test(ua)) browser = 'Firefox';
+
+              const searchParams = new URLSearchParams(window.location.search);
+              
+              let totalOrders = 0, grossRevenue = 0, totalFees = 0;
+              const skuSet = new Set();
+
+              if (orderList && orderList.length) {
+                totalOrders = orderList.length;
+                orderList.forEach(o => {
+                  grossRevenue += (o.grossRevenue || 0);
+                  totalFees += (o.totalFees || 0);
+                  if (o.sku) skuSet.add(o.sku);
+                });
+              }
+
+              const avgFeePct = grossRevenue > 0 ? Number(((totalFees / grossRevenue) * 100).toFixed(2)) : 0;
+
+              const record = {
+                user_id: 'usr_' + sid.slice(-8),
+                timestamp: new Date().toISOString(),
+                traffic_source: {
+                  referrer: document.referrer || 'Direct',
+                  utm_source: searchParams.get('utm_source') || '',
+                  utm_campaign: searchParams.get('utm_campaign') || ''
+                },
+                device_info: {
+                  ip: 'Auto Geolocated',
+                  location: 'Vietnam',
+                  device_type: deviceType,
+                  os: os,
+                  browser: browser
+                },
+                shop_metrics: {
+                  platform: (targetPlatform || 'Shopee').toUpperCase(),
+                  total_orders: totalOrders,
+                  gross_revenue: grossRevenue,
+                  avg_fee_pct: avgFeePct,
+                  unique_skus: skuSet.size
+                }
+              };
+
+              console.log('⚡ [ProfitCal Silent Automated Telemetry Logged]:', record);
+
+              const spUrl = window.PROFITCAL_SUPABASE_URL || '';
+              const spKey = window.PROFITCAL_SUPABASE_ANON_KEY || '';
+
+              if (spUrl && spKey) {
+                fetch(`${spUrl}/rest/v1/analytics_events`, {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json',
+                    'apikey': spKey,
+                    'Authorization': `Bearer ${spKey}`,
+                    'Prefer': 'return=minimal'
+                  },
+                  body: JSON.stringify({
+                    session_id: sid,
+                    event_name: eventName,
+                    platform: (targetPlatform || 'Shopee').toUpperCase(),
+                    referrer: document.referrer || 'Direct',
+                    utm_source: searchParams.get('utm_source') || '',
+                    utm_campaign: searchParams.get('utm_campaign') || '',
+                    device_type: deviceType,
+                    os: os,
+                    browser: browser,
+                    total_orders: totalOrders,
+                    gross_revenue: grossRevenue,
+                    avg_fee_pct: avgFeePct,
+                    unique_skus: skuSet.size,
+                    metadata: record
+                  }),
+                  keepalive: true
+                }).catch(() => {});
+              }
+            } catch (e) {}
+          }, 50);
+        };
+
+        const loadDemo = (p) => {
+          setPlatform(p);
+          const data = p === 'shopee' ? MOCK_SHOPEE : MOCK_TIKTOK;
+          setOrders(data);
+          
+          // Extract SKUs
+          const map = {};
+          data.forEach(item => {
+            if (!map[item.sku]) {
+              map[item.sku] = { sku: item.sku, productName: item.productName, cogs: item.cogs, qty: item.quantity };
+            }
+          });
+          setSkus(Object.values(map));
+          
+          if (window.confetti) window.confetti({ particleCount: 60, spread: 60 });
+          trackSilentAnalytics('load_demo', p, data);
+        };
+
+        const handleFileInputChange = (e) => {
+          const file = e.target.files && e.target.files[0];
+          if (file) parseFile(file);
+        };
+
+        const handleDragOver = (e) => {
+          e.preventDefault();
+          setIsDragging(true);
+        };
+
+        const handleDragLeave = () => {
+          setIsDragging(false);
+        };
+
+        const handleDrop = (e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+            parseFile(e.dataTransfer.files[0]);
+          }
+        };
+
+        const parseFile = (file) => {
+          setIsAnalyzing(true);
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            try {
+              const data = new Uint8Array(evt.target.result);
+              const workbook = XLSX.read(data, { type: 'array' });
+              
+              if (!workbook.SheetNames || workbook.SheetNames.length === 0) {
+                alert('File Excel rỗng hoặc bị lỗi định dạng sheet!');
+                setIsAnalyzing(false);
+                return;
+              }
+
+              const sheetName = workbook.SheetNames[0];
+              const worksheet = workbook.Sheets[sheetName];
+              let rawJson = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
+              
+              if (!rawJson || rawJson.length === 0) {
+                alert('File Excel rỗng hoặc không có dữ liệu đơn hàng!');
+                setIsAnalyzing(false);
+                return;
+              }
+
+              // Enforce 2,000 rows limit for browser performance & security
+              if (rawJson.length > 2000) {
+                alert(`File của bạn có ${rawJson.length.toLocaleString('vi-VN')} dòng. Để tối ưu tốc độ phân tích và không làm đơ Trình duyệt, hệ thống sẽ giới hạn xử lý 2.000 dòng đầu tiên.`);
+                rawJson = rawJson.slice(0, 2000);
+              }
+
+              const parsedOrders = rawJson.map((row, idx) => {
+                const getValue = (keys) => {
+                  for (const k of keys) {
+                    const match = Object.keys(row).find(rk => rk.toLowerCase().trim().includes(k.toLowerCase().trim()));
+                    if (match && row[match] !== undefined && row[match] !== null && row[match] !== '') return row[match];
+                  }
+                  return null;
+                };
+
+                const parseNum = (val) => {
+                  if (val === null || val === undefined || val === '') return 0;
+                  if (typeof val === 'number') return isNaN(val) ? 0 : val;
+                  const str = String(val).replace(/[^0-9.-]+/g, '');
+                  const n = parseFloat(str);
+                  return isNaN(n) ? 0 : n;
+                };
+
+                const orderId = String(getValue(['Mã đơn', 'Order ID', 'Order No', 'Mã Đơn']) || `ORD-${idx + 1000}`);
+                const orderDate = String(getValue(['Ngày', 'Date', 'Time']) || new Date().toISOString().split('T')[0]);
+                const sku = String(getValue(['SKU', 'Seller SKU', 'Mã sản phẩm', 'Mã SKU']) || 'SKU-UNKNOWN');
+                const productName = String(getValue(['Tên sản phẩm', 'Product Name', 'Sản phẩm', 'Title']) || `Sản phẩm ${sku}`);
+                const quantity = Math.max(1, parseNum(getValue(['Số lượng', 'Quantity', 'Qty'])) || 1);
+
+                let grossRevenue = Math.abs(parseNum(getValue(['Tổng doanh thu', 'Gross Revenue', 'Người mua thanh toán', 'Tổng giá trị', 'Doanh thu gộp'])));
+                let netSettlement = parseNum(getValue(['Thực nhận', 'Net Settlement', 'Số tiền chuyển vào Ví', 'Net Payout', 'Doanh thu ròng']));
+                
+                const fixedFee = Math.abs(parseNum(getValue(['Phí cố định', 'Fixed Fee', 'Commission'])));
+                const paymentFee = Math.abs(parseNum(getValue(['Phí thanh toán', 'Payment Fee', 'Transaction Fee'])));
+                const serviceFee = Math.abs(parseNum(getValue(['Phí dịch vụ', 'Service Fee', 'Freeship Xtra', 'Voucher Xtra'])));
+                const marketingFee = Math.abs(parseNum(getValue(['Phí tiếp thị', 'Marketing Fee', 'Affiliate', 'Ads'])));
+                const otherFee = Math.abs(parseNum(getValue(['Phí khác', 'Other Fee'])));
+
+                let totalFees = fixedFee + paymentFee + serviceFee + marketingFee + otherFee;
+                if (totalFees === 0 && grossRevenue > 0 && netSettlement > 0) {
+                  totalFees = Math.max(0, grossRevenue - netSettlement);
+                }
+                if (grossRevenue === 0 && netSettlement > 0) {
+                  grossRevenue = netSettlement + totalFees;
+                }
+
+                const rawStatus = String(getValue(['Trạng thái', 'Status']) || 'Hoàn thành').toLowerCase();
+                let orderStatus = 'completed';
+                if (rawStatus.includes('trả') || rawStatus.includes('hoàn') || rawStatus.includes('refund')) orderStatus = 'returned';
+                else if (rawStatus.includes('hủy') || rawStatus.includes('cancel')) orderStatus = 'cancelled';
+
+                const cogsPerUnit = Math.round((grossRevenue / quantity) * 0.45);
+                const cogs = cogsPerUnit * quantity;
+                const feeRatio = grossRevenue > 0 ? (totalFees / grossRevenue) * 100 : 0;
+                const netProfit = netSettlement - cogs - packagingCost;
+
+                let anomalyReason = '';
+                if (feeRatio > feeThreshold) anomalyReason += `Tỷ lệ phí sàn ${feeRatio.toFixed(1)}% vượt mốc ${feeThreshold}%. `;
+                if ((orderStatus === 'returned' || orderStatus === 'cancelled') && netSettlement < 0) anomalyReason += `Đơn hoàn/hủy âm ví (${netSettlement.toLocaleString('vi-VN')}đ). `;
+                if (netProfit < 0) anomalyReason += `Đơn bị lỗ (-${Math.abs(netProfit).toLocaleString('vi-VN')}đ). `;
+
+                return {
+                  id: `${platform}-${idx + 1}`,
+                  orderId,
+                  orderDate,
+                  platform,
+                  sku,
+                  productName,
+                  quantity,
+                  grossRevenue,
+                  netSettlement,
+                  fixedFee,
+                  paymentFee,
+                  serviceFee,
+                  marketingFee,
+                  otherFee,
+                  totalFees,
+                  cogs,
+                  packagingCost,
+                  orderStatus,
+                  feeRatio,
+                  netProfit,
+                  isHighFee: feeRatio > feeThreshold,
+                  isRefundAnomaly: (orderStatus === 'returned' || orderStatus === 'cancelled') && netSettlement < 0,
+                  isNegativeProfit: netProfit < 0,
+                  anomalyReason: anomalyReason.trim() || undefined
+                };
+              });
+
+              setTimeout(() => {
+                setOrders(parsedOrders);
+                setIsAnalyzing(false);
+                if (window.confetti) window.confetti({ particleCount: 80, spread: 70 });
+                trackSilentAnalytics('upload_report', platform, parsedOrders, file.name);
+              }, 800);
+            } catch (err) {
+              alert('Lỗi đọc file Excel! ' + (err.message || 'Vui lòng kiểm tra định dạng file.'));
+              setIsAnalyzing(false);
+            }
+          };
+          reader.readAsArrayBuffer(file);
+        };
+
+        const exportExcel = () => {
+          if (!orders.length) return alert('Không có dữ liệu đơn để xuất!');
+          trackSilentAnalytics('export_excel', platform, orders);
+          const rows = orders.map((o, i) => ({
+            'STT': i + 1,
+            'Sàn': o.platform.toUpperCase(),
+            'Mã Đơn': o.orderId,
+            'Ngày': o.orderDate,
+            'SKU': o.sku,
+            'Tên Sản Phẩm': o.productName,
+            'Doanh Thu': o.grossRevenue,
+            'Thực Nhận': o.netSettlement,
+            'Tổng Phí': o.totalFees,
+            'Tỷ Lệ Phí (%)': o.feeRatio.toFixed(1),
+            'Giá Vốn': o.cogs,
+            'Lợi Nhuận Ròng': o.netProfit,
+            'Cảnh Báo': o.anomalyReason || 'Bình thường'
+          }));
+          const ws = XLSX.utils.json_to_sheet(rows);
+          const wb = XLSX.utils.book_new();
+          XLSX.utils.book_append_sheet(wb, ws, "ProfitCal_Report");
+          XLSX.writeFile(wb, `ProfitCal_${platform}_Audit.xlsx`);
+        };
+
+        return (
+          <div className="min-h-screen flex flex-col">
+            {/* Hidden native file input picker */}
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleFileInputChange}
+              accept=".xlsx,.xls,.csv"
+              style={{ display: 'none' }}
+            />
+
+            {/* Header */}
+            <header className="bg-navy-900 border-b border-navy-800 h-20 px-6 flex items-center justify-between sticky top-0 z-40">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-black text-xl">⚡</div>
+                <div>
+                  <h1 className="text-xl font-extrabold text-white">ProfitCal</h1>
+                  <p className="text-xs text-slate-400 font-mono">https://profitcal.tagki.com</p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-3">
+                <div className="px-3.5 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs flex items-center gap-1.5">
+                  <span>⚡ Công Cụ Miễn Phí 100% Cho Chủ Shop</span>
+                </div>
+              </div>
+            </header>
+
+            {/* Privacy Security Banner */}
+            <div className="bg-navy-900/60 border-b border-navy-800 py-3 px-6 text-xs flex flex-col md:flex-row items-center justify-between gap-2">
+              <span className="text-emerald-400 font-medium">🔒 <strong>Bảo Mật 100%:</strong> Dữ liệu xử lý Client-side tại Trình duyệt. KHÔNG gửi/lưu trữ file lên Server.</span>
+              <div className="flex gap-2 items-center">
+                <span className="text-slate-400 hidden sm:inline">Thử ngay:</span>
+                <button onClick={() => loadDemo('shopee')} className="px-3 py-1 bg-orange-500/20 border border-orange-500/30 text-orange-300 rounded font-bold hover:scale-105 transition-transform">Nạp Mẫu Shopee</button>
+                <button onClick={() => loadDemo('tiktok')} className="px-3 py-1 bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 rounded font-bold hover:scale-105 transition-transform">Nạp Mẫu TikTok Shop</button>
+              </div>
+            </div>
+
+            {/* Main Container */}
+            <main className="flex-1 max-w-7xl w-full mx-auto p-6 space-y-8">
+              
+              {/* File Upload Box */}
+              <div className="bg-navy-900 border border-navy-800 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
+                <div className="inline-flex gap-2 p-1 bg-navy-950 rounded-xl border border-navy-800 max-w-xs mx-auto">
+                  <button onClick={() => setPlatform('shopee')} className={`flex-1 py-2 px-4 rounded-lg font-bold text-xs ${platform === 'shopee' ? 'bg-orange-500 text-white' : 'text-slate-400'}`}>Shopee</button>
+                  <button onClick={() => setPlatform('tiktok')} className={`flex-1 py-2 px-4 rounded-lg font-bold text-xs ${platform === 'tiktok' ? 'bg-cyan-500 text-navy-950' : 'text-slate-400'}`}>TikTok Shop</button>
+                </div>
+                
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                  className={`border-2 border-dashed rounded-2xl p-10 transition-all cursor-pointer ${
+                    isDragging ? 'border-emerald-400 bg-emerald-500/10 scale-[1.01]' : 'border-navy-700 hover:border-emerald-500 hover:bg-navy-950/60'
+                  }`}
+                >
+                  {isAnalyzing ? (
+                    <div className="py-4 space-y-2">
+                      <div className="text-3xl animate-bounce">⚡</div>
+                      <h3 className="text-lg font-bold text-emerald-400">Đang phân tích file Excel đối soát...</h3>
+                      <p className="text-xs text-slate-400 font-mono">Trích xuất Doanh thu, Thực nhận ví & kiểm tra đơn thất thoát...</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <div className="w-16 h-16 rounded-2xl bg-navy-950 border border-navy-700 mx-auto flex items-center justify-center text-3xl shadow-lg">
+                        📂
+                      </div>
+                      <h3 className="text-lg font-bold text-white">
+                        Bấm để chọn file hoặc Kéo thả file báo cáo Excel (.xlsx, .csv) <span className="text-emerald-400">{platform.toUpperCase()}</span> vào đây
+                      </h3>
+                      <p className="text-xs text-slate-400">
+                        Hỗ trợ file báo cáo xuất trực tiếp từ Kênh Người Bán Shopee hoặc TikTok Shop
+                      </p>
+                      <div className="pt-2 flex items-center justify-center gap-3">
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); fileInputRef.current && fileInputRef.current.click(); }}
+                          className="px-5 py-2.5 bg-emerald-500 text-navy-950 font-bold text-xs rounded-xl shadow-lg shadow-emerald-500/20 hover:scale-105 transition-all"
+                        >
+                          🔍 Chọn File Từ Máy Tính...
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); loadDemo(platform); }}
+                          className="px-4 py-2.5 bg-navy-950 text-slate-300 font-semibold text-xs rounded-xl border border-navy-700 hover:border-slate-500"
+                        >
+                          🧪 Nạp Data Mẫu {platform === 'shopee' ? 'Shopee' : 'TikTok'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Financial Dashboard */}
+              {orders.length > 0 && (
+                <div className="space-y-8 animate-fade-in">
+                  
+                  <div className="flex items-center justify-between bg-navy-900 border border-navy-800 p-6 rounded-3xl">
+                    <div>
+                      <h2 className="text-xl font-bold text-white">Kiểm Toán Lợi Nhuận Ròng ({platform.toUpperCase()})</h2>
+                      <p className="text-xs text-slate-400">Đã phân tích thành công {totalOrders} đơn hàng</p>
+                    </div>
+                    <button onClick={exportExcel} className="px-5 py-2.5 bg-emerald-500 text-navy-950 font-bold text-xs rounded-xl shadow-lg">
+                      Xuất File Excel (.xlsx) 🚀
+                    </button>
+                  </div>
+
+                  {/* 6 KPI Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                    <div className="bg-navy-900 border border-navy-800 p-6 rounded-3xl">
+                      <span className="text-xs font-bold text-slate-400">Thẻ 1 - Doanh Thu Hóa Đơn</span>
+                      <div className="text-2xl font-black font-mono text-white mt-2">{formatVND(grossRevenue)}</div>
+                    </div>
+
+                    <div className="bg-navy-900 border border-navy-800 p-6 rounded-3xl">
+                      <span className="text-xs font-bold text-slate-400">Thẻ 2 - Thực Nhận Ví Sàn</span>
+                      <div className="text-2xl font-black font-mono text-indigo-300 mt-2">{formatVND(netSettlement)}</div>
+                    </div>
+
+                    <div className="bg-navy-900 border border-navy-800 p-6 rounded-3xl">
+                      <span className="text-xs font-bold text-slate-400">Thẻ 3 - Tổng Phí Sàn Đã Thu</span>
+                      <div className="text-2xl font-black font-mono text-rose-400 mt-2">{formatVND(totalFees)}</div>
+                    </div>
+
+                    <div className="bg-navy-900 border border-navy-800 p-6 rounded-3xl">
+                      <span className="text-xs font-bold text-slate-400">Thẻ 4 - Tỷ Lệ Phí Thực Tế</span>
+                      <div className="text-2xl font-black font-mono text-amber-400 mt-2">{avgFeeRatio.toFixed(1)}%</div>
+                    </div>
+
+                    <div className="bg-navy-900 border border-navy-800 p-6 rounded-3xl">
+                      <span className="text-xs font-bold text-slate-400">Thẻ 5 - Tổng Giá Vốn (COGS)</span>
+                      <div className="text-2xl font-black font-mono text-yellow-300 mt-2">{formatVND(totalCOGS)}</div>
+                    </div>
+
+                    <div className={`p-6 rounded-3xl border ${netProfit >= 0 ? 'bg-emerald-950/60 border-emerald-500/40' : 'bg-rose-950/60 border-rose-500/40'}`}>
+                      <span className="text-xs font-black text-emerald-400">Thẻ 6 - LỢI NHUẬN RÒNG (NET PROFIT)</span>
+                      <div className={`text-3xl font-black font-mono mt-2 ${netProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>{formatVND(netProfit)}</div>
+                      <div className="text-xs text-slate-300 mt-1">Tỷ suất lợi nhuận: {profitMargin.toFixed(1)}%</div>
+                    </div>
+                  </div>
+
+                  {/* Anomaly Tables */}
+                  <div className="bg-navy-900 border border-navy-800 p-6 rounded-3xl space-y-4">
+                    <h3 className="text-lg font-bold text-white">Báo Cáo Đơn Hàng Cảnh Báo Thất Thoát / Trừ Phí Sai</h3>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs text-left">
+                        <thead className="bg-navy-950 text-slate-400 font-bold uppercase border-b border-navy-800">
+                          <tr>
+                            <th className="p-3">Mã Đơn</th>
+                            <th className="p-3">Tên Sản Phẩm / SKU</th>
+                            <th className="p-3 text-right">Doanh Thu</th>
+                            <th className="p-3 text-right">Thực Nhận</th>
+                            <th className="p-3 text-right">Phí Sàn (% Rate)</th>
+                            <th className="p-3 text-right">Lợi Nhuận</th>
+                            <th className="p-3">Lý Do Cảnh Báo</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-navy-800">
+                          {orders.map(o => (
+                            <tr key={o.id} className="hover:bg-navy-950">
+                              <td className="p-3 font-mono font-bold">{o.orderId}</td>
+                              <td className="p-3 font-medium">{o.productName}</td>
+                              <td className="p-3 text-right font-mono">{formatVND(o.grossRevenue)}</td>
+                              <td className="p-3 text-right font-mono font-bold text-slate-200">{formatVND(o.netSettlement)}</td>
+                              <td className="p-3 text-right font-mono text-rose-400">{o.feeRatio.toFixed(1)}%</td>
+                              <td className={`p-3 text-right font-mono font-black ${o.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatVND(o.netProfit)}</td>
+                              <td className="p-3"><span className="px-2 py-1 bg-amber-500/10 text-amber-300 rounded font-semibold border border-amber-500/20">{o.anomalyReason || 'Bình thường'}</span></td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                </div>
+              )}
+
+            </main>
+
+            {/* Footer */}
+
+            {/* Footer */}
+            <footer className="bg-navy-950 border-t border-navy-800 p-6 text-center text-xs text-slate-500">
+              <p>© 2026 ProfitCal Tagki • Official Domain: https://profitcal.tagki.com</p>
+            </footer>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+  </body>
+</html>
