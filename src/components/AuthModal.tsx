@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle2, X, PlusCircle, Check } from 'lucide-react';
 import { UserState } from '../types';
+import { signInWithGoogleOAuth, SUPABASE_URL } from '../utils/supabaseAuth';
 
 interface AuthModalProps {
   user: UserState;
@@ -25,6 +26,16 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
     { email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', avatar: 'E' },
     { email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', avatar: 'D' },
   ];
+
+  const handleGoogleClick = () => {
+    // If Supabase OAuth is configured (VITE_SUPABASE_URL set on Vercel), trigger real Google OAuth
+    if (SUPABASE_URL && SUPABASE_URL.includes('supabase.co')) {
+      signInWithGoogleOAuth();
+    } else {
+      // Toggle local Google Account selector prompt
+      setShowGoogleOneTap(true);
+    }
+  };
 
   const handleSelectGoogleAccount = (acc: { email: string; name: string }) => {
     onLoginSuccess(acc.email, acc.name);
@@ -59,7 +70,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
       
-      {/* FLOATING GOOGLE ONE TAP PROMPT ON TOP RIGHT OF MODAL (DISPLAYED WHEN CLICKING GOOGLE OR TOGGLED) */}
+      {/* FLOATING GOOGLE ONE TAP PROMPT ON TOP RIGHT OF MODAL */}
       {showGoogleOneTap && (
         <div className="absolute top-6 right-6 z-50 bg-white text-slate-800 rounded-2xl shadow-2xl border border-slate-200 w-80 p-3.5 text-xs space-y-2 animate-bounce-short">
           <div className="flex items-center justify-between border-b border-slate-100 pb-2">
@@ -77,7 +88,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
             </button>
           </div>
 
-          {/* Google Accounts Items */}
           <div className="space-y-1">
             {googleAccounts.map((acc) => (
               <button
@@ -99,7 +109,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
         </div>
       )}
 
-      {/* MAIN AUTH CARD (MATCHING USER SCREENSHOT EXACTLY) */}
+      {/* MAIN AUTH CARD */}
       <div className="bg-white text-slate-900 rounded-3xl w-full max-w-md p-8 shadow-2xl relative space-y-6 text-center border border-slate-100">
         
         {/* Close Button */}
@@ -125,7 +135,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
         {/* Big Google Sign-In Button */}
         <button
           type="button"
-          onClick={() => setShowGoogleOneTap(true)}
+          onClick={handleGoogleClick}
           className="w-full py-3 px-4 rounded-2xl bg-white border border-slate-300 text-slate-700 font-bold text-xs shadow-sm flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
