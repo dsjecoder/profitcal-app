@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Crown, Sparkles, X, ShieldCheck, QrCode, Copy, CheckCircle2, CreditCard, DollarSign } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Crown, Sparkles, X, ShieldCheck, QrCode, Copy, CheckCircle2, CreditCard, DollarSign, Clock, RefreshCw, Check } from 'lucide-react';
 import { UserState } from '../types';
 import { getPaymentGatewaysConfig } from '../utils/adminConfig';
 
@@ -14,24 +14,48 @@ export const PricingModal: React.FC<PricingModalProps> = ({
   onClose,
   onConfirmUpgrade,
 }) => {
-  const [billingCycle, setBillingCycle] = useState<'monthly' | 'yearly'>('yearly');
+  // Step 1: Select Plan ('plan_select') | Step 2: Checkout Payment ('checkout')
+  const [step, setStep] = useState<'plan_select' | 'checkout'>('plan_select');
+  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly'>('yearly');
   const [paymentMethod, setPaymentMethod] = useState<'vietqr' | 'bank' | 'binance' | 'oxapay'>('vietqr');
-  const [showPaymentDetails, setShowPaymentDetails] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  const paymentConfig = getPaymentGatewaysConfig();
-  const priceAmount = billingCycle === 'yearly' ? 599000 : 130000;
-  const priceLabel = billingCycle === 'yearly' ? '599.000đ / Năm' : '130.000đ / Tháng';
+  // 15:00 Timer state for checkout
+  const [timeLeft, setTimeLeft] = useState(900); // 15 minutes
 
-  const handleCopyMemo = (text: string) => {
+  useEffect(() => {
+    if (step === 'checkout') {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => (prev > 0 ? prev - 1 : 0));
+      }, 1000);
+      return () => clearInterval(timer);
+    }
+  }, [step]);
+
+  const paymentConfig = getPaymentGatewaysConfig();
+  const priceAmount = selectedPlan === 'yearly' ? 599000 : 130000;
+  const priceLabel = selectedPlan === 'yearly' ? '599.000đ / Năm' : '130.000đ / Tháng';
+
+  const formatTimer = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+  };
+
+  const handleCopyText = (text: string) => {
     navigator.clipboard.writeText(text);
     setIsCopied(true);
     setTimeout(() => setIsCopied(false), 2000);
   };
 
+  const handleSelectPlanAndCheckout = (plan: 'monthly' | 'yearly') => {
+    setSelectedPlan(plan);
+    setStep('checkout');
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md animate-fade-in">
-      <div className="bg-gradient-to-b from-navy-900 via-navy-950 to-navy-900 border border-amber-500/40 rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl shadow-amber-500/10 relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/90 backdrop-blur-md animate-fade-in">
+      <div className="bg-gradient-to-b from-navy-900 via-navy-950 to-navy-900 border border-amber-500/40 rounded-3xl w-full max-w-4xl max-h-[92vh] overflow-y-auto shadow-2xl shadow-amber-500/10 relative">
         
         {/* Close Button */}
         <button
@@ -41,26 +65,183 @@ export const PricingModal: React.FC<PricingModalProps> = ({
           <X className="w-4 h-4" />
         </button>
 
-        {showPaymentDetails ? (
-          /* Multi-Gateway Payment Checkout Screen */
-          <div className="p-8 text-center space-y-6 animate-fade-in">
+        {step === 'plan_select' ? (
+          /* STEP 1: PRICING PLAN SELECTION MATRIX (3 COLUMNS) */
+          <div className="p-6 sm:p-10 space-y-8 text-center">
             
-            {/* Payment Method Switcher Tabs */}
-            <div className="flex justify-center border-b border-navy-800 pb-4">
+            <div className="space-y-2">
+              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 p-0.5 mx-auto shadow-xl">
+                <div className="w-full h-full bg-navy-950 rounded-[14px] flex items-center justify-center">
+                  <Crown className="w-8 h-8 text-amber-400" />
+                </div>
+              </div>
+
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Chọn Gói Dịch Vụ ProfitCal
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-300 max-w-lg mx-auto">
+                Tối ưu chi phí sàn, bóc tách thuế 1.5% và xuất file vận chuyển không giới hạn.
+              </p>
+            </div>
+
+            {/* 3 Columns Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+              
+              {/* Column 1: FREE Plan */}
+              <div className="bg-navy-950 border border-navy-800 rounded-3xl p-6 flex flex-col justify-between space-y-6">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-bold text-xs">
+                      Bản FREE
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-black text-white">0 VNĐ</div>
+                    <p className="text-xs text-slate-400">Miễn phí cho chủ shop</p>
+                  </div>
+
+                  <ul className="space-y-2.5 text-xs text-slate-300 pt-2 border-t border-navy-800">
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Tính Lãi Ròng & Thuế 1.5% Online</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Phân tích SKU Quảng Cáo ROAS/CIR</span>
+                    </li>
+                    <li className="flex items-center gap-2 text-slate-400">
+                      <Check className="w-4 h-4 text-slate-500 shrink-0" />
+                      <span>Xuất file vận chuyển: 20 đơn/lượt (Reset 7 ngày)</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  disabled
+                  className="w-full py-3 rounded-2xl bg-navy-900 border border-navy-700 text-slate-400 font-bold text-xs text-center cursor-not-allowed"
+                >
+                  Đang Sử Dụng
+                </button>
+              </div>
+
+              {/* Column 2: PRO Monthly Plan */}
+              <div className="bg-navy-900 border border-amber-500/30 rounded-3xl p-6 flex flex-col justify-between space-y-6 shadow-lg">
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-400 font-bold text-xs border border-amber-500/30">
+                      PRO Tháng
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-black text-amber-400">130.000đ</div>
+                    <p className="text-xs text-slate-400">Thanh toán theo tháng</p>
+                  </div>
+
+                  <ul className="space-y-2.5 text-xs text-slate-200 pt-2 border-t border-navy-800">
+                    <li className="flex items-center gap-2 font-bold text-emerald-400">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Xuất file Vận chuyển KHÔNG GIỚI HẠN</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Cảnh báo Tồn kho Telegram Bot</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Tự động Lập Hồ Sơ Kháng Nại CSKH</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  onClick={() => handleSelectPlanAndCheckout('monthly')}
+                  className="w-full py-3 rounded-2xl bg-amber-500 text-navy-950 font-bold text-xs hover:bg-amber-400 transition-all shadow-md"
+                >
+                  Chọn Gói Tháng 🚀
+                </button>
+              </div>
+
+              {/* Column 3: PRO Yearly Plan (Best Value - 62% Off) */}
+              <div className="bg-gradient-to-b from-navy-900 via-navy-950 to-navy-900 border-2 border-amber-500 rounded-3xl p-6 flex flex-col justify-between space-y-6 shadow-2xl relative overflow-hidden">
+                
+                {/* Popular Tag */}
+                <div className="absolute top-0 right-0 bg-gradient-to-r from-amber-500 to-orange-500 text-navy-950 font-black text-[10px] uppercase px-3 py-1 rounded-bl-xl shadow-md">
+                  Bán Chạy Nhất (-62%)
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <span className="px-3 py-1 rounded-full bg-amber-500 text-navy-950 font-black text-xs">
+                      PRO Tiết Kiệm Năm
+                    </span>
+                  </div>
+                  <div>
+                    <div className="text-3xl font-black text-amber-300">599.000đ</div>
+                    <p className="text-xs text-emerald-400 font-bold">Chỉ ~49k / tháng (Tiết kiệm 62%)</p>
+                  </div>
+
+                  <ul className="space-y-2.5 text-xs text-slate-100 pt-2 border-t border-navy-800 font-semibold">
+                    <li className="flex items-center gap-2 text-amber-300 font-bold">
+                      <Check className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>Toàn bộ quyền lợi Gói PRO</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Ưu tiên hỗ trợ CSKH 1-on-1 24/7</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Check className="w-4 h-4 text-emerald-400 shrink-0" />
+                      <span>Cập nhật miễn phí các tính năng Phase 3</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <button
+                  onClick={() => handleSelectPlanAndCheckout('yearly')}
+                  className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-navy-950 font-black text-xs shadow-xl hover:scale-[1.02] transition-all"
+                >
+                  Chọn Gói Năm (Khuyên Dùng) 🚀
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        ) : (
+          /* STEP 2: CHECKOUT SCREEN 100% IDENTICAL TO TAGKI.COM */
+          <div className="p-6 sm:p-8 space-y-6 animate-fade-in text-center">
+            
+            {/* Top Bar with Timer & Status */}
+            <div className="flex flex-col sm:flex-row items-center justify-between bg-navy-950 p-4 rounded-2xl border border-navy-800 gap-3">
+              <div className="flex items-center gap-2 text-xs">
+                <Clock className="w-4 h-4 text-amber-400" />
+                <span className="text-slate-300">Thời gian giữ đơn thanh toán:</span>
+                <span className="font-mono text-base font-black text-amber-400">{formatTimer(timeLeft)}</span>
+              </div>
+
+              <div className="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-bold flex items-center gap-2 animate-pulse">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                <span>Đang kiểm tra giao dịch tự động...</span>
+              </div>
+            </div>
+
+            {/* Payment Gateways Selector Tabs */}
+            <div className="flex justify-center border-b border-navy-800 pb-3">
               <div className="bg-navy-950 p-1 rounded-2xl border border-navy-800 flex gap-1 text-xs font-bold">
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('vietqr')}
                   className={`py-2 px-3 rounded-xl transition-all ${paymentMethod === 'vietqr' ? 'bg-emerald-500 text-navy-950' : 'text-slate-400'}`}
                 >
-                  VietQR
+                  VietQR Mã QR
                 </button>
                 <button
                   type="button"
                   onClick={() => setPaymentMethod('bank')}
                   className={`py-2 px-3 rounded-xl transition-all ${paymentMethod === 'bank' ? 'bg-emerald-500 text-navy-950' : 'text-slate-400'}`}
                 >
-                  Chuyển Khoản
+                  Chuyển Khoản Ngân Hàng
                 </button>
                 <button
                   type="button"
@@ -79,38 +260,59 @@ export const PricingModal: React.FC<PricingModalProps> = ({
               </div>
             </div>
 
-            {/* Gateway 1: VietQR */}
+            {/* Gateway 1: VietQR Checkout */}
             {paymentMethod === 'vietqr' && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-white">Thanh Toán Quét Mã VietQR ({priceLabel})</h3>
-                <div className="bg-white p-3 rounded-2xl w-48 h-48 mx-auto flex flex-col items-center justify-center border-4 border-amber-400 shadow-xl">
+              <div className="space-y-4 max-w-md mx-auto">
+                <h3 className="text-lg font-bold text-white">Quét Mã QR Chuyển Khoản ({priceLabel})</h3>
+                
+                <div className="bg-white p-3 rounded-2xl w-52 h-52 mx-auto flex flex-col items-center justify-center border-4 border-amber-400 shadow-2xl">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=STK_${paymentConfig.vietqrAccount}_PROFITCAL_${priceAmount}`}
-                    alt="VietQR ProfitCal Pro"
-                    className="w-36 h-36 object-contain"
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=STK_${paymentConfig.vietqrAccount}_PROFITCAL_${priceAmount}`}
+                    alt="VietQR Tagki"
+                    className="w-40 h-40 object-contain"
                   />
                   <span className="text-[10px] font-bold text-navy-950 mt-1">{paymentConfig.vietqrBank}</span>
                 </div>
-                <div className="bg-navy-900 p-3 rounded-xl border border-navy-800 text-xs font-mono text-left max-w-sm mx-auto space-y-1">
-                  <div className="flex justify-between"><span className="text-slate-400">Số tài khoản:</span><span className="font-bold text-amber-400">{paymentConfig.vietqrAccount}</span></div>
+
+                <div className="bg-navy-950 p-4 rounded-2xl border border-navy-800 text-xs font-mono text-left space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Số tài khoản:</span>
+                    <button onClick={() => handleCopyText(paymentConfig.vietqrAccount)} className="font-bold text-amber-400 bg-navy-900 px-2 py-1 rounded border border-navy-700 flex items-center gap-1">
+                      <span>{paymentConfig.vietqrAccount}</span>
+                      <Copy className="w-3 h-3 text-slate-400" />
+                    </button>
+                  </div>
                   <div className="flex justify-between"><span className="text-slate-400">Chủ tài khoản:</span><span className="font-bold text-slate-200">{paymentConfig.vietqrName}</span></div>
+                  <div className="flex justify-between items-center pt-2 border-t border-navy-800">
+                    <span className="text-slate-400">Nội dung CK:</span>
+                    <button onClick={() => handleCopyText(`PROFITCAL PRO ${user.email || 'DEMO'}`)} className="font-bold text-cyan-300 bg-navy-900 px-2 py-1 rounded border border-navy-700 flex items-center gap-1">
+                      <span>PROFITCAL PRO {user.email || 'DEMO'}</span>
+                      <Copy className="w-3 h-3 text-cyan-400" />
+                    </button>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Gateway 2: Direct Bank Transfer */}
+            {/* Gateway 2: Direct Bank Checkout */}
             {paymentMethod === 'bank' && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-white">Chuyển Khoản Ngân Hàng Trực Tiếp</h3>
-                <div className="bg-navy-900 p-4 rounded-2xl border border-navy-800 text-xs font-mono text-left max-w-md mx-auto space-y-2">
+              <div className="space-y-4 max-w-md mx-auto">
+                <h3 className="text-lg font-bold text-white">Thông Tin Chuyển Khoản Ngân Hàng</h3>
+                <div className="bg-navy-950 p-4 rounded-2xl border border-navy-800 text-xs font-mono text-left space-y-2">
                   <div className="flex justify-between"><span className="text-slate-400">Ngân hàng:</span><span className="font-bold text-white">{paymentConfig.vietqrBank}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Số tài khoản:</span><span className="font-bold text-amber-400">{paymentConfig.vietqrAccount}</span></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Số tài khoản:</span>
+                    <button onClick={() => handleCopyText(paymentConfig.vietqrAccount)} className="font-bold text-amber-400 bg-navy-900 px-2 py-1 rounded border border-navy-700 flex items-center gap-1">
+                      <span>{paymentConfig.vietqrAccount}</span>
+                      <Copy className="w-3 h-3 text-slate-400" />
+                    </button>
+                  </div>
                   <div className="flex justify-between"><span className="text-slate-400">Chủ tài khoản:</span><span className="font-bold text-slate-200">{paymentConfig.vietqrName}</span></div>
                   <div className="flex justify-between items-center pt-2 border-t border-navy-800">
                     <span className="text-slate-400">Nội dung CK:</span>
-                    <button onClick={() => handleCopyMemo(`PROFITCAL PRO ${user.email || 'DEMO'}`)} className="font-bold text-cyan-300 bg-navy-950 px-2 py-1 rounded text-[11px] flex items-center gap-1">
+                    <button onClick={() => handleCopyText(`PROFITCAL PRO ${user.email || 'DEMO'}`)} className="font-bold text-cyan-300 bg-navy-900 px-2 py-1 rounded border border-navy-700 flex items-center gap-1">
                       <span>PROFITCAL PRO {user.email || 'DEMO'}</span>
-                      <Copy className="w-3 h-3" />
+                      <Copy className="w-3 h-3 text-cyan-400" />
                     </button>
                   </div>
                 </div>
@@ -119,124 +321,47 @@ export const PricingModal: React.FC<PricingModalProps> = ({
 
             {/* Gateway 3: Binance Pay */}
             {paymentMethod === 'binance' && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-amber-400">Thanh Toán Qua Binance Pay (USDT)</h3>
-                <div className="bg-navy-900 p-4 rounded-2xl border border-amber-500/30 text-xs font-mono text-left max-w-md mx-auto space-y-2">
-                  <div className="flex justify-between"><span className="text-slate-400">Binance Pay ID:</span><span className="font-bold text-amber-400">{paymentConfig.binancePayId}</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Số tiền Crypto:</span><span className="font-bold text-emerald-400">{billingCycle === 'yearly' ? '25.00 USDT' : '5.50 USDT'}</span></div>
-                  <p className="text-[11px] text-slate-400 pt-2 border-t border-navy-800">Mở App Binance $\rightarrow$ Quét mã hoặc gửi tới Pay ID trên.</p>
+              <div className="space-y-4 max-w-md mx-auto">
+                <h3 className="text-lg font-bold text-amber-400">Thanh Toán Binance Pay (USDT)</h3>
+                <div className="bg-navy-950 p-4 rounded-2xl border border-amber-500/30 text-xs font-mono text-left space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Binance Pay ID:</span>
+                    <button onClick={() => handleCopyText(paymentConfig.binancePayId)} className="font-bold text-amber-400 bg-navy-900 px-2 py-1 rounded border border-navy-700 flex items-center gap-1">
+                      <span>{paymentConfig.binancePayId}</span>
+                      <Copy className="w-3 h-3 text-slate-400" />
+                    </button>
+                  </div>
+                  <div className="flex justify-between"><span className="text-slate-400">Số tiền Crypto:</span><span className="font-bold text-emerald-400">{selectedPlan === 'yearly' ? '25.00 USDT' : '5.50 USDT'}</span></div>
                 </div>
               </div>
             )}
 
-            {/* Gateway 4: OxaPay Integration */}
+            {/* Gateway 4: OxaPay Crypto Checkout */}
             {paymentMethod === 'oxapay' && (
-              <div className="space-y-4">
-                <h3 className="text-xl font-bold text-cyan-400">Thanh Toán Crypto Qua OxaPay (https://oxapay.com/)</h3>
-                <div className="bg-navy-900 p-4 rounded-2xl border border-cyan-500/30 text-xs font-mono text-left max-w-md mx-auto space-y-2">
-                  <div className="flex justify-between"><span className="text-slate-400">Cổng OxaPay Merchant:</span><span className="font-bold text-cyan-300">Active</span></div>
+              <div className="space-y-4 max-w-md mx-auto">
+                <h3 className="text-lg font-bold text-cyan-400">Thanh Toán Qua OxaPay API (https://oxapay.com/)</h3>
+                <div className="bg-navy-950 p-4 rounded-2xl border border-cyan-500/30 text-xs font-mono text-left space-y-2">
+                  <div className="flex justify-between"><span className="text-slate-400">Cổng OxaPay Merchant:</span><span className="font-bold text-cyan-300">Live Active</span></div>
                   <div className="flex justify-between"><span className="text-slate-400">Chấp nhận:</span><span className="font-bold text-slate-200">USDT (BEP20 / TRC20), BTC, ETH</span></div>
-                  <p className="text-[11px] text-slate-400 pt-2 border-t border-navy-800">Hệ thống xử lý thanh toán tự động qua API Gateway OxaPay giống tagki.com.</p>
+                  <p className="text-[11px] text-slate-400 pt-2 border-t border-navy-800">Tích hợp cổng OxaPay tự động hoàn toàn giống 100% tagki.com.</p>
                 </div>
               </div>
             )}
 
-            {/* Instant Demo Upgrade Trigger Button */}
-            <div className="space-y-2 pt-2">
+            {/* Confirmation & Back Button */}
+            <div className="pt-2 space-y-2 max-w-md mx-auto">
               <button
                 onClick={onConfirmUpgrade}
-                className="w-full max-w-md py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-navy-950 font-black text-sm shadow-xl hover:scale-[1.02] transition-all"
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-navy-950 font-black text-sm shadow-xl hover:scale-[1.02] transition-all"
               >
                 Xác Nhận Đã Thanh Toán (Kích Hoạt PRO Ngay) 🚀
               </button>
-              <p className="text-[11px] text-slate-500">Hệ thống tự động kích hoạt tài khoản PRO trong 5 giây sau khi ghi nhận giao dịch.</p>
-            </div>
-
-          </div>
-        ) : (
-          /* Upgrade Feature Matrix Table */
-          <div className="p-6 sm:p-8 space-y-6">
-            
-            <div className="text-center space-y-2">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-500 p-0.5 mx-auto shadow-xl">
-                <div className="w-full h-full bg-navy-950 rounded-[14px] flex items-center justify-center">
-                  <Crown className="w-8 h-8 text-amber-400" />
-                </div>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-                Nâng Cấp Gói PRO Unlimited
-              </h2>
-
-              <p className="text-xs text-slate-300 max-w-md mx-auto">
-                Mở khóa xuất file vận chuyển <strong className="text-amber-300">không giới hạn số đơn</strong> (không chờ 7 ngày) và kích hoạt <strong className="text-emerald-400">Cảnh Báo Tồn Kho Đèn Đỏ Telegram</strong>.
-              </p>
-            </div>
-
-            {/* Switcher */}
-            <div className="flex justify-center">
-              <div className="bg-navy-950 p-1 rounded-2xl border border-navy-800 flex gap-1 font-bold text-xs">
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle('monthly')}
-                  className={`py-2 px-4 rounded-xl transition-all ${billingCycle === 'monthly' ? 'bg-amber-500 text-navy-950 shadow-md' : 'text-slate-400'}`}
-                >
-                  130.000đ / Tháng
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBillingCycle('yearly')}
-                  className={`py-2 px-4 rounded-xl transition-all ${billingCycle === 'yearly' ? 'bg-amber-500 text-navy-950 shadow-md' : 'text-slate-400'}`}
-                >
-                  <span>599.000đ / Năm</span>
-                  <span className="ml-1 text-[9px] font-black bg-rose-500 text-white px-1.5 py-0.5 rounded-full uppercase">Tiết kiệm 62%</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Table */}
-            <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-navy-900 border-b border-navy-800 text-slate-400 uppercase font-bold">
-                  <tr>
-                    <th className="py-3 px-4">Tính năng / Quyền lợi</th>
-                    <th className="py-3 px-4 text-center">Gói FREE (0đ)</th>
-                    <th className="py-3 px-4 text-center text-amber-400 bg-amber-500/10">Gói PRO ({priceLabel})</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-navy-800/60 font-medium">
-                  <tr>
-                    <td className="py-3 px-4 text-slate-300 font-bold">Tính Lợi Nhuận Ròng & Thuế 1.5%</td>
-                    <td className="py-3 px-4 text-center text-emerald-400 font-bold">Không giới hạn</td>
-                    <td className="py-3 px-4 text-center font-bold text-emerald-400 bg-amber-500/5">Không giới hạn</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 text-slate-300 font-bold">Xuất File Vận Chuyển Excel</td>
-                    <td className="py-3 px-4 text-center text-slate-400">20 đơn/lượt (Reset 7 ngày)</td>
-                    <td className="py-3 px-4 text-center font-bold text-amber-400 bg-amber-500/5">KHÔNG GIỚI HẠN (Xuất ngay)</td>
-                  </tr>
-                  <tr>
-                    <td className="py-3 px-4 text-slate-300 font-bold">Cổng Thanh Toán Hỗ Trợ</td>
-                    <td className="py-3 px-4 text-center text-slate-400">---</td>
-                    <td className="py-3 px-4 text-center font-bold text-slate-200 bg-amber-500/5">VietQR, Bank, Binance, OxaPay</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <div className="pt-2 space-y-3">
               <button
-                onClick={() => setShowPaymentDetails(true)}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-navy-950 font-black text-sm shadow-xl hover:scale-[1.02] transition-all flex items-center justify-center gap-2"
+                onClick={() => setStep('plan_select')}
+                className="text-xs text-slate-400 underline font-semibold hover:text-white"
               >
-                <Sparkles className="w-5 h-5" />
-                <span>Nâng Cấp PRO Ngay ({priceLabel})</span>
+                ← Quay lại chọn gói khác
               </button>
-
-              <p className="text-[11px] text-slate-400 text-center flex items-center justify-center gap-1">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Bảo hành hoàn tiền 100% trong 7 ngày nếu không hài lòng!</span>
-              </p>
             </div>
 
           </div>

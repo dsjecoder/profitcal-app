@@ -17,6 +17,7 @@ import {
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, PieChart, Pie, Cell } from 'recharts';
 import { AuditSummary, OrderItem } from '../types';
 import { formatPercent, formatVND } from '../utils/storage';
+import { Language, t } from '../utils/i18n';
 
 interface ExecutiveDashboardProps {
   summary: AuditSummary;
@@ -29,6 +30,7 @@ interface ExecutiveDashboardProps {
   onExportExcel: () => void;
   onOpenShippingModal?: () => void;
   platform: string;
+  currentLang?: Language;
 }
 
 export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({

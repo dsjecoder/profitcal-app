@@ -53,76 +53,62 @@
     <script type="text/babel">
       const { useState, useEffect, useRef } = React;
 
-      // Formatting Helper
       const formatVND = (num) => {
         if (num === null || num === undefined || isNaN(num)) return '0đ';
         return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(num);
       };
 
-      // Play Beep Sound
-      const playBeepSound = () => {
-        try {
-          const AudioContext = window.AudioContext || window.webkitAudioContext;
-          if (!AudioContext) return;
-          const ctx = new AudioContext();
-          const play = (freq, start, duration) => {
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(freq, ctx.currentTime + start);
-            gain.gain.setValueAtTime(0.15, ctx.currentTime + start);
-            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + start + duration);
-            osc.connect(gain);
-            gain.connect(ctx.destination);
-            osc.start(ctx.currentTime + start);
-            osc.stop(ctx.currentTime + start + duration);
-          };
-          play(880, 0, 0.15);
-          play(1100, 0.2, 0.25);
-        } catch (e) {}
+      const DICT = {
+        vi: {
+          title: 'Kiểm Toán Lợi Nhuận Ròng & Thuế TMĐT',
+          upload_h: 'Tải Báo Cáo Đơn Hàng / Đối Soát Excel',
+          upload_p: 'Gói FREE: Tối đa 20 đơn / lượt ghép (Reset sau 7 ngày)',
+          gross: 'Doanh Thu Hóa Đơn',
+          net: 'Thực Nhận Ví Sàn',
+          fees: 'Phí Sàn Đã Trừ',
+          tax: 'Thuế TMĐT (1.5%)',
+          profit: 'LỢI NHUẬN RÒNG THỰC TẾ',
+          ship_btn: '🚚 Ghép File Vận Chuyển Excel (Tối đa 20 đơn bản Free)',
+          pro_btn: '👑 Gói PRO',
+          admin_btn: '🛡️ Admin Portal (/admin)',
+          terms_btn: '📄 Điều Khoản',
+        },
+        en: {
+          title: 'Net Profit & E-com Tax Audit',
+          upload_h: 'Upload Order Report / Excel Settlement',
+          upload_p: 'Free Plan: Max 20 orders / export (7-day reset interval)',
+          gross: 'Gross Revenue',
+          net: 'Net Settlement Payout',
+          fees: 'Total Platform Fees',
+          tax: 'E-com Tax (1.5%)',
+          profit: 'NET PROFIT (REAL NET INCOME)',
+          ship_btn: '🚚 Export Shipping Excel (Max 20 orders Free)',
+          pro_btn: '👑 PRO Plan',
+          admin_btn: '🛡️ Admin Portal (/admin)',
+          terms_btn: '📄 Terms & Policy',
+        }
       };
 
-      // Sample Demo Data
       const MOCK_SHOPEE = [
-        { id: 'SP-101', orderId: '240801SP001', orderDate: '2026-08-01', platform: 'shopee', sku: 'AT-COTTON-BLK-L', productName: 'Áo Thun Cotton Oversize (Đen L)', quantity: 2, grossRevenue: 380000, netSettlement: 312000, fixedFee: 22800, paymentFee: 15200, serviceFee: 30000, marketingFee: 45000, otherFee: 0, totalFees: 113000, cogs: 140000, packagingCost: 3000, taxAmount: 5700, orderStatus: 'completed', feeRatio: 29.7, netProfit: 163300, isHighFee: true, isRefundAnomaly: false, isNegativeProfit: false, anomalyReason: 'Tỷ lệ phí 29.7% cao hơn 15%', receiverName: 'Nguyễn Văn An', receiverPhone: '0988123456', receiverAddress: '123 Lê Lợi', province: 'Hà Nội', district: 'Cầu Giấy' },
-        { id: 'SP-102', orderId: '240801SP002', orderDate: '2026-08-01', platform: 'shopee', sku: 'QUAN-JEAN-BLU-30', productName: 'Quần Jean Slimfit Co Giãn (Xanh 30)', quantity: 1, grossRevenue: 450000, netSettlement: 395000, fixedFee: 27000, paymentFee: 18000, serviceFee: 10000, marketingFee: 65000, otherFee: 0, totalFees: 120000, cogs: 210000, packagingCost: 3000, taxAmount: 6750, orderStatus: 'completed', feeRatio: 26.6, netProfit: 175250, isHighFee: true, isRefundAnomaly: false, isNegativeProfit: false, anomalyReason: 'Phí Marketing Ads cao (65.000đ)', receiverName: 'Trần Thị Bình', receiverPhone: '0912345678', receiverAddress: '45 Nguyễn Huệ', province: 'Hồ Chí Minh', district: 'Quận 1' },
-        { id: 'SP-103', orderId: '240802SP003', orderDate: '2026-08-02', platform: 'shopee', sku: 'VAY-HOA-NHI-S', productName: 'Váy Hoa Nhí Vintage (Size S)', quantity: 1, grossRevenue: 290000, netSettlement: -35000, fixedFee: 0, paymentFee: 0, serviceFee: 0, marketingFee: 0, otherFee: 35000, totalFees: 35000, cogs: 120000, packagingCost: 3000, taxAmount: 4350, orderStatus: 'returned', feeRatio: 12.0, netProfit: -162350, isHighFee: false, isRefundAnomaly: true, isNegativeProfit: true, anomalyReason: 'Đơn hoàn hủy bị âm ví (-35.000đ) & mất vốn', receiverName: 'Lê Hoàng Cường', receiverPhone: '0977889900', receiverAddress: '78 Trần Phú', province: 'Đà Nẵng', district: 'Hải Châu' },
+        { id: 'SP-101', orderId: '240801SP001', orderDate: '2026-08-01', platform: 'shopee', sku: 'AT-COTTON-BLK-L', productName: 'Áo Thun Cotton Oversize (Đen L)', quantity: 2, grossRevenue: 380000, netSettlement: 312000, fixedFee: 22800, paymentFee: 15200, serviceFee: 30000, marketingFee: 45000, otherFee: 0, totalFees: 113000, cogs: 140000, packagingCost: 3000, taxAmount: 5700, orderStatus: 'completed', feeRatio: 29.7, netProfit: 163300, receiverName: 'Nguyễn Văn An', receiverPhone: '0988123456', receiverAddress: '123 Lê Lợi', province: 'Hà Nội', district: 'Cầu Giấy' },
+        { id: 'SP-102', orderId: '240801SP002', orderDate: '2026-08-01', platform: 'shopee', sku: 'QUAN-JEAN-BLU-30', productName: 'Quần Jean Slimfit Co Giãn (Xanh 30)', quantity: 1, grossRevenue: 450000, netSettlement: 395000, fixedFee: 27000, paymentFee: 18000, serviceFee: 10000, marketingFee: 65000, otherFee: 0, totalFees: 120000, cogs: 210000, packagingCost: 3000, taxAmount: 6750, orderStatus: 'completed', feeRatio: 26.6, netProfit: 175250, receiverName: 'Trần Thị Bình', receiverPhone: '0912345678', receiverAddress: '45 Nguyễn Huệ', province: 'Hồ Chí Minh', district: 'Quận 1' },
       ];
 
       function App() {
         const [lang, setLang] = useState('vi');
-        const [platform, setPlatform] = useState('shopee');
         const [orders, setOrders] = useState([]);
-        const [packagingCost, setPackagingCost] = useState(3000);
-        const [feeThreshold, setFeeThreshold] = useState(15);
-        const [isAnalyzing, setIsAnalyzing] = useState(false);
-        const [showShippingModal, setShowShippingModal] = useState(false);
         const [showPricingModal, setShowPricingModal] = useState(false);
+        const [pricingStep, setPricingStep] = useState('plan_select');
+        const [selectedPlan, setSelectedPlan] = useState('yearly');
+        const [paymentMethod, setPaymentMethod] = useState('vietqr');
         const [showAdminModal, setShowAdminModal] = useState(false);
         const [showTermsModal, setShowTermsModal] = useState(false);
         const [showAuthModal, setShowAuthModal] = useState(false);
-        const [showContactMenu, setShowContactMenu] = useState(false);
-        
-        // Admin security first login state
-        const [adminEmail, setAdminEmail] = useState('admin@tagki.com');
-        const [adminPass, setAdminPass] = useState('admin123');
-        const [isFirstAdminLogin, setIsFirstAdminLogin] = useState(true);
-        const [adminAuth, setAdminAuth] = useState(false);
-        const [newAdminPass, setNewAdminPass] = useState('');
-
-        const [carrier, setCarrier] = useState('ghtk');
-        const [paymentMethod, setPaymentMethod] = useState('vietqr');
+        const [showGooglePicker, setShowGooglePicker] = useState(false);
         const [isPro, setIsPro] = useState(false);
-        const fileInputRef = useRef(null);
 
-        // Auto detect route /admin
-        useEffect(() => {
-          if (window.location.pathname.includes('/admin') || window.location.hash.includes('admin')) {
-            setShowAdminModal(true);
-          }
-        }, []);
+        const t = DICT[lang] || DICT['vi'];
 
-        // Compute Summaries
         let grossRevenue = 0, netSettlement = 0, totalFees = 0, totalCOGS = 0, totalTaxAmount = 0;
         orders.forEach(o => {
           const tax = Math.round((o.grossRevenue || 0) * 0.015);
@@ -133,86 +119,21 @@
           totalTaxAmount += tax;
         });
 
-        const totalOrders = orders.length;
-        const totalPackaging = totalOrders * packagingCost;
-        const netProfit = netSettlement - totalCOGS - totalPackaging - totalTaxAmount;
-        const avgFeeRatio = grossRevenue > 0 ? (totalFees / grossRevenue) * 100 : 0;
-        const profitMargin = grossRevenue > 0 ? (netProfit / grossRevenue) * 100 : 0;
+        const netProfit = netSettlement - totalCOGS - (orders.length * 3000) - totalTaxAmount;
 
-        const loadDemo = (p) => {
-          setPlatform(p);
+        const loadDemo = () => {
           setOrders(MOCK_SHOPEE);
           if (window.confetti) window.confetti({ particleCount: 70, spread: 60 });
         };
 
-        const handleFileInputChange = (e) => {
-          const file = e.target.files && e.target.files[0];
-          if (file) parseFile(file);
-        };
-
-        const parseFile = (file) => {
-          setIsAnalyzing(true);
-          setTimeout(() => {
-            setOrders(MOCK_SHOPEE);
-            setIsAnalyzing(false);
-            if (window.confetti) window.confetti({ particleCount: 80, spread: 70 });
-          }, 600);
-        };
-
-        const exportCarrierFile = () => {
-          if (!orders.length) return alert('Không có dữ liệu!');
-          let exportList = orders;
-          if (!isPro && orders.length > 20) {
-            alert('Gói FREE quy định tối đa 20 đơn / lượt ghép (Reset sau 7 ngày). Đã tự động lấy 20 đơn đầu tiên.');
-            exportList = orders.slice(0, 20);
-          }
-          const rows = exportList.map((o, i) => ({
-            'STT': i + 1,
-            'Mã đơn hàng': o.orderId,
-            'Tên người nhận': o.receiverName,
-            'Số điện thoại': o.receiverPhone.replace(/[^0-9]/g, ''),
-            'Địa chỉ chi tiết': o.receiverAddress,
-            'Tỉnh/Thành': o.province,
-            'Quận/Huyện': o.district,
-            'Tiền COD (VND)': o.netSettlement > 0 ? o.grossRevenue : 0,
-            'Mã SKU': o.sku,
-            'Tên sản phẩm': o.productName,
-            'Số lượng': o.quantity,
-          }));
-
-          const ws = XLSX.utils.json_to_sheet(rows);
-          const wb = XLSX.utils.book_new();
-          XLSX.utils.book_append_sheet(wb, ws, `${carrier.toUpperCase()}_Export`);
-          XLSX.writeFile(wb, `Don_Van_Chuyen_${carrier.toUpperCase()}_${new Date().toISOString().split('T')[0]}.xlsx`);
-          setShowShippingModal(false);
-        };
-
-        const handleAdminLogin = (e) => {
-          e.preventDefault();
-          const em = e.target.email.value;
-          const pw = e.target.pass.value;
-          if (em === adminEmail && pw === adminPass) {
-            setAdminAuth(true);
-          } else {
-            alert('Email hoặc Mật khẩu Admin không đúng!');
-          }
-        };
-
-        const handleChangeFirstAdminPass = (e) => {
-          e.preventDefault();
-          if (newAdminPass.length < 6) return alert('Mật khẩu mới tối thiểu 6 ký tự!');
-          setAdminPass(newAdminPass);
-          setIsFirstAdminLogin(false);
-          alert('Đã đổi mật khẩu Admin thành công! Từ các lần sau bạn chỉ cần đăng nhập bằng mật khẩu mới này.');
-        };
+        const priceLabel = selectedPlan === 'yearly' ? '599.000đ / Năm' : '130.000đ / Tháng';
 
         return (
           <div className="min-h-screen flex flex-col relative">
-            <input type="file" ref={fileInputRef} onChange={handleFileInputChange} accept=".xlsx,.xls,.csv" style={{ display: 'none' }} />
-
+            
             {/* Mobile Notice Banner */}
             <div className="bg-amber-950 border-b border-amber-500/30 px-4 py-2 text-xs flex items-center justify-between">
-              <span className="text-amber-300">📱 <strong>Mobile UI/UX Notice:</strong> Trên Điện thoại, hệ thống tối ưu xử lý tối đa <strong>20 đơn/lần</strong> để máy chạy mượt. Mở máy tính (Desktop) để phân tích file lớn.</span>
+              <span className="text-amber-300">📱 <strong>Mobile UI/UX Notice:</strong> Trên Điện thoại, hệ thống tối ưu xử lý tối đa <strong>20 đơn/lần</strong> để máy chạy mượt.</span>
             </div>
 
             {/* Header */}
@@ -226,21 +147,15 @@
               </div>
 
               <div className="flex items-center space-x-2 text-xs">
-                {/* i18n switcher */}
+                {/* i18n Switcher */}
                 <div className="bg-navy-950 p-1 rounded-xl border border-navy-800 flex gap-1">
-                  <button onClick={() => setLang('vi')} className={`px-2 py-1 rounded font-bold ${lang === 'vi' ? 'bg-emerald-500 text-navy-950' : 'text-slate-400'}`}>🇻🇳 VN</button>
-                  <button onClick={() => setLang('en')} className={`px-2 py-1 rounded font-bold ${lang === 'en' ? 'bg-emerald-500 text-navy-950' : 'text-slate-400'}`}>🇬🇧 EN</button>
+                  <button onClick={() => setLang('vi')} className={`px-2.5 py-1 rounded font-bold transition-all ${lang === 'vi' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400'}`}>🇻🇳 VN</button>
+                  <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded font-bold transition-all ${lang === 'en' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400'}`}>🇬🇧 EN</button>
                 </div>
 
-                <button onClick={() => setShowAdminModal(true)} className="px-3 py-1.5 rounded-xl bg-navy-950 border border-navy-700 text-emerald-400 font-bold hover:bg-navy-800">
-                  🛡️ Admin Portal (/admin)
-                </button>
-                <button onClick={() => setShowTermsModal(true)} className="px-3 py-1.5 rounded-xl bg-navy-950 border border-navy-700 text-slate-300 font-semibold">
-                  📄 Điều Khoản
-                </button>
-                <button onClick={() => setShowPricingModal(true)} className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold hover:bg-amber-500/20">
-                  👑 Gói PRO
-                </button>
+                <button onClick={() => setShowAdminModal(true)} className="px-3 py-1.5 rounded-xl bg-navy-950 border border-navy-700 text-emerald-400 font-bold hover:bg-navy-800">{t.admin_btn}</button>
+                <button onClick={() => setShowAuthModal(true)} className="px-3 py-1.5 rounded-xl bg-navy-950 border border-navy-700 text-slate-200 font-semibold">🔑 Đăng Nhập</button>
+                <button onClick={() => { setPricingStep('plan_select'); setShowPricingModal(true); }} className="px-3.5 py-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-400 font-bold hover:bg-amber-500/20">{t.pro_btn}</button>
               </div>
             </header>
 
@@ -249,136 +164,117 @@
               
               {/* File Upload Box */}
               <div className="bg-navy-900 border border-navy-800 rounded-3xl p-8 text-center space-y-4 shadow-2xl">
-                <h2 className="text-2xl font-black text-white">{lang === 'vi' ? 'Tải Báo Cáo Đơn Hàng / Đối Soát Excel' : 'Upload Order Report / Settlement Excel'}</h2>
-                <p className="text-xs text-slate-400">{lang === 'vi' ? 'Gói FREE: Tối đa 20 đơn / lượt ghép (Reset sau 7 ngày)' : 'Free Plan: Max 20 orders / export (7-day reset interval)'}</p>
+                <h2 className="text-2xl font-black text-white">{t.upload_h}</h2>
+                <p className="text-xs text-slate-400">{t.upload_p}</p>
                 <div className="pt-2 flex items-center justify-center gap-3">
-                  <button onClick={() => fileInputRef.current.click()} className="px-5 py-2.5 bg-emerald-500 text-navy-950 font-bold text-xs rounded-xl shadow-lg">🔍 Chọn File Excel...</button>
-                  <button onClick={() => loadDemo('shopee')} className="px-4 py-2.5 bg-navy-950 text-slate-300 font-semibold text-xs rounded-xl border border-navy-700">🧪 Nạp Data Mẫu Shopee</button>
+                  <button onClick={loadDemo} className="px-5 py-2.5 bg-emerald-500 text-navy-950 font-bold text-xs rounded-xl shadow-lg">🧪 Nạp Data Mẫu Shopee / TikTok</button>
                 </div>
               </div>
 
-              {/* Dashboard */}
+              {/* Financial Dashboard */}
               {orders.length > 0 && (
                 <div className="space-y-8 animate-fade-in">
                   <div className="flex flex-wrap items-center justify-between bg-navy-900 border border-navy-800 p-6 rounded-3xl gap-4">
-                    <h2 className="text-xl font-bold text-white">Kiểm Toán Lợi Nhuận & Phí Sàn</h2>
-                    <button onClick={() => setShowShippingModal(true)} className="px-4 py-2.5 bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-bold text-xs rounded-xl">
-                      🚚 Ghép File Vận Chuyển Excel (Tối đa 20 đơn bản Free)
-                    </button>
+                    <h2 className="text-xl font-bold text-white">{t.title}</h2>
+                    <button className="px-4 py-2.5 bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-bold text-xs rounded-xl">{t.ship_btn}</button>
                   </div>
 
                   {/* KPI Cards */}
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-slate-400">Doanh Thu Hóa Đơn</span><div className="text-xl font-black font-mono text-white mt-2">{formatVND(grossRevenue)}</div></div>
-                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-slate-400">Thực Nhận Ví Sàn</span><div className="text-xl font-black font-mono text-indigo-300 mt-2">{formatVND(netSettlement)}</div></div>
-                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-rose-400">Phí Sàn Đã Trừ</span><div className="text-xl font-black font-mono text-rose-400 mt-2">{formatVND(totalFees)}</div></div>
-                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-purple-400">Thuế TMĐT (1.5%)</span><div className="text-xl font-black font-mono text-purple-300 mt-2">{formatVND(totalTaxAmount)}</div></div>
-                    <div className="p-5 rounded-3xl border bg-emerald-950/60 border-emerald-500/40 md:col-span-2"><span className="text-xs font-black text-emerald-400">LỢI NHUẬN RÒNG THỰC TẾ (NET PROFIT)</span><div className="text-2xl font-black font-mono text-emerald-400 mt-1">{formatVND(netProfit)}</div></div>
+                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-slate-400">{t.gross}</span><div className="text-xl font-black font-mono text-white mt-2">{formatVND(grossRevenue)}</div></div>
+                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-slate-400">{t.net}</span><div className="text-xl font-black font-mono text-indigo-300 mt-2">{formatVND(netSettlement)}</div></div>
+                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-rose-400">{t.fees}</span><div className="text-xl font-black font-mono text-rose-400 mt-2">{formatVND(totalFees)}</div></div>
+                    <div className="bg-navy-900 border border-navy-800 p-5 rounded-3xl"><span className="text-xs font-bold text-purple-400">{t.tax}</span><div className="text-xl font-black font-mono text-purple-300 mt-2">{formatVND(totalTaxAmount)}</div></div>
+                    <div className="p-5 rounded-3xl border bg-emerald-950/60 border-emerald-500/40 md:col-span-2"><span className="text-xs font-black text-emerald-400">{t.profit}</span><div className="text-2xl font-black font-mono text-emerald-400 mt-1">{formatVND(netProfit)}</div></div>
                   </div>
                 </div>
               )}
 
             </main>
 
-            {/* Floating Multi-Channel Contact Widget */}
-            <div className="fixed bottom-6 right-6 z-50">
-              {showContactMenu && (
-                <div className="mb-3 bg-navy-900 border border-navy-700 p-4 rounded-2xl shadow-2xl space-y-2 text-xs w-60">
-                  <span className="font-bold text-white block border-b border-navy-800 pb-2">Hỗ Trợ Khách Hàng 24/7</span>
-                  <a href="https://zalo.me/0988888999" target="_blank" className="block p-2 bg-navy-950 text-cyan-300 rounded font-bold">💬 Zalo Chat</a>
-                  <a href="https://m.me/tagkimedia" target="_blank" className="block p-2 bg-navy-950 text-blue-300 rounded font-bold">💬 Facebook Messenger</a>
-                  <a href="https://wa.me/84988888999" target="_blank" className="block p-2 bg-navy-950 text-emerald-300 rounded font-bold">💬 WhatsApp</a>
-                  <a href="https://t.me/tagkicustomer" target="_blank" className="block p-2 bg-navy-950 text-cyan-300 rounded font-bold">💬 Telegram Support</a>
-                </div>
-              )}
-              <button onClick={() => setShowContactMenu(!showContactMenu)} className="w-14 h-14 rounded-full bg-emerald-500 text-navy-950 font-black flex items-center justify-center shadow-xl text-xl">
-                💬
-              </button>
-            </div>
-
-            {/* Admin Portal Modal (/admin) */}
-            {showAdminModal && (
+            {/* Auth Modal with Instant Google Account Picker */}
+            {showAuthModal && (
               <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md">
-                <div className="bg-navy-900 border border-emerald-500/40 rounded-3xl p-6 w-full max-w-lg space-y-4">
+                <div className="bg-navy-900 border border-navy-700 rounded-3xl p-6 w-full max-w-md space-y-4">
                   <div className="flex justify-between items-center border-b border-navy-800 pb-2">
-                    <h3 className="text-lg font-bold text-white">ProfitCal Admin Portal (https://profitcal.tagki.com/admin)</h3>
-                    <button onClick={() => setShowAdminModal(false)} className="text-slate-400">✕</button>
+                    <h3 className="text-lg font-bold text-white">Đăng Nhập / Đăng Ký</h3>
+                    <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); }} className="text-slate-400">✕</button>
                   </div>
 
-                  {!adminAuth ? (
-                    <form onSubmit={handleAdminLogin} className="space-y-3 text-xs">
-                      <div>
-                        <label className="text-slate-300 font-bold block mb-1">Email Admin:</label>
-                        <input name="email" defaultValue="admin@tagki.com" className="w-full bg-navy-950 border border-navy-700 rounded-xl p-2.5 text-white font-mono" />
-                      </div>
-                      <div>
-                        <label className="text-slate-300 font-bold block mb-1">Mật khẩu Admin:</label>
-                        <input name="pass" type="password" defaultValue="admin123" className="w-full bg-navy-950 border border-navy-700 rounded-xl p-2.5 text-white font-mono" />
-                      </div>
-                      <button type="submit" className="w-full py-3 bg-emerald-500 text-navy-950 font-extrabold text-xs rounded-xl">Đăng Nhập Admin</button>
-                    </form>
-                  ) : isFirstAdminLogin ? (
-                    <form onSubmit={handleChangeFirstAdminPass} className="space-y-3 text-xs">
-                      <div className="p-3 bg-amber-500/10 border border-amber-500/30 text-amber-300 rounded-xl">
-                        🔒 <strong>Yêu Cầu Bắt Buộc:</strong> Bạn đang đăng nhập lần đầu tiên. Vui lòng đổi mật khẩu Admin mặc định trước khi tiếp tục!
-                      </div>
-                      <div>
-                        <label className="text-slate-300 font-bold block mb-1">Mật khẩu Admin mới:</label>
-                        <input type="password" value={newAdminPass} onChange={(e) => setNewAdminPass(e.target.value)} placeholder="Tối thiểu 6 ký tự" className="w-full bg-navy-950 border border-navy-700 rounded-xl p-2.5 text-white font-mono" required />
-                      </div>
-                      <button type="submit" className="w-full py-3 bg-amber-500 text-navy-950 font-black text-xs rounded-xl">Xác Nhận Đổi Mật Khẩu Admin 🔒</button>
-                    </form>
+                  {showGooglePicker ? (
+                    <div className="space-y-3">
+                      <p className="text-xs text-slate-300 font-bold">Chọn tài khoản Google của bạn:</p>
+                      <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); alert('Đã đăng nhập tài khoản Google thành công!'); }} className="w-full p-3 bg-navy-950 border border-navy-800 rounded-2xl flex items-center gap-3 text-xs">
+                        <span className="text-lg">🛒</span>
+                        <div className="text-left"><div className="font-bold text-white">Chủ Shop Official Store</div><div className="text-slate-400">shop.official.vn@gmail.com</div></div>
+                      </button>
+                      <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); alert('Đã đăng nhập tài khoản Google thành công!'); }} className="w-full p-3 bg-navy-950 border border-navy-800 rounded-2xl flex items-center gap-3 text-xs">
+                        <span className="text-lg">👨‍💼</span>
+                        <div className="text-left"><div className="font-bold text-white">Nguyễn Văn Thiêm</div><div className="text-slate-400">thiem.nguyen.ecom@gmail.com</div></div>
+                      </button>
+                    </div>
                   ) : (
-                    <div className="space-y-4 text-xs">
-                      <div className="p-3 bg-emerald-500/10 text-emerald-400 rounded-xl font-bold">
-                        ✅ Đã Đăng Nhập Quản Trị Viên Admin Thành Công!
-                      </div>
-                      <div className="space-y-2">
-                        <h4 className="font-bold text-white">Cấu hình Hệ Thống Admin:</h4>
-                        <p className="text-slate-400">• Gói Free: Max 20 đơn / 7 ngày reset.</p>
-                        <p className="text-slate-400">• Thanh toán: VietQR, Binance Pay, OxaPay (oxapay.com).</p>
-                        <p className="text-slate-400">• Liên hệ: Zalo, FB, WhatsApp, Telegram.</p>
-                      </div>
+                    <div className="space-y-3">
+                      <button onClick={() => setShowGooglePicker(true)} className="w-full py-3 bg-white text-navy-950 font-bold text-xs rounded-2xl shadow flex items-center justify-center gap-2">
+                        <span>Đăng nhập nhanh bằng Google</span>
+                      </button>
                     </div>
                   )}
                 </div>
               </div>
             )}
 
-            {/* Pricing Modal (4 Payment Gateways) */}
+            {/* Pricing Modal: 3 Columns Selection & Tagki.com Checkout */}
             {showPricingModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md">
-                <div className="bg-navy-900 border border-amber-500/40 rounded-3xl p-6 w-full max-w-md space-y-4 text-center">
-                  <h3 className="text-2xl font-black text-white">Nâng Cấp Gói PRO Unlimited</h3>
-                  <p className="text-xs text-slate-300">130.000đ / Tháng (hoặc 599.000đ / Năm)</p>
-                  
-                  <div className="space-y-2 text-xs text-left">
-                    <label className="text-slate-400 font-bold block">Chọn Cổng Thanh Toán:</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <button onClick={() => setPaymentMethod('vietqr')} className={`p-2 rounded-xl border text-center font-bold ${paymentMethod === 'vietqr' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-navy-950 border-navy-800'}`}>VietQR Mã QR</button>
-                      <button onClick={() => setPaymentMethod('bank')} className={`p-2 rounded-xl border text-center font-bold ${paymentMethod === 'bank' ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400' : 'bg-navy-950 border-navy-800'}`}>Chuyển Khoản</button>
-                      <button onClick={() => setPaymentMethod('binance')} className={`p-2 rounded-xl border text-center font-bold ${paymentMethod === 'binance' ? 'bg-amber-500/20 border-amber-500 text-amber-400' : 'bg-navy-950 border-navy-800'}`}>Binance Pay</button>
-                      <button onClick={() => setPaymentMethod('oxapay')} className={`p-2 rounded-xl border text-center font-bold ${paymentMethod === 'oxapay' ? 'bg-cyan-500/20 border-cyan-500 text-cyan-300' : 'bg-navy-950 border-navy-800'}`}>OxaPay Crypto</button>
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/90 backdrop-blur-md">
+                <div className="bg-navy-900 border border-amber-500/40 rounded-3xl p-6 w-full max-w-3xl space-y-6">
+                  <div className="flex justify-between items-center border-b border-navy-800 pb-2">
+                    <h3 className="text-xl font-extrabold text-white">Chọn Gói Dịch Vụ ProfitCal</h3>
+                    <button onClick={() => setShowPricingModal(false)} className="text-slate-400">✕</button>
+                  </div>
+
+                  {pricingStep === 'plan_select' ? (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+                      <div className="p-4 bg-navy-950 rounded-2xl border border-navy-800 space-y-3">
+                        <span className="font-bold text-slate-400">Gói FREE</span>
+                        <div className="text-2xl font-black text-white">0 VNĐ</div>
+                        <p className="text-slate-400">20 đơn/lượt ghép (Reset 7 ngày)</p>
+                        <button disabled className="w-full py-2 bg-navy-900 text-slate-500 font-bold rounded-xl">Đang Sử Dụng</button>
+                      </div>
+
+                      <div className="p-4 bg-navy-950 rounded-2xl border border-amber-500/40 space-y-3">
+                        <span className="font-bold text-amber-400">PRO Tháng</span>
+                        <div className="text-2xl font-black text-amber-400">130.000đ</div>
+                        <p className="text-slate-300">Xuất file vận chuyển không giới hạn</p>
+                        <button onClick={() => { setSelectedPlan('monthly'); setPricingStep('checkout'); }} className="w-full py-2 bg-amber-500 text-navy-950 font-bold rounded-xl">Chọn Gói Tháng 🚀</button>
+                      </div>
+
+                      <div className="p-4 bg-navy-950 rounded-2xl border-2 border-amber-500 space-y-3">
+                        <span className="font-bold text-amber-300">PRO Tiết Kiệm Năm (-62%)</span>
+                        <div className="text-2xl font-black text-amber-300">599.000đ</div>
+                        <p className="text-emerald-400 font-bold">Chỉ ~49k / tháng</p>
+                        <button onClick={() => { setSelectedPlan('yearly'); setPricingStep('checkout'); }} className="w-full py-2 bg-amber-500 text-navy-950 font-black rounded-xl">Chọn Gói Năm (Khuyên Dùng) 🚀</button>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    /* Checkout 100% tagki.com style */
+                    <div className="space-y-4 text-xs text-center">
+                      <div className="p-3 bg-navy-950 border border-navy-800 rounded-xl flex items-center justify-between text-slate-300">
+                        <span>⏱️ Thời gian đếm ngược: <strong className="text-amber-400">14:59</strong></span>
+                        <span className="text-emerald-400 font-bold animate-pulse">🔄 Đang kiểm tra giao dịch tự động...</span>
+                      </div>
 
-                  <button onClick={() => { setIsPro(true); setShowPricingModal(false); alert('Đã kích hoạt gói PRO thành công!'); }} className="w-full py-3.5 bg-amber-500 text-navy-950 font-black text-sm rounded-xl">
-                    Xác Nhận Đã Thanh Toán 🚀
-                  </button>
-                  <button onClick={() => setShowPricingModal(false)} className="text-xs text-slate-400 underline">Bỏ qua</button>
-                </div>
-              </div>
-            )}
-
-            {/* Terms Modal */}
-            {showTermsModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md">
-                <div className="bg-navy-900 border border-navy-700 rounded-3xl p-6 w-full max-w-lg space-y-4">
-                  <h3 className="text-lg font-bold text-white">Điều Khoản Sử Dụng & Chính Sách Bảo Mật</h3>
-                  <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-xs rounded-xl">
-                    🔒 <strong>Bảo mật 100% Client-side:</strong> ProfitCal xử lý dữ liệu trực tiếp trên Trình duyệt của bạn. KHÔNG lưu trữ file Excel hay SĐT khách hàng trên Server.
-                  </div>
-                  <button onClick={() => setShowTermsModal(false)} className="w-full py-2.5 bg-emerald-500 text-navy-950 font-bold text-xs rounded-xl">Đã Hiểu & Đồng Ý</button>
+                      <div className="bg-white p-3 rounded-2xl w-44 h-44 mx-auto shadow-xl">
+                        <img src={`https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=STK_0988888999_PROFITCAL`} alt="VietQR" className="w-36 h-36 mx-auto" />
+                      </div>
+                      <div className="p-3 bg-navy-950 border border-navy-800 rounded-xl text-left font-mono space-y-1">
+                        <div>STK: <strong className="text-amber-400">0988 888 999</strong> (MBBank)</div>
+                        <div>Số tiền: <strong className="text-emerald-400">{priceLabel}</strong></div>
+                        <div>Nội dung CK: <strong className="text-cyan-300">PROFITCAL PRO DEMO</strong></div>
+                      </div>
+                      <button onClick={() => { setIsPro(true); setShowPricingModal(false); alert('Đã kích hoạt PRO thành công!'); }} className="w-full py-3 bg-amber-500 text-navy-950 font-black rounded-xl">Xác Nhận Đã Thanh Toán 🚀</button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
