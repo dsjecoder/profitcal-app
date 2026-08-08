@@ -53,3 +53,7 @@ export function recordFreeExportUsage(): void {
     localStorage.setItem(FREE_EXPORT_TIMESTAMP_KEY, new Date().toISOString());
   } catch (e) {}
 }
+
+export type FreemiumRule = FreemiumRules;
+export const getFreemiumRule = getSystemFreemiumRules;
+export const saveFreemiumRule = saveSystemFreemiumRules;

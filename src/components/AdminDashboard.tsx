@@ -335,21 +335,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <label className="text-slate-400 block mb-1">Số Đơn Tối Đa Cho Phép / Lượt Ghép (Free Tier):</label>
                     <input
                       type="number"
-                      value={freemiumRule.maxOrdersPerFreeExport}
-                      onChange={(e) => setFreemiumRule({ ...freemiumRule, maxOrdersPerFreeExport: Number(e.target.value) })}
+                      value={freemiumRule.maxFreeOrders || 20}
+                      onChange={(e) => setFreemiumRule({ ...freemiumRule, maxFreeOrders: Number(e.target.value) })}
                       className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Thời Gian Reset Token Tự Động (Giờ):</label>
+                    <label className="text-slate-400 block mb-1">Thời Gian Reset Token Tự Động (Ngày):</label>
                     <input
                       type="number"
-                      value={freemiumRule.resetIntervalHours}
-                      onChange={(e) => setFreemiumRule({ ...freemiumRule, resetIntervalHours: Number(e.target.value) })}
+                      value={freemiumRule.resetIntervalDays || 7}
+                      onChange={(e) => setFreemiumRule({ ...freemiumRule, resetIntervalDays: Number(e.target.value) })}
                       className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-white font-mono"
                     />
-                    <p className="text-[10px] text-slate-500 mt-1">Mặc định: 168 giờ (tương đương 7 ngày).</p>
+                    <p className="text-[10px] text-slate-500 mt-1">Mặc định: 7 ngày (tương đương 168 giờ).</p>
                   </div>
 
                   <button

@@ -1,5 +1,5 @@
-import React from 'react';
-import { ShieldCheck, Zap, User, Globe, Shield, FileText } from 'lucide-react';
+import React, { useState } from 'react';
+import { ShieldCheck, Zap, User, Globe, Shield, FileText, LogOut } from 'lucide-react';
 import { UserState } from '../types';
 import { Language, t } from '../utils/i18n';
 

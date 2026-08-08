@@ -36,6 +36,7 @@ import { saveAuditHistorySnapshot } from './utils/historyTracker';
 import { getInitialLanguage, saveLanguagePreference, Language } from './utils/i18n';
 
 import { TabNavigation, MainTabType } from './components/TabNavigation';
+import { parseOAuthRedirectHash } from './utils/oauthHandler';
 
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
