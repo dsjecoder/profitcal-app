@@ -302,6 +302,7 @@ export function App() {
         onOpenAdmin={() => setShowAdminDashboard(true)}
         onOpenTerms={() => setShowTermsModal(true)}
         onLogout={handleLogout}
+        onOpenUpgradeModal={() => setShowPricingModal(true)}
       />
 
       {/* Security Banner & Quick Demo Loaders */}

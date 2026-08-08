@@ -11,6 +11,7 @@ interface NavbarProps {
   onOpenAdmin: () => void;
   onOpenTerms: () => void;
   onLogout?: () => void;
+  onOpenUpgradeModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -21,6 +22,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAdmin,
   onOpenTerms,
   onLogout,
+  onOpenUpgradeModal,
 }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
 
@@ -74,6 +76,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
+          {/* PRO Upgrade Button */}
+          {onOpenUpgradeModal && (
+            <button
+              onClick={onOpenUpgradeModal}
+              className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-navy-950 font-black text-xs shadow-lg shadow-amber-500/20 hover:scale-105 transition-all flex items-center gap-1.5"
+            >
+              <span>👑 {currentLang === 'en' ? 'PRO Plan' : 'Gói PRO'}</span>
+            </button>
+          )}
+
           {/* Terms & Privacy */}
           <button
             onClick={onOpenTerms}
@@ -121,6 +133,18 @@ export const Navbar: React.FC<NavbarProps> = ({
                     <span>• {user.tokens ?? 20} Token</span>
                   </div>
                 </div>
+
+                {onOpenUpgradeModal && user.tier !== 'pro' && (
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      onOpenUpgradeModal();
+                    }}
+                    className="w-full px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-left flex items-center gap-2 transition-colors border border-amber-500/30"
+                  >
+                    <span>👑 {currentLang === 'en' ? 'Upgrade PRO Plan' : 'Nâng Cấp Gói PRO'}</span>
+                  </button>
+                )}
 
                 <button
                   onClick={() => {
