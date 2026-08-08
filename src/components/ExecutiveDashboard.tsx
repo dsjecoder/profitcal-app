@@ -44,6 +44,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   onExportExcel,
   onOpenShippingModal,
   platform,
+  currentLang = 'vi',
 }) => {
 
   // Bar Chart Data
