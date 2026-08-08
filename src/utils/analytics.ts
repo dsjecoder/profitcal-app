@@ -130,6 +130,15 @@ export function trackEventSilent(payload: AnalyticsPayload): void {
 
       console.log('⚡ [ProfitCal Silent Telemetry Logged]:', record);
 
+      // Save to localStorage for Admin Telemetry Dashboard
+      try {
+        const raw = localStorage.getItem('profitcal_telemetry_logs_v1');
+        const logs = raw ? JSON.parse(raw) : [];
+        logs.unshift(record);
+        if (logs.length > 50) logs.pop(); // keep last 50 events
+        localStorage.setItem('profitcal_telemetry_logs_v1', JSON.stringify(logs));
+      } catch (e) {}
+
       // Send to Supabase REST API if credentials exist
       if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         const endpoint = `${SUPABASE_URL}/rest/v1/analytics_events`;
@@ -149,4 +158,43 @@ export function trackEventSilent(payload: AnalyticsPayload): void {
       // Silent catch - never interrupt user flow
     }
   }, 50);
+}
+
+export function getStoredAnalyticsEvents(): any[] {
+  try {
+    const raw = localStorage.getItem('profitcal_telemetry_logs_v1');
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+
+  // Sample fallback telemetry logs for Admin Dashboard
+  return [
+    {
+      session_id: 'sess_9x8a7b_17861800',
+      event_name: 'upload_report',
+      platform: 'SHOPEE',
+      device_type: 'Desktop',
+      os: 'macOS',
+      browser: 'Chrome',
+      ip_address: '14.226.12.88',
+      location: 'Hà Nội, Vietnam',
+      total_orders: 142,
+      gross_revenue: 35800000,
+      avg_fee_pct: 26.4,
+      metadata: { file_name: 'BaoCaoDoiSoat_Shopee_082026.xlsx', timestamp: new Date().toISOString() },
+    },
+    {
+      session_id: 'sess_3c4d5e_17861850',
+      event_name: 'load_demo',
+      platform: 'TIKTOK',
+      device_type: 'Mobile',
+      os: 'iOS',
+      browser: 'Safari',
+      ip_address: '113.161.44.12',
+      location: 'Hồ Chí Minh, Vietnam',
+      total_orders: 20,
+      gross_revenue: 8900000,
+      avg_fee_pct: 28.1,
+      metadata: { file_name: 'Data Mẫu TikTok Shop', timestamp: new Date(Date.now() - 3600000).toISOString() },
+    },
+  ];
 }

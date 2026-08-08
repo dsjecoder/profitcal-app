@@ -35,7 +35,7 @@ import { trackEventSilent } from './utils/analytics';
 import { saveAuditHistorySnapshot } from './utils/historyTracker';
 import { getInitialLanguage, saveLanguagePreference, Language } from './utils/i18n';
 
-import { parseOAuthRedirectHash } from './utils/oauthHandler';
+import { TabNavigation, MainTabType } from './components/TabNavigation';
 
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
@@ -43,6 +43,9 @@ export function App() {
   const [platform, setPlatform] = useState<PlatformType>('shopee');
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [extractedSkus, setExtractedSkus] = useState<SKUData[]>([]);
+
+  // Main Dashboard Tab Navigation
+  const [activeMainTab, setActiveMainTab] = useState<MainTabType>('financial');
 
   // Settings
   const [settings, setSettings] = useState(getAppSettings());
@@ -77,9 +80,21 @@ export function App() {
       setUser(updatedUser);
       saveUserState(updatedUser);
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-      alert(`🎉 Đăng nhập thành công qua Google OAuth!\n\nEmail: ${oauthUser.email}\nHọ tên: ${oauthUser.name}`);
     }
   }, []);
+
+  const handleLogout = () => {
+    const loggedOutUser: UserState = {
+      isLoggedIn: false,
+      email: '',
+      name: 'Khách',
+      tier: 'free',
+      tokens: 20,
+      lastTokenReset: new Date().toISOString(),
+    };
+    setUser(loggedOutUser);
+    saveUserState(loggedOutUser);
+  };
 
   const handleLanguageChange = (lang: Language) => {
     setCurrentLang(lang);
@@ -285,6 +300,7 @@ export function App() {
         onOpenAuth={() => setShowAuthModal(true)}
         onOpenAdmin={() => setShowAdminDashboard(true)}
         onOpenTerms={() => setShowTermsModal(true)}
+        onLogout={handleLogout}
       />
 
       {/* Security Banner & Quick Demo Loaders */}
@@ -303,56 +319,72 @@ export function App() {
 
         {/* Dashboard Results (Only shown when orders are parsed/loaded) */}
         {orders.length > 0 && (
-          <div className="animate-fade-in space-y-12">
+          <div className="animate-fade-in space-y-8">
             
-            {/* Executive Dashboard & KPI Cards */}
-            <ExecutiveDashboard
-              summary={summary}
-              orders={orders}
-              packagingCost={settings.packagingCost}
-              feeThreshold={settings.feeThreshold}
-              onPackagingCostChange={handlePackagingCostChange}
-              onFeeThresholdChange={handleFeeThresholdChange}
-              onOpenCogsModal={() => setShowCogsModal(true)}
-              onExportExcel={handleExportExcel}
+            {/* Feature Modular Tab Navigation */}
+            <TabNavigation
+              activeTab={activeMainTab}
+              onTabChange={setActiveMainTab}
+              currentLang={currentLang}
               onOpenShippingModal={() => setShowShippingModal(true)}
-              platform={platform}
-              currentLang={currentLang}
             />
 
-            {/* Ad ROAS & CIR Performance Table */}
-            <AdPerformanceTable orders={orders} currentLang={currentLang} />
-
-            {/* Multi-Period Growth Comparison */}
-            <GrowthComparison summary={summary} />
-
-            {/* Low-Stock Red Alert */}
-            <LowStockAlert
-              skus={extractedSkus}
-              user={user}
-              onUpdateThreshold={handleUpdateThreshold}
-              onOpenUpgradeModal={() => setShowPricingModal(true)}
-              currentLang={currentLang}
-            />
-
-            {/* Anomalies & Loss Detection Engine Tables */}
-            <div className="space-y-4">
-              <div className="flex justify-end">
-                <button
-                  onClick={() => setShowDisputeModal(true)}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold text-xs shadow-lg shadow-rose-500/20 hover:scale-105 transition-all"
-                >
-                  <span>Tự Động Lập Hồ Sơ Kháng Nại CSKH Sàn 🚀</span>
-                </button>
-              </div>
-
-              <AnomalyTables
-                orders={orders}
+            {/* TAB 1: EXECUTIVE FINANCIAL AUDIT DASHBOARD */}
+            {activeMainTab === 'financial' && (
+              <ExecutiveDashboard
                 summary={summary}
+                orders={orders}
+                packagingCost={settings.packagingCost}
                 feeThreshold={settings.feeThreshold}
+                onPackagingCostChange={handlePackagingCostChange}
+                onFeeThresholdChange={handleFeeThresholdChange}
+                onOpenCogsModal={() => setShowCogsModal(true)}
                 onExportExcel={handleExportExcel}
+                onOpenShippingModal={() => setShowShippingModal(true)}
+                platform={platform}
+                currentLang={currentLang}
               />
-            </div>
+            )}
+
+            {/* TAB 2: AD ROAS & CIR PERFORMANCE */}
+            {activeMainTab === 'ads' && (
+              <AdPerformanceTable orders={orders} currentLang={currentLang} />
+            )}
+
+            {/* TAB 3: GROWTH COMPARISON & ANOMALY TABLES */}
+            {activeMainTab === 'growth' && (
+              <div className="space-y-8">
+                <GrowthComparison summary={summary} />
+                <div className="space-y-4">
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setShowDisputeModal(true)}
+                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold text-xs shadow-lg shadow-rose-500/20 hover:scale-105 transition-all"
+                    >
+                      <span>Tự Động Lập Hồ Sơ Kháng Nại CSKH Sàn 🚀</span>
+                    </button>
+                  </div>
+
+                  <AnomalyTables
+                    orders={orders}
+                    summary={summary}
+                    feeThreshold={settings.feeThreshold}
+                    onExportExcel={handleExportExcel}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: LOW-STOCK RED ALERT */}
+            {activeMainTab === 'inventory' && (
+              <LowStockAlert
+                skus={extractedSkus}
+                user={user}
+                onUpdateThreshold={handleUpdateThreshold}
+                onOpenUpgradeModal={() => setShowPricingModal(true)}
+                currentLang={currentLang}
+              />
+            )}
 
           </div>
         )}

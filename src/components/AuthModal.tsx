@@ -88,7 +88,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
   const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
     if (otpCode === generatedOtp || otpCode === '123456') {
-      alert('Xác thực Email thành công! Tài khoản của bạn đã được kích hoạt.');
       onLoginSuccess(email, name);
     } else {
       alert('Mã OTP không chính xác! Vui lòng thử lại.');

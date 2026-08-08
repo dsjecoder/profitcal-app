@@ -3,9 +3,12 @@ export interface PaymentGatewaysConfig {
   vietqrAccount: string;
   vietqrName: string;
   binancePayId: string;
+  binanceNetwork: string; // Mạng TRC20 / BEP20
+  binanceWalletAddress: string; // Địa chỉ ví USDT
+  oxapayMerchantId: string;
   oxapayMerchantKey: string;
   oxapayEnabled: boolean;
-  googleClientId?: string; // Real Google OAuth 2.0 Client ID for profitcal.tagki.com
+  googleClientId?: string;
 }
 
 export interface SocialContactsConfig {
@@ -15,15 +18,26 @@ export interface SocialContactsConfig {
   telegramLink: string;
 }
 
+export interface EmailServerConfig {
+  smtpHost: string;
+  smtpPort: number;
+  smtpUser: string;
+  smtpPass: string;
+  senderName: string;
+  senderEmail: string;
+  resendApiKey: string;
+}
+
 export interface AdminSecurityState {
   adminEmail: string;
   adminPass: string;
-  isFirstLogin: boolean; // Flag to force password change on first login
+  isFirstLogin: boolean;
 }
 
 const ADMIN_SECURITY_KEY = 'profitcal_admin_security_v1';
 const PAYMENT_CONFIG_KEY = 'profitcal_payment_config_v1';
 const SOCIAL_CONFIG_KEY = 'profitcal_social_config_v1';
+const EMAIL_CONFIG_KEY = 'profitcal_email_config_v1';
 
 export function getAdminSecurityState(): AdminSecurityState {
   try {
@@ -55,6 +69,9 @@ export function getPaymentGatewaysConfig(): PaymentGatewaysConfig {
     vietqrAccount: '0988 888 999',
     vietqrName: 'TAGKI MEDIA TECH',
     binancePayId: '285918392',
+    binanceNetwork: 'TRC20 (Tron Network) & BEP20 (BSC)',
+    binanceWalletAddress: 'TX7n8z9K2pL4mQ5R6sT1uV3wX8yZ9aB0cC',
+    oxapayMerchantId: 'OXA-TAGKI-8899',
     oxapayMerchantKey: 'oxapay_live_merchant_key_tagki_2026',
     oxapayEnabled: true,
     googleClientId: (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '',
@@ -84,5 +101,28 @@ export function getSocialContactsConfig(): SocialContactsConfig {
 export function saveSocialContactsConfig(config: SocialContactsConfig): void {
   try {
     localStorage.setItem(SOCIAL_CONFIG_KEY, JSON.stringify(config));
+  } catch (e) {}
+}
+
+export function getEmailServerConfig(): EmailServerConfig {
+  try {
+    const raw = localStorage.getItem(EMAIL_CONFIG_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+
+  return {
+    smtpHost: 'smtp.resend.com',
+    smtpPort: 465,
+    smtpUser: 'resend',
+    smtpPass: 're_123456789_tagkiprofitcal',
+    senderName: 'Tagki ProfitCal System',
+    senderEmail: 'noreply@profitcal.tagki.com',
+    resendApiKey: 're_tagki_live_api_key_2026',
+  };
+}
+
+export function saveEmailServerConfig(config: EmailServerConfig): void {
+  try {
+    localStorage.setItem(EMAIL_CONFIG_KEY, JSON.stringify(config));
   } catch (e) {}
 }

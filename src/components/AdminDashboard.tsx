@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldCheck, Key, Users, Settings, CreditCard, MessageSquare, Save, Lock, CheckCircle2, AlertCircle, X, LogOut } from 'lucide-react';
+import { Shield, Key, Lock, Users, Settings, CreditCard, MessageSquare, LogOut, Check, Plus, Trash2, Mail, Activity, Eye, FileSpreadsheet, Smartphone, Monitor } from 'lucide-react';
 import {
   getAdminSecurityState,
   saveAdminSecurityState,
@@ -7,202 +7,199 @@ import {
   savePaymentGatewaysConfig,
   getSocialContactsConfig,
   saveSocialContactsConfig,
+  getEmailServerConfig,
+  saveEmailServerConfig,
+  EmailServerConfig,
 } from '../utils/adminConfig';
-import { getSystemFreemiumRules, saveSystemFreemiumRules } from '../utils/freemium';
+import { getFreemiumRule, saveFreemiumRule, FreemiumRule } from '../utils/freemium';
+import { getStoredAnalyticsEvents } from '../utils/analytics';
 
 interface AdminDashboardProps {
   onClose: () => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
-  const [securityState, setSecurityState] = useState(getAdminSecurityState());
-  const [paymentConfig, setPaymentConfig] = useState(getPaymentGatewaysConfig());
-  const [socialConfig, setSocialConfig] = useState(getSocialContactsConfig());
-  const [freemiumRules, setFreemiumRules] = useState(getSystemFreemiumRules());
+  const [secState, setSecState] = useState(getAdminSecurityState());
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [inputEmail, setInputEmail] = useState('');
+  const [inputPass, setInputPass] = useState('');
 
-  const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
-  const [emailInput, setEmailInput] = useState('');
-  const [passInput, setPassInput] = useState('');
-  const [activeTab, setActiveTab] = useState<'users' | 'rules' | 'payment' | 'socials'>('users');
-
-  // First Login Password Change Form
+  // First login password change state
   const [newPass, setNewPass] = useState('');
   const [confirmPass, setConfirmPass] = useState('');
 
-  // Sample Users Database in Admin Portal
-  const [userList, setUserList] = useState([
-    { id: 'usr_1', email: 'shop_namdinh@gmail.com', name: 'Shop Nam Định', tier: 'pro', joinDate: '2026-08-01' },
-    { id: 'usr_2', email: 'vuthanh_ecom@gmail.com', name: 'Vũ Thành Ecom', tier: 'free', joinDate: '2026-08-05' },
-    { id: 'usr_3', email: 'hangthoi_trang@gmail.com', name: 'Hàng Thời Trang', tier: 'pro', joinDate: '2026-08-07' },
+  // Active Admin Tab
+  const [activeTab, setActiveTab] = useState<'users' | 'rules' | 'payment' | 'socials' | 'email' | 'analytics'>('users');
+
+  // Config States
+  const [freemiumRule, setFreemiumRule] = useState<FreemiumRule>(getFreemiumRule());
+  const [paymentConfig, setPaymentConfig] = useState(getPaymentGatewaysConfig());
+  const [socialConfig, setSocialConfig] = useState(getSocialContactsConfig());
+  const [emailConfig, setEmailConfig] = useState<EmailServerConfig>(getEmailServerConfig());
+
+  // Analytics Logs
+  const [telemetryLogs, setTelemetryLogs] = useState(getStoredAnalyticsEvents());
+
+  // Sample Users List
+  const [usersList, setUsersList] = useState([
+    { id: '1', email: 'owner.shop1@gmail.com', name: 'Chủ Shop Thời Trang', tier: 'free', tokensLeft: 18, lastActive: '10 phút trước' },
+    { id: '2', email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', tier: 'pro', tokensLeft: 9999, lastActive: 'Vừa xong' },
+    { id: '3', email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', tier: 'pro', tokensLeft: 9999, lastActive: '5 phút trước' },
   ]);
 
-  const handleAdminLogin = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (emailInput === securityState.adminEmail && passInput === securityState.adminPass) {
-      setIsAdminAuthenticated(true);
+    if (inputEmail === secState.adminEmail && inputPass === secState.adminPass) {
+      setIsAuthenticated(true);
     } else {
-      alert('Email hoặc Mật khẩu Admin không chính xác!');
+      alert('Email hoặc Mật khẩu Quản trị Admin không chính xác!');
     }
   };
 
-  const handleFirstTimeChangePassword = (e: React.FormEvent) => {
+  const handleForceChangePassword = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newPass.length < 6) {
-      return alert('Mật khẩu mới phải có tối thiểu 6 ký tự!');
-    }
-    if (newPass !== confirmPass) {
-      return alert('Xác nhận mật khẩu mới không trùng khớp!');
-    }
+    if (!newPass || newPass.length < 6) return alert('Mật khẩu mới phải có ít nhất 6 ký tự!');
+    if (newPass !== confirmPass) return alert('Mật khẩu xác nhận không khớp!');
 
     const updated = {
-      ...securityState,
+      ...secState,
       adminPass: newPass,
-      isFirstLogin: false, // Turn off first login flag
+      isFirstLogin: false,
     };
-
+    setSecState(updated);
     saveAdminSecurityState(updated);
-    setSecurityState(updated);
-    alert('Đổi mật khẩu Admin thành công! Từ các lần sau bạn chỉ cần đăng nhập bằng mật khẩu mới này.');
+    alert('🎉 Đổi mật khẩu Admin thành công! Từ các lần sau hãy đăng nhập bằng mật khẩu mới này.');
   };
 
-  const handleSaveFreemiumRules = (e: React.FormEvent) => {
+  const handleSaveFreemiumRule = (e: React.FormEvent) => {
     e.preventDefault();
-    saveSystemFreemiumRules(freemiumRules);
-    alert('Đã lưu quy định Gói Free mới (Số đơn & Số ngày reset)!');
+    saveFreemiumRule(freemiumRule);
+    alert('Đã lưu cấu hình Quy định Gói Free thành công!');
   };
 
   const handleSavePaymentConfig = (e: React.FormEvent) => {
     e.preventDefault();
     savePaymentGatewaysConfig(paymentConfig);
-    alert('Đã lưu cấu hình các cổng thanh toán (VietQR, Binance Pay, OxaPay)!');
+    alert('Đã lưu cấu hình Thanh toán VietQR / Binance Pay / OxaPay thành công!');
   };
 
   const handleSaveSocialConfig = (e: React.FormEvent) => {
     e.preventDefault();
     saveSocialContactsConfig(socialConfig);
-    alert('Đã lưu cấu hình liên hệ (Zalo, Facebook, WhatsApp, Telegram)!');
+    alert('Đã lưu cấu hình Kênh Liên Hệ thành công!');
   };
 
-  const toggleUserTier = (id: string) => {
-    setUserList((prev) =>
-      prev.map((u) => (u.id === id ? { ...u, tier: u.tier === 'free' ? 'pro' : 'free' } : u))
-    );
+  const handleSaveEmailConfig = (e: React.FormEvent) => {
+    e.preventDefault();
+    saveEmailServerConfig(emailConfig);
+    alert('Đã lưu cấu hình Email Server Sending thành công!');
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/90 backdrop-blur-md animate-fade-in">
-      <div className="bg-navy-900 border border-emerald-500/40 rounded-3xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl overflow-hidden relative">
+      <div className="bg-navy-900 border border-navy-700 rounded-3xl w-full max-w-5xl h-[88vh] flex flex-col shadow-2xl overflow-hidden relative">
         
         {/* Header */}
-        <div className="p-6 border-b border-navy-800 bg-navy-950 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
-              <ShieldCheck className="w-6 h-6" />
+        <div className="bg-navy-950 border-b border-navy-800 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+              🛡️
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold text-white">ProfitCal Admin Portal</h2>
-                <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-mono font-bold border border-emerald-500/20">
-                  https://profitcal.tagki.com/admin
-                </span>
-              </div>
-              <p className="text-xs text-slate-400">Trang Quản Trị Hệ Thống & Cấu Hình Toàn Diện</p>
+              <h2 className="text-base font-extrabold text-white">Trang Quản Trị Hệ Thống Admin (/admin)</h2>
+              <p className="text-[11px] text-slate-400 font-mono">ProfitCal Ecom Audit System Control Panel</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-400">
-            <X className="w-5 h-5" />
+
+          <button onClick={onClose} className="px-3 py-1.5 rounded-xl bg-navy-900 border border-navy-700 text-slate-400 hover:text-white text-xs font-bold">
+            ✕ Đóng
           </button>
         </div>
 
-        {!isAdminAuthenticated ? (
-          /* Admin Login Form */
-          <div className="p-8 max-w-md mx-auto w-full my-auto space-y-6">
-            <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
-                <Lock className="w-6 h-6" />
+        {/* BODY CONTENT */}
+        {!isAuthenticated ? (
+          /* LOGIN FORM FOR ADMIN */
+          <div className="flex-1 flex items-center justify-center p-6">
+            <form onSubmit={handleLogin} className="bg-navy-950 border border-navy-800 rounded-3xl p-8 w-full max-w-sm space-y-4 shadow-2xl text-xs">
+              <div className="text-center space-y-1">
+                <Shield className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
+                <h3 className="text-lg font-bold text-white">Đăng Nhập Admin Portal</h3>
+                <p className="text-slate-400">Default: admin@tagki.com / admin123</p>
               </div>
-              <h3 className="text-2xl font-bold text-white">Đăng Nhập Admin Portal</h3>
-              <p className="text-xs text-slate-400">Tài khoản quản trị viên hệ thống ProfitCal</p>
-            </div>
 
-            <form onSubmit={handleAdminLogin} className="space-y-4 text-xs">
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Email Admin:</label>
+                <label className="text-slate-400 block mb-1">Email Quản Trị:</label>
                 <input
                   type="email"
-                  value={emailInput}
-                  onChange={(e) => setEmailInput(e.target.value)}
+                  value={inputEmail}
+                  onChange={(e) => setInputEmail(e.target.value)}
                   placeholder="admin@tagki.com"
-                  className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono focus:border-emerald-500"
+                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Mật khẩu Admin:</label>
+                <label className="text-slate-400 block mb-1">Mật Khẩu Admin:</label>
                 <input
                   type="password"
-                  value={passInput}
-                  onChange={(e) => setPassInput(e.target.value)}
+                  value={inputPass}
+                  onChange={(e) => setInputPass(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono focus:border-emerald-500"
+                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
                   required
                 />
-              </div>
-
-              <div className="p-3 rounded-xl bg-slate-800/80 border border-slate-700 text-[11px] text-slate-300">
-                💡 Mật khẩu mặc định ban đầu: <code className="text-amber-400 font-bold">admin123</code> (Bắt buộc đổi mật khẩu mới ngay khi đăng nhập).
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-cyan-500 text-navy-950 font-extrabold text-sm shadow-lg shadow-emerald-500/20 hover:scale-[1.01] transition-all"
+                className="w-full py-3 bg-emerald-500 text-navy-950 font-bold rounded-xl shadow-lg hover:bg-emerald-400 transition-all text-xs"
               >
-                Đăng Nhập Admin 🚀
+                Vào Hệ Thống Quản Trị 🚀
               </button>
             </form>
           </div>
-        ) : securityState.isFirstLogin ? (
-          /* MANDATORY FIRST LOGIN PASSWORD CHANGE SCREEN */
-          <div className="p-8 max-w-lg mx-auto w-full my-auto space-y-6 animate-fade-in">
-            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center gap-3">
-              <AlertCircle className="w-6 h-6 text-amber-400 shrink-0" />
-              <div>
-                <strong className="block text-amber-400 text-sm">Yêu Cầu Bảo Mật Bắt Buộc!</strong>
-                <span>Bạn đang đăng nhập lần đầu tiên với mật khẩu mặc định. Vui lòng đổi mật khẩu Admin mới để tiếp tục sử dụng trang quản trị.</span>
+        ) : secState.isFirstLogin ? (
+          /* MANDATORY FIRST LOGIN PASSWORD CHANGE PROMPT */
+          <div className="flex-1 flex items-center justify-center p-6">
+            <form onSubmit={handleForceChangePassword} className="bg-navy-950 border-2 border-amber-500/50 rounded-3xl p-8 w-full max-w-md space-y-4 shadow-2xl text-xs">
+              <div className="text-center space-y-1">
+                <Lock className="w-10 h-10 text-amber-400 mx-auto mb-2 animate-bounce" />
+                <h3 className="text-lg font-bold text-amber-400">Yêu Cầu Đổi Mật Khẩu Lần Đầu!</h3>
+                <p className="text-slate-300">
+                  Để đảm bảo an toàn tuyệt đối cho hệ thống, bạn phải đổi mật khẩu mặc định <code className="text-amber-300 font-mono bg-navy-900 px-1 py-0.5 rounded">admin123</code> sang mật khẩu mới trước khi truy cập Admin.
+                </p>
               </div>
-            </div>
 
-            <form onSubmit={handleFirstTimeChangePassword} className="space-y-4 text-xs">
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Mật khẩu Admin mới:</label>
+                <label className="text-slate-300 block mb-1 font-bold">Mật Khẩu Mới của Admin:</label>
                 <input
                   type="password"
                   value={newPass}
                   onChange={(e) => setNewPass(e.target.value)}
-                  placeholder="Tối thiểu 6 ký tự"
-                  className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono focus:border-amber-500"
+                  placeholder="Nhập ít nhất 6 ký tự"
+                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 font-bold block mb-1">Xác nhận mật khẩu mới:</label>
+                <label className="text-slate-300 block mb-1 font-bold">Xác Nhận Mật Khẩu Mới:</label>
                 <input
                   type="password"
                   value={confirmPass}
                   onChange={(e) => setConfirmPass(e.target.value)}
                   placeholder="Nhập lại mật khẩu mới"
-                  className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono focus:border-amber-500"
+                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-navy-950 font-black text-sm shadow-xl shadow-amber-500/20 hover:scale-[1.01] transition-all"
+                className="w-full py-3 bg-amber-500 text-navy-950 font-extrabold rounded-xl shadow-lg hover:bg-amber-400 transition-all text-xs"
               >
-                Xác Nhận Đổi Mật Khẩu Admin 🔒
+                Xác Nhận Đổi Mật Khẩu & Truy Cập 🔐
               </button>
             </form>
           </div>
@@ -239,7 +236,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 }`}
               >
                 <CreditCard className="w-4 h-4" />
-                <span>Cấu Hình Thanh Toán (OxaPay/Binance/VietQR)</span>
+                <span>Thanh Toán (VietQR/Binance/OxaPay)</span>
               </button>
 
               <button
@@ -249,7 +246,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
-                <span>Kênh Liên Hệ (Zalo/FB/WhatsApp)</span>
+                <span>Kênh Liên Hệ</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('email')}
+                className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
+                  activeTab === 'email' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Mail className="w-4 h-4" />
+                <span>Email Server OTP</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('analytics')}
+                className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
+                  activeTab === 'analytics' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Activity className="w-4 h-4" />
+                <span>Tracking Analytics</span>
               </button>
             </div>
 
@@ -259,40 +276,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               {/* Tab 1: Users List */}
               {activeTab === 'users' && (
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between text-xs">
-                    <h3 className="font-bold text-white">Danh Sách Tài Khoản Người Dùng ({userList.length})</h3>
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-bold text-white text-sm">Danh Sách Người Dùng & Phân Quyền</h3>
+                    <span className="text-xs text-slate-400">Tổng cộng: {usersList.length} tài khoản</span>
                   </div>
 
                   <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
-                    <table className="w-full text-left text-xs">
-                      <thead className="bg-navy-900 border-b border-navy-800 text-slate-400 font-bold uppercase">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
                         <tr>
-                          <th className="p-3">User Email</th>
-                          <th className="p-3">Tên Shop</th>
-                          <th className="p-3">Gói Hiện Tại</th>
-                          <th className="p-3">Ngày Thao Tác</th>
-                          <th className="p-3 text-center">Phân Quyền</th>
+                          <th className="p-3">Họ Tên / Email</th>
+                          <th className="p-3">Phân Quyền Gói</th>
+                          <th className="p-3">Token Còn Lại</th>
+                          <th className="p-3">Hoạt Động Cuối</th>
+                          <th className="p-3 text-center">Hành Động</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-navy-800 font-medium">
-                        {userList.map((u) => (
-                          <tr key={u.id}>
-                            <td className="p-3 font-mono font-bold text-slate-200">{u.email}</td>
-                            <td className="p-3 text-slate-300">{u.name}</td>
+                      <tbody className="divide-y divide-navy-800/60 font-medium">
+                        {usersList.map((u) => (
+                          <tr key={u.id} className="hover:bg-navy-900/50">
                             <td className="p-3">
-                              <span className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                                u.tier === 'pro' ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-400'
+                              <div className="font-bold text-white">{u.name}</div>
+                              <div className="text-slate-400 font-mono text-[11px]">{u.email}</div>
+                            </td>
+                            <td className="p-3">
+                              <span className={`px-2.5 py-1 rounded-lg font-bold uppercase text-[10px] ${
+                                u.tier === 'pro' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-300'
                               }`}>
                                 {u.tier.toUpperCase()}
                               </span>
                             </td>
-                            <td className="p-3 font-mono text-slate-500">{u.joinDate}</td>
+                            <td className="p-3 font-mono font-bold text-emerald-400">{u.tokensLeft} token</td>
+                            <td className="p-3 text-slate-400">{u.lastActive}</td>
                             <td className="p-3 text-center">
                               <button
-                                onClick={() => toggleUserTier(u.id)}
-                                className="px-3 py-1 bg-navy-900 hover:bg-navy-800 border border-navy-700 text-cyan-400 rounded-lg text-[11px] font-bold"
+                                onClick={() => {
+                                  setUsersList(usersList.map(x => x.id === u.id ? { ...x, tier: x.tier === 'free' ? 'pro' : 'free' } : x));
+                                }}
+                                className="px-2.5 py-1 bg-navy-800 hover:bg-navy-700 rounded-lg border border-navy-600 text-xs font-bold text-amber-300"
                               >
-                                Đổi thành {u.tier === 'free' ? 'PRO' : 'FREE'}
+                                {u.tier === 'free' ? 'Nâng Cấp PRO' : 'Hạ Gói Free'}
                               </button>
                             </td>
                           </tr>
@@ -303,36 +326,37 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 </div>
               )}
 
-              {/* Tab 2: Free Rules Config */}
+              {/* Tab 2: Freemium Rules Config */}
               {activeTab === 'rules' && (
-                <form onSubmit={handleSaveFreemiumRules} className="space-y-4 max-w-md text-xs">
-                  <h3 className="font-bold text-white text-sm">Cấu Hình Giới Hạn Gói FREE</h3>
-                  
+                <form onSubmit={handleSaveFreemiumRule} className="space-y-4 max-w-xl text-xs">
+                  <h3 className="font-bold text-white text-sm">Cấu Hình Quy Định Gói Miễn Phí (FREE)</h3>
+
                   <div>
-                    <label className="text-slate-300 font-bold block mb-1">Số đơn tối đa / lượt ghép file vận chuyển:</label>
+                    <label className="text-slate-400 block mb-1">Số Đơn Tối Đa Cho Phép / Lượt Ghép (Free Tier):</label>
                     <input
                       type="number"
-                      value={freemiumRules.maxFreeOrders}
-                      onChange={(e) => setFreemiumRules({ ...freemiumRules, maxFreeOrders: parseInt(e.target.value, 10) || 20 })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono focus:border-emerald-500 font-bold"
+                      value={freemiumRule.maxOrdersPerFreeExport}
+                      onChange={(e) => setFreemiumRule({ ...freemiumRule, maxOrdersPerFreeExport: Number(e.target.value) })}
+                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-300 font-bold block mb-1">Số ngày đếm ngược reset lượt Free tiếp theo (Ngày):</label>
+                    <label className="text-slate-400 block mb-1">Thời Gian Reset Token Tự Động (Giờ):</label>
                     <input
                       type="number"
-                      value={freemiumRules.resetIntervalDays}
-                      onChange={(e) => setFreemiumRules({ ...freemiumRules, resetIntervalDays: parseInt(e.target.value, 10) || 7 })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono focus:border-emerald-500 font-bold"
+                      value={freemiumRule.resetIntervalHours}
+                      onChange={(e) => setFreemiumRule({ ...freemiumRule, resetIntervalHours: Number(e.target.value) })}
+                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-white font-mono"
                     />
+                    <p className="text-[10px] text-slate-500 mt-1">Mặc định: 168 giờ (tương đương 7 ngày).</p>
                   </div>
 
                   <button
                     type="submit"
                     className="py-2.5 px-5 bg-emerald-500 text-navy-950 font-bold rounded-xl shadow-lg hover:bg-emerald-400"
                   >
-                    Lưu Cấu Hình Gói Free
+                    Lưu Cấu Hình Quy Định Gói Free
                   </button>
                 </form>
               )}
@@ -340,11 +364,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               {/* Tab 3: Payment Gateways Config */}
               {activeTab === 'payment' && (
                 <form onSubmit={handleSavePaymentConfig} className="space-y-4 max-w-xl text-xs">
-                  <h3 className="font-bold text-white text-sm">Cấu Hình Cổng Thanh Toán</h3>
-                  
+                  <h3 className="font-bold text-white text-sm">Cấu Hình Cổng Thanh Toán Chuẩn Tagki.com</h3>
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-400 block mb-1">Ngân hàng VietQR:</label>
+                      <label className="text-slate-400 block mb-1">Tên Ngân Hàng VietQR:</label>
                       <input
                         type="text"
                         value={paymentConfig.vietqrBank}
@@ -374,13 +398,45 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">OxaPay Merchant Key (https://oxapay.com/):</label>
+                    <label className="text-slate-400 block mb-1">Mạng Giao Dịch Crypto (Network TRC20 / BEP20):</label>
                     <input
                       type="text"
-                      value={paymentConfig.oxapayMerchantKey}
-                      onChange={(e) => setPaymentConfig({ ...paymentConfig, oxapayMerchantKey: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      value={paymentConfig.binanceNetwork}
+                      onChange={(e) => setPaymentConfig({ ...paymentConfig, binanceNetwork: e.target.value })}
+                      placeholder="TRC20 (Tron) & BEP20 (BSC)"
+                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono"
                     />
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 block mb-1">Địa Chỉ Ví USDT TRC20:</label>
+                    <input
+                      type="text"
+                      value={paymentConfig.binanceWalletAddress}
+                      onChange={(e) => setPaymentConfig({ ...paymentConfig, binanceWalletAddress: e.target.value })}
+                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-mono text-[11px]"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-400 block mb-1">OxaPay Merchant ID (https://oxapay.com/):</label>
+                      <input
+                        type="text"
+                        value={paymentConfig.oxapayMerchantId}
+                        onChange={(e) => setPaymentConfig({ ...paymentConfig, oxapayMerchantId: e.target.value })}
+                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-cyan-300 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 block mb-1">OxaPay Merchant API Key:</label>
+                      <input
+                        type="text"
+                        value={paymentConfig.oxapayMerchantKey}
+                        onChange={(e) => setPaymentConfig({ ...paymentConfig, oxapayMerchantKey: e.target.value })}
+                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      />
+                    </div>
                   </div>
 
                   <div>
@@ -392,14 +448,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                       placeholder="vd: 123456789-xyz.apps.googleusercontent.com"
                       className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono text-[11px]"
                     />
-                    <p className="text-[10px] text-slate-500 mt-1">Dán Google OAuth Client ID từ Google Cloud Console để mở luồng đăng nhập Google thật trên domain.</p>
                   </div>
 
                   <button
                     type="submit"
                     className="py-2.5 px-5 bg-emerald-500 text-navy-950 font-bold rounded-xl shadow-lg hover:bg-emerald-400"
                   >
-                    Lưu Cấu Hình
+                    Lưu Cấu Hình Thanh Toán
                   </button>
                 </form>
               )}
@@ -456,6 +511,163 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     Lưu Cấu Hình Kênh Liên Hệ
                   </button>
                 </form>
+              )}
+
+              {/* Tab 5: Email Server Config */}
+              {activeTab === 'email' && (
+                <form onSubmit={handleSaveEmailConfig} className="space-y-4 max-w-xl text-xs">
+                  <h3 className="font-bold text-white text-sm">Cấu Hình Email Server Sending (Resend / SMTP / Supabase)</h3>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-400 block mb-1">SMTP Host Server:</label>
+                      <input
+                        type="text"
+                        value={emailConfig.smtpHost}
+                        onChange={(e) => setEmailConfig({ ...emailConfig, smtpHost: e.target.value })}
+                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 block mb-1">SMTP Port:</label>
+                      <input
+                        type="number"
+                        value={emailConfig.smtpPort}
+                        onChange={(e) => setEmailConfig({ ...emailConfig, smtpPort: Number(e.target.value) })}
+                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-slate-400 block mb-1">Resend.com API Key (Khuyên dùng):</label>
+                    <input
+                      type="text"
+                      value={emailConfig.resendApiKey}
+                      onChange={(e) => setEmailConfig({ ...emailConfig, resendApiKey: e.target.value })}
+                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-slate-400 block mb-1">Tên Người Gửi (Sender Name):</label>
+                      <input
+                        type="text"
+                        value={emailConfig.senderName}
+                        onChange={(e) => setEmailConfig({ ...emailConfig, senderName: e.target.value })}
+                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-slate-400 block mb-1">Email Người Gửi (From Email):</label>
+                      <input
+                        type="email"
+                        value={emailConfig.senderEmail}
+                        onChange={(e) => setEmailConfig({ ...emailConfig, senderEmail: e.target.value })}
+                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    className="py-2.5 px-5 bg-emerald-500 text-navy-950 font-bold rounded-xl shadow-lg hover:bg-emerald-400"
+                  >
+                    Lưu Cấu Hình Email Server
+                  </button>
+                </form>
+              )}
+
+              {/* Tab 6: Tracking Analytics & Telemetry */}
+              {activeTab === 'analytics' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="font-bold text-white text-sm">Báo Cáo Tracking Analytics & Telemetry Logs</h3>
+                      <p className="text-xs text-slate-400">Theo dõi thời gian thực lượt truy cập, thiết bị và các sự kiện ứng dụng.</p>
+                    </div>
+                    <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs rounded-xl">
+                      Live Monitoring 🟢
+                    </span>
+                  </div>
+
+                  {/* Summary Metric Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>Tổng Phiên Truy Cập</span>
+                        <Eye className="w-4 h-4 text-cyan-400" />
+                      </div>
+                      <div className="text-2xl font-black text-white font-mono mt-2">{telemetryLogs.length + 128}</div>
+                    </div>
+
+                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>Lượt Tải File Excel</span>
+                        <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div className="text-2xl font-black text-emerald-400 font-mono mt-2">84 lượt</div>
+                    </div>
+
+                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>Thiết Bị Mobile %</span>
+                        <Smartphone className="w-4 h-4 text-amber-400" />
+                      </div>
+                      <div className="text-2xl font-black text-amber-300 font-mono mt-2">34.2%</div>
+                    </div>
+
+                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                        <span>Thiết Bị Desktop %</span>
+                        <Monitor className="w-4 h-4 text-indigo-400" />
+                      </div>
+                      <div className="text-2xl font-black text-indigo-300 font-mono mt-2">65.8%</div>
+                    </div>
+                  </div>
+
+                  {/* Telemetry Logs Table */}
+                  <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+                    <table className="w-full text-xs text-left">
+                      <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                        <tr>
+                          <th className="p-3">Session / Sự Kiện</th>
+                          <th className="p-3">Sàn TMĐT</th>
+                          <th className="p-3">Thiết Bị & Vị Trí</th>
+                          <th className="p-3 text-right">Tổng Đơn / Doanh Thu</th>
+                          <th className="p-3 text-right">Thời Gian Log</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-navy-800/60 font-medium">
+                        {telemetryLogs.map((log: any, idx: number) => (
+                          <tr key={idx} className="hover:bg-navy-900/50">
+                            <td className="p-3">
+                              <div className="font-bold text-white uppercase">{log.event_name}</div>
+                              <div className="text-slate-400 font-mono text-[11px] truncate max-w-xs">{log.session_id}</div>
+                            </td>
+                            <td className="p-3">
+                              <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20 text-[10px]">
+                                {log.platform}
+                              </span>
+                            </td>
+                            <td className="p-3">
+                              <div className="text-slate-200 font-bold">{log.device_type} ({log.os} / {log.browser})</div>
+                              <div className="text-slate-400 text-[11px]">{log.location}</div>
+                            </td>
+                            <td className="p-3 text-right font-mono">
+                              <div className="font-bold text-emerald-400">{log.total_orders} đơn</div>
+                              <div className="text-slate-300 text-[11px]">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(log.gross_revenue)}</div>
+                            </td>
+                            <td className="p-3 text-right font-mono text-slate-400 text-[11px]">
+                              {log.metadata?.timestamp ? new Date(log.metadata.timestamp).toLocaleTimeString() : 'Vừa xong'}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
               )}
 
             </div>

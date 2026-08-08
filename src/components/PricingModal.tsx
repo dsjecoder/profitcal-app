@@ -319,19 +319,35 @@ export const PricingModal: React.FC<PricingModalProps> = ({
               </div>
             )}
 
-            {/* Gateway 3: Binance Pay */}
+            {/* Gateway 3: Binance Pay & USDT TRC20/BEP20 */}
             {paymentMethod === 'binance' && (
               <div className="space-y-4 max-w-md mx-auto">
-                <h3 className="text-lg font-bold text-amber-400">Thanh Toán Binance Pay (USDT)</h3>
-                <div className="bg-navy-950 p-4 rounded-2xl border border-amber-500/30 text-xs font-mono text-left space-y-2">
+                <h3 className="text-lg font-bold text-amber-400">Thanh Toán Binance Pay & USDT Crypto</h3>
+                <div className="bg-navy-950 p-4 rounded-2xl border border-amber-500/30 text-xs font-mono text-left space-y-2.5">
                   <div className="flex justify-between items-center">
                     <span className="text-slate-400">Binance Pay ID:</span>
-                    <button onClick={() => handleCopyText(paymentConfig.binancePayId)} className="font-bold text-amber-400 bg-navy-900 px-2 py-1 rounded border border-navy-700 flex items-center gap-1">
+                    <button onClick={() => handleCopyText(paymentConfig.binancePayId)} className="font-bold text-amber-400 bg-navy-900 px-2.5 py-1 rounded-lg border border-navy-700 flex items-center gap-1">
                       <span>{paymentConfig.binancePayId}</span>
                       <Copy className="w-3 h-3 text-slate-400" />
                     </button>
                   </div>
-                  <div className="flex justify-between"><span className="text-slate-400">Số tiền Crypto:</span><span className="font-bold text-emerald-400">{selectedPlan === 'yearly' ? '25.00 USDT' : '5.50 USDT'}</span></div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400">Mạng Giao Dịch:</span>
+                    <span className="px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 text-[11px]">
+                      {paymentConfig.binanceNetwork || 'TRC20 (Tron) & BEP20 (BSC)'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1 pt-1">
+                    <span className="text-slate-400">Địa chỉ Ví USDT ({paymentConfig.binanceNetwork?.includes('TRC20') ? 'Mạng TRC20' : 'USDT'}):</span>
+                    <button onClick={() => handleCopyText(paymentConfig.binanceWalletAddress)} className="font-bold text-emerald-400 bg-navy-900 px-2.5 py-1.5 rounded-lg border border-navy-700 flex items-center justify-between text-[11px] break-all">
+                      <span>{paymentConfig.binanceWalletAddress}</span>
+                      <Copy className="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2" />
+                    </button>
+                  </div>
+                  <div className="flex justify-between border-t border-navy-800 pt-2">
+                    <span className="text-slate-400">Số tiền USDT:</span>
+                    <span className="font-bold text-emerald-400 text-sm">{selectedPlan === 'yearly' ? '25.00 USDT' : '5.50 USDT'}</span>
+                  </div>
                 </div>
               </div>
             )}
@@ -341,8 +357,9 @@ export const PricingModal: React.FC<PricingModalProps> = ({
               <div className="space-y-4 max-w-md mx-auto">
                 <h3 className="text-lg font-bold text-cyan-400">Thanh Toán Qua OxaPay API (https://oxapay.com/)</h3>
                 <div className="bg-navy-950 p-4 rounded-2xl border border-cyan-500/30 text-xs font-mono text-left space-y-2">
-                  <div className="flex justify-between"><span className="text-slate-400">Cổng OxaPay Merchant:</span><span className="font-bold text-cyan-300">Live Active</span></div>
-                  <div className="flex justify-between"><span className="text-slate-400">Chấp nhận:</span><span className="font-bold text-slate-200">USDT (BEP20 / TRC20), BTC, ETH</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">OxaPay Merchant ID:</span><span className="font-bold text-cyan-300">{paymentConfig.oxapayMerchantId}</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">Trạng Thái Cổng:</span><span className="font-bold text-emerald-400">Live Active 🟢</span></div>
+                  <div className="flex justify-between"><span className="text-slate-400">Chấp nhận:</span><span className="font-bold text-slate-200">USDT (TRC20 / BEP20), BTC, ETH, TRX</span></div>
                   <p className="text-[11px] text-slate-400 pt-2 border-t border-navy-800">Tích hợp cổng OxaPay tự động hoàn toàn giống 100% tagki.com.</p>
                 </div>
               </div>
