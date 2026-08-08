@@ -297,10 +297,11 @@ export function App() {
               onExportExcel={handleExportExcel}
               onOpenShippingModal={() => setShowShippingModal(true)}
               platform={platform}
+              currentLang={currentLang}
             />
 
             {/* Ad ROAS & CIR Performance Table */}
-            <AdPerformanceTable orders={orders} />
+            <AdPerformanceTable orders={orders} currentLang={currentLang} />
 
             {/* Multi-Period Growth Comparison */}
             <GrowthComparison summary={summary} />
@@ -311,6 +312,7 @@ export function App() {
               user={user}
               onUpdateThreshold={handleUpdateThreshold}
               onOpenUpgradeModal={() => setShowPricingModal(true)}
+              currentLang={currentLang}
             />
 
             {/* Anomalies & Loss Detection Engine Tables */}

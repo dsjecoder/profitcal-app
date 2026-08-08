@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { ShieldAlert, Volume2, Send, Settings, CheckCircle2, AlertTriangle, RefreshCw, Bell, Sparkles } from 'lucide-react';
 import { SKUData, StockAlert, UserState } from '../types';
 import { auditLowStockSKUs, getTelegramConfig, playLowStockBeepSound, saveTelegramConfig, sendTelegramLowStockAlert } from '../utils/stockMonitor';
+import { Language, t } from '../utils/i18n';
 
 interface LowStockAlertProps {
   skus: SKUData[];
   user: UserState;
   onUpdateThreshold: (sku: string, newThreshold: number) => void;
   onOpenUpgradeModal: () => void;
+  currentLang?: Language;
 }
 
 export const LowStockAlert: React.FC<LowStockAlertProps> = ({
@@ -15,6 +17,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
   user,
   onUpdateThreshold,
   onOpenUpgradeModal,
+  currentLang = 'vi',
 }) => {
   const [telegramConfig, setTelegramConfig] = useState(getTelegramConfig());
   const [showConfigDrawer, setShowConfigDrawer] = useState(false);
