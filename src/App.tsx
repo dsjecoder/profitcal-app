@@ -37,7 +37,7 @@ import { getInitialLanguage, saveLanguagePreference, Language } from './utils/i1
 
 import { TabNavigation, MainTabType } from './components/TabNavigation';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
-import { submitUpgradeRequest } from './utils/upgradeTracker';
+import { submitUpgradeRequest, checkEmailProRecord } from './utils/upgradeTracker';
 
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
