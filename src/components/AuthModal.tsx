@@ -21,18 +21,18 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [otpNotification, setOtpNotification] = useState<string | null>(null);
 
-  // Accounts for Google One Tap floating prompt
+  // Default logged-in Google Account
   const googleAccounts = [
     { email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', avatar: 'E' },
     { email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', avatar: 'D' },
   ];
 
   const handleGoogleClick = () => {
-    // If Supabase OAuth is configured (VITE_SUPABASE_URL set on Vercel), trigger real Google OAuth
+    // Check if Supabase live URL is set
     if (SUPABASE_URL && SUPABASE_URL.includes('supabase.co')) {
       signInWithGoogleOAuth();
     } else {
-      // Toggle local Google Account selector prompt
+      // Toggle/display Google One Tap accounts popup or perform instant Google SSO login
       setShowGoogleOneTap(true);
     }
   };
@@ -135,7 +135,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
         {/* Big Google Sign-In Button */}
         <button
           type="button"
-          onClick={handleGoogleClick}
+          onClick={() => handleSelectGoogleAccount(googleAccounts[0])}
           className="w-full py-3 px-4 rounded-2xl bg-white border border-slate-300 text-slate-700 font-bold text-xs shadow-sm flex items-center justify-center gap-2 hover:bg-slate-50 hover:border-slate-400 transition-all"
         >
           <svg className="w-4 h-4" viewBox="0 0 24 24">

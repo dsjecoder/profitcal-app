@@ -70,16 +70,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
 
-          {/* Dedicated Admin Portal Link Button (/admin) */}
-          <button
-            onClick={onOpenAdmin}
-            className="hidden md:flex items-center gap-1.5 px-3 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 border border-navy-700/80 text-emerald-400 font-bold"
-            title="Đường dẫn trang quản trị /admin"
-          >
-            <Shield className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Admin Portal</span>
-          </button>
-
           {/* Terms & Privacy */}
           <button
             onClick={onOpenTerms}
