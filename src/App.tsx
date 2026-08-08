@@ -66,9 +66,13 @@ export function App() {
     const oauthUser = parseOAuthRedirectHash();
     if (oauthUser) {
       const updatedUser: UserState = {
+        ...user,
         isLoggedIn: true,
         email: oauthUser.email,
         name: oauthUser.name,
+        tier: user.tier || 'free',
+        tokens: user.tokens ?? 20,
+        lastTokenReset: user.lastTokenReset || new Date().toISOString(),
       };
       setUser(updatedUser);
       saveUserState(updatedUser);
