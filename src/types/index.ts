@@ -32,7 +32,7 @@ export interface OrderItem {
   totalFees: number;        // Tổng các loại phí
   cogs: number;             // Giá vốn hàng bán (do người dùng nhập)
   packagingCost: number;    // Chi phí đóng gói (mặc định / đơn)
-  taxAmount: number;        // Thuế TMĐT (1.5% x grossRevenue)
+  taxAmount?: number;       // Thuế TMĐT (1.5% x grossRevenue)
   orderStatus: 'completed' | 'returned' | 'cancelled';
   
   // Shipping info (extracted from report for GHTK / Viettel Post / GHN / SPX export)
