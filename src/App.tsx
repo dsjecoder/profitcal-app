@@ -37,6 +37,7 @@ import { getInitialLanguage, saveLanguagePreference, Language } from './utils/i1
 
 import { TabNavigation, MainTabType } from './components/TabNavigation';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
+import { submitUpgradeRequest } from './utils/upgradeTracker';
 
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
@@ -265,26 +266,32 @@ export function App() {
     saveUserState(updated);
     setUser(updated);
     setShowAuthModal(false);
-  };
+  // 8. Submit Pro Upgrade Request for Admin Approval
+  const handleConfirmUpgrade = (plan: 'monthly' | 'yearly', paymentMethod: string, amount: number) => {
+    submitUpgradeRequest({
+      userEmail: user.email || 'guest@tagki.com',
+      userName: user.name || 'Chủ Shop',
+      plan,
+      amount,
+      paymentMethod,
+    });
 
-  // 8. Confirm Pro Upgrade
-  const handleConfirmUpgrade = () => {
     const updated: UserState = {
       ...user,
-      tier: 'pro',
-      tokens: 999,
+      upgradeStatus: 'pending',
+      pendingPlan: plan,
     };
     saveUserState(updated);
     setUser(updated);
     setShowPricingModal(false);
 
     confetti({
-      particleCount: 150,
-      spread: 90,
+      particleCount: 100,
+      spread: 70,
       origin: { y: 0.5 },
     });
 
-    alert('Chúc mừng! Bạn đã nâng cấp thành công gói PROFITCAL PRO Unlimited! 🚀');
+    alert('🎉 Yêu cầu nâng cấp Gói PRO của bạn đã được gửi tới Admin!\n\nAdmin sẽ kiểm tra giao dịch chuyển khoản và kích hoạt tài khoản PRO của bạn trong 5-15 phút.');
   };
 
   return (

@@ -4,6 +4,17 @@ export type CarrierType = 'ghtk' | 'viettelpost' | 'ghn' | 'spx';
 
 export type UserTier = 'free' | 'pro';
 
+export interface UpgradeRequest {
+  id: string;
+  userEmail: string;
+  userName: string;
+  plan: 'monthly' | 'yearly';
+  amount: number;
+  paymentMethod: string;
+  requestedAt: string;
+  status: 'pending' | 'approved' | 'rejected';
+}
+
 export interface UserState {
   isLoggedIn: boolean;
   email?: string;
@@ -12,6 +23,8 @@ export interface UserState {
   tokens: number;
   lastTokenReset: string; // ISO string
   lastShippingExportTime?: string; // ISO timestamp of last Free shipping export
+  upgradeStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+  pendingPlan?: 'monthly' | 'yearly';
 }
 
 export interface OrderItem {

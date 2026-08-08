@@ -11,6 +11,11 @@ import {
   saveEmailServerConfig,
   EmailServerConfig,
 } from '../utils/adminConfig';
+import {
+  getUpgradeRequests,
+  approveUpgradeRequest,
+  rejectUpgradeRequest,
+} from '../utils/upgradeTracker';
 import { getFreemiumRule, saveFreemiumRule, FreemiumRule } from '../utils/freemium';
 import { getStoredAnalyticsEvents } from '../utils/analytics';
 
@@ -37,6 +42,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const [socialConfig, setSocialConfig] = useState(getSocialContactsConfig());
   const [emailConfig, setEmailConfig] = useState<EmailServerConfig>(getEmailServerConfig());
 
+  // Pending Upgrade Requests State
+  const [upgradeRequests, setUpgradeRequests] = useState(getUpgradeRequests());
+
   // Analytics Logs
   const [telemetryLogs, setTelemetryLogs] = useState(getStoredAnalyticsEvents());
 
@@ -46,6 +54,20 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     { id: '2', email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', tier: 'pro', tokensLeft: 9999, lastActive: 'Vừa xong' },
     { id: '3', email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', tier: 'pro', tokensLeft: 9999, lastActive: '5 phút trước' },
   ]);
+
+  const handleApproveRequest = (reqId: string, email: string) => {
+    approveUpgradeRequest(reqId);
+    setUpgradeRequests(getUpgradeRequests());
+    // Also update usersList
+    setUsersList(usersList.map(u => u.email === email ? { ...u, tier: 'pro', tokensLeft: 9999 } : u));
+    alert(`🎉 Đã duyệt kích hoạt Gói PRO thành công cho tài khoản: ${email}!`);
+  };
+
+  const handleRejectRequest = (reqId: string) => {
+    rejectUpgradeRequest(reqId);
+    setUpgradeRequests(getUpgradeRequests());
+    alert('Đã từ chối yêu cầu nâng cấp.');
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -273,9 +295,85 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
             {/* Tab Contents */}
             <div className="p-6 overflow-y-auto flex-1 space-y-6">
               
-              {/* Tab 1: Users List */}
+              {/* Tab 1: Users List & Pending Upgrade Approvals */}
               {activeTab === 'users' && (
-                <div className="space-y-4">
+                <div className="space-y-8">
+                  
+                  {/* PENDING UPGRADE APPROVALS SECTION */}
+                  <div className="space-y-3 bg-amber-950/40 border-2 border-amber-500/40 p-5 rounded-3xl">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xl">⏳</span>
+                        <h3 className="font-extrabold text-amber-300 text-sm">Yêu Cầu Nâng Cấp Gói PRO Chờ Admin Duyệt</h3>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-xs font-bold border border-amber-500/40">
+                        {upgradeRequests.filter(r => r.status === 'pending').length} Yêu Cầu Chờ
+                      </span>
+                    </div>
+
+                    <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+                      <table className="w-full text-xs text-left">
+                        <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                          <tr>
+                            <th className="p-3">Khách Hàng / Email</th>
+                            <th className="p-3">Gói Chọn Mua</th>
+                            <th className="p-3">Phương Thức & Số Tiền</th>
+                            <th className="p-3">Thời Gian Gửi</th>
+                            <th className="p-3 text-center">Trạng Thái / Duyệt</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-navy-800/60 font-medium">
+                          {upgradeRequests.map((req) => (
+                            <tr key={req.id} className="hover:bg-navy-900/50">
+                              <td className="p-3">
+                                <div className="font-bold text-white">{req.userName}</div>
+                                <div className="text-slate-400 font-mono text-[11px]">{req.userEmail}</div>
+                              </td>
+                              <td className="p-3">
+                                <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-bold border border-amber-500/30 text-[11px] uppercase">
+                                  {req.plan === 'yearly' ? 'Gói PRO Năm (599k)' : 'Gói PRO Tháng (130k)'}
+                                </span>
+                              </td>
+                              <td className="p-3 font-mono">
+                                <div className="font-bold text-emerald-400">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(req.amount)}</div>
+                                <div className="text-slate-400 text-[11px]">{req.paymentMethod}</div>
+                              </td>
+                              <td className="p-3 text-slate-400 text-[11px] font-mono">
+                                {new Date(req.requestedAt).toLocaleTimeString()}
+                              </td>
+                              <td className="p-3 text-center">
+                                {req.status === 'pending' ? (
+                                  <div className="flex items-center justify-center gap-2">
+                                    <button
+                                      onClick={() => handleApproveRequest(req.id, req.userEmail)}
+                                      className="px-3 py-1.5 bg-emerald-500 text-navy-950 rounded-xl font-black shadow hover:bg-emerald-400 transition-all text-xs"
+                                    >
+                                      ✅ Duyệt Kích Hoạt PRO
+                                    </button>
+                                    <button
+                                      onClick={() => handleRejectRequest(req.id)}
+                                      className="px-2.5 py-1.5 bg-rose-500/20 text-rose-300 rounded-xl font-bold border border-rose-500/40 hover:bg-rose-500/30 text-xs"
+                                    >
+                                      ❌ Từ Chối
+                                    </button>
+                                  </div>
+                                ) : req.status === 'approved' ? (
+                                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 text-[11px]">
+                                    ✓ Đã Duyệt PRO 🟢
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 font-bold border border-rose-500/30 text-[11px]">
+                                    ✗ Đã Từ Chối
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-white text-sm">Danh Sách Người Dùng & Phân Quyền</h3>
                     <span className="text-xs text-slate-400">Tổng cộng: {usersList.length} tài khoản</span>

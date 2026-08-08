@@ -6,7 +6,7 @@ import { getPaymentGatewaysConfig } from '../utils/adminConfig';
 interface PricingModalProps {
   user: UserState;
   onClose: () => void;
-  onConfirmUpgrade: () => void;
+  onConfirmUpgrade: (plan: 'monthly' | 'yearly', paymentMethod: string, amount: number) => void;
 }
 
 export const PricingModal: React.FC<PricingModalProps> = ({
@@ -368,10 +368,10 @@ export const PricingModal: React.FC<PricingModalProps> = ({
             {/* Confirmation & Back Button */}
             <div className="pt-2 space-y-2 max-w-md mx-auto">
               <button
-                onClick={onConfirmUpgrade}
+                onClick={() => onConfirmUpgrade(selectedPlan, paymentMethod, priceAmount)}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 text-navy-950 font-black text-sm shadow-xl hover:scale-[1.02] transition-all"
               >
-                Xác Nhận Đã Thanh Toán (Kích Hoạt PRO Ngay) 🚀
+                Xác Nhận Đã Chuyển Tiền (Gửi Admin Duyệt) 🚀
               </button>
               <button
                 onClick={() => setStep('plan_select')}
