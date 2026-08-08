@@ -191,31 +191,41 @@
 
             </main>
 
-            {/* Auth Modal with Instant Google Account Picker */}
+            {/* Auth Modal with Inline Google Account Selector */}
             {showAuthModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md">
-                <div className="bg-navy-900 border border-navy-700 rounded-3xl p-6 w-full max-w-md space-y-4">
-                  <div className="flex justify-between items-center border-b border-navy-800 pb-2">
-                    <h3 className="text-lg font-bold text-white">Đăng Nhập / Đăng Ký</h3>
-                    <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); }} className="text-slate-400">✕</button>
-                  </div>
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                <div className="bg-white text-slate-900 rounded-3xl p-8 w-full max-w-md space-y-6 text-center shadow-2xl relative border border-slate-100">
+                  <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); }} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100">✕</button>
 
                   {showGooglePicker ? (
-                    <div className="space-y-3">
-                      <p className="text-xs text-slate-300 font-bold">Chọn tài khoản Google của bạn:</p>
-                      <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); alert('Đã đăng nhập tài khoản Google thành công!'); }} className="w-full p-3 bg-navy-950 border border-navy-800 rounded-2xl flex items-center gap-3 text-xs">
-                        <span className="text-lg">🛒</span>
-                        <div className="text-left"><div className="font-bold text-white">Chủ Shop Official Store</div><div className="text-slate-400">shop.official.vn@gmail.com</div></div>
-                      </button>
-                      <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); alert('Đã đăng nhập tài khoản Google thành công!'); }} className="w-full p-3 bg-navy-950 border border-navy-800 rounded-2xl flex items-center gap-3 text-xs">
-                        <span className="text-lg">👨‍💼</span>
-                        <div className="text-left"><div className="font-bold text-white">Nguyễn Văn Thiêm</div><div className="text-slate-400">thiem.nguyen.ecom@gmail.com</div></div>
-                      </button>
+                    <div className="space-y-4 text-left">
+                      <div className="border-b border-slate-100 pb-3">
+                        <h3 className="text-base font-bold text-slate-900">Sign in with Google</h3>
+                        <p className="text-xs text-slate-500">Chọn một tài khoản để tiếp tục tới <strong>profitcal.tagki.com</strong></p>
+                      </div>
+                      <div className="space-y-2">
+                        <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); alert('Đã đăng nhập thành công bằng ecodervn@gmail.com!'); }} className="w-full p-3 rounded-2xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 flex items-center gap-3 text-xs transition-all text-left">
+                          <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold flex items-center justify-center">E</div>
+                          <div><div className="font-bold text-slate-800 text-sm">Ecodervn Alan Vu</div><div className="text-slate-500 font-mono">ecodervn@gmail.com</div></div>
+                        </button>
+                        <button onClick={() => { setShowAuthModal(false); setShowGooglePicker(false); alert('Đã đăng nhập thành công bằng dsjecoder@gmail.com!'); }} className="w-full p-3 rounded-2xl border border-slate-200 hover:border-blue-500 hover:bg-blue-50 flex items-center gap-3 text-xs transition-all text-left">
+                          <div className="w-8 h-8 rounded-full bg-teal-600 text-white font-bold flex items-center justify-center">D</div>
+                          <div><div className="font-bold text-slate-800 text-sm">Dsj Ecoder Vu</div><div className="text-slate-500 font-mono">dsjecoder@gmail.com</div></div>
+                        </button>
+                        <button onClick={() => { const email = prompt('Nhập Gmail của bạn:'); if (email) { setShowAuthModal(false); setShowGooglePicker(false); alert(`Đã đăng nhập thành công bằng ${email}!`); } }} className="w-full p-3 rounded-2xl border border-dashed border-slate-300 hover:bg-slate-50 flex items-center gap-2 text-xs text-blue-600 font-bold">
+                          <span>+ Sử dụng một tài khoản Google khác...</span>
+                        </button>
+                      </div>
                     </div>
                   ) : (
-                    <div className="space-y-3">
-                      <button onClick={() => setShowGooglePicker(true)} className="w-full py-3 bg-white text-navy-950 font-bold text-xs rounded-2xl shadow flex items-center justify-center gap-2">
-                        <span>Đăng nhập nhanh bằng Google</span>
+                    <div className="space-y-6">
+                      <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white font-black text-3xl mx-auto flex items-center justify-center shadow-lg">T</div>
+                      <div>
+                        <h2 className="text-2xl font-extrabold text-slate-900">Đăng nhập</h2>
+                        <p className="text-xs text-slate-500">Khám phá hệ sinh thái tài khoản số & dịch vụ Tagki</p>
+                      </div>
+                      <button onClick={() => setShowGooglePicker(true)} className="w-full py-3 px-4 rounded-2xl bg-white border border-slate-300 text-slate-700 font-bold text-xs shadow-sm flex items-center justify-center gap-2 hover:bg-slate-50 transition-all">
+                        <span>G Đăng nhập bằng Google (Gmail)</span>
                       </button>
                     </div>
                   )}
