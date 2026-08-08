@@ -148,7 +148,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         {/* Card 1: Gross Revenue */}
         <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Doanh Thu Hóa Đơn</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('card_gross', currentLang)}</span>
             <div className="w-8 h-8 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
               <ShoppingBag className="w-4 h-4 text-cyan-400" />
             </div>
@@ -157,14 +157,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             <div className="text-xl sm:text-2xl font-black font-mono text-white tracking-tight">
               {formatVND(summary.grossRevenue)}
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Tổng tiền khách thanh toán</p>
+            <p className="text-[10px] text-slate-400 mt-1">{currentLang === 'en' ? 'Total gross paid by customers' : 'Tổng tiền khách thanh toán'}</p>
           </div>
         </div>
 
         {/* Card 2: Net Settlement */}
         <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Thực Nhận Ví Sàn</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('card_net', currentLang)}</span>
             <div className="w-8 h-8 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
               <DollarSign className="w-4 h-4 text-indigo-400" />
             </div>
@@ -173,14 +173,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             <div className="text-xl sm:text-2xl font-black font-mono text-indigo-300 tracking-tight">
               {formatVND(summary.netSettlement)}
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Số tiền sàn chuyển về ví shop</p>
+            <p className="text-[10px] text-slate-400 mt-1">{currentLang === 'en' ? 'Net payout transferred to seller wallet' : 'Số tiền sàn chuyển về ví shop'}</p>
           </div>
         </div>
 
         {/* Card 3: Total Platform Fees */}
         <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tổng Phí Sàn Đã Trừ</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('card_fees', currentLang)}</span>
             <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
               <TrendingUp className="w-4 h-4 text-rose-400" />
             </div>
@@ -189,14 +189,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             <div className="text-xl sm:text-2xl font-black font-mono text-rose-400 tracking-tight">
               {formatVND(summary.totalFees)}
             </div>
-            <p className="text-[10px] text-slate-400 mt-1">Gồm phí cố định, thanh toán, Xtra, Ads...</p>
+            <p className="text-[10px] text-slate-400 mt-1">{currentLang === 'en' ? 'Fixed, payment, service & ad fees' : 'Gồm phí cố định, thanh toán, Xtra, Ads...'}</p>
           </div>
         </div>
 
         {/* Card 4: Fee Ratio % */}
         <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tỷ Lệ Phí Thực Tế</span>
+            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{t('card_fee_ratio', currentLang)}</span>
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
               <Percent className="w-4 h-4 text-amber-400" />
             </div>
@@ -208,16 +208,16 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
               summary.avgFeeRatio > feeThreshold ? 'bg-rose-500/20 text-rose-400' : 'bg-emerald-500/20 text-emerald-400'
             }`}>
-              {summary.avgFeeRatio > feeThreshold ? 'Phí Cao!' : 'Phí Chuẩn'}
+              {summary.avgFeeRatio > feeThreshold ? (currentLang === 'en' ? 'High Fee!' : 'Phí Cao!') : (currentLang === 'en' ? 'Normal Fee' : 'Phí Chuẩn')}
             </span>
           </div>
-          <p className="text-[10px] text-slate-400 mt-1">Công thức: (Tổng Phí Sàn / Doanh Thu) × 100%</p>
+          <p className="text-[10px] text-slate-400 mt-1">{currentLang === 'en' ? 'Formula: (Fees / Revenue) × 100%' : 'Công thức: (Tổng Phí Sàn / Doanh Thu) × 100%'}</p>
         </div>
 
         {/* Card 5: Tax 1.5% E-commerce Policy */}
         <div className="relative overflow-hidden bg-gradient-to-br from-navy-900 via-navy-950 to-navy-900 border border-navy-800 rounded-3xl p-5 shadow-xl">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Thuế TMĐT Tạm Tính (1.5%)</span>
+            <span className="text-[11px] font-bold text-purple-400 uppercase tracking-wider">{t('card_tax', currentLang)}</span>
             <div className="w-8 h-8 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
               <Receipt className="w-4 h-4 text-purple-400" />
             </div>
