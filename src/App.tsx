@@ -266,6 +266,8 @@ export function App() {
     saveUserState(updated);
     setUser(updated);
     setShowAuthModal(false);
+  };
+
   // 8. Submit Pro Upgrade Request for Admin Approval
   const handleConfirmUpgrade = (plan: 'monthly' | 'yearly', paymentMethod: string, amount: number) => {
     submitUpgradeRequest({
