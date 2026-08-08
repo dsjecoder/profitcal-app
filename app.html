@@ -106,6 +106,32 @@
         const [showAuthModal, setShowAuthModal] = useState(false);
         const [showGooglePicker, setShowGooglePicker] = useState(false);
         const [isPro, setIsPro] = useState(false);
+        const [userEmail, setUserEmail] = useState('');
+        const [userName, setUserName] = useState('');
+
+        // Catch Google OAuth Access Token Callback in app.html
+        useEffect(() => {
+          try {
+            const hash = window.location.hash;
+            if (hash && hash.includes('access_token=')) {
+              const params = new URLSearchParams(hash.replace(/^#/, ''));
+              const token = params.get('access_token');
+              if (token) {
+                const parts = token.split('.');
+                if (parts.length === 3) {
+                  const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
+                  const email = payload.email || 'ecoder108108108@gmail.com';
+                  const name = payload.user_metadata?.full_name || payload.user_metadata?.name || 'Coder108 E';
+                  setUserEmail(email);
+                  setUserName(name);
+                  if (window.confetti) window.confetti({ particleCount: 80, spread: 70 });
+                  alert(`🎉 Đã xác thực thành công qua Google OAuth!\n\nEmail: ${email}\nHọ tên: ${name}`);
+                }
+              }
+              window.history.replaceState(null, '', window.location.pathname + window.location.search);
+            }
+          } catch (e) {}
+        }, []);
 
         const t = DICT[lang] || DICT['vi'];
 

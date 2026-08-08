@@ -35,6 +35,8 @@ import { trackEventSilent } from './utils/analytics';
 import { saveAuditHistorySnapshot } from './utils/historyTracker';
 import { getInitialLanguage, saveLanguagePreference, Language } from './utils/i18n';
 
+import { parseOAuthRedirectHash } from './utils/oauthHandler';
+
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
   const [currentLang, setCurrentLang] = useState<Language>(getInitialLanguage());
@@ -54,10 +56,24 @@ export function App() {
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
 
-  // Auto detect `/admin` route in URL hash/path
+  // Auto detect `/admin` route or Google OAuth `#access_token=` in URL
   useEffect(() => {
-    if (window.location.pathname.includes('/admin') || window.location.hash.includes('admin')) {
+    if (window.location.pathname.includes('/admin') || window.location.hash === '#admin') {
       setShowAdminDashboard(true);
+    }
+
+    // Catch Real Google OAuth Token Callback
+    const oauthUser = parseOAuthRedirectHash();
+    if (oauthUser) {
+      const updatedUser: UserState = {
+        isLoggedIn: true,
+        email: oauthUser.email,
+        name: oauthUser.name,
+      };
+      setUser(updatedUser);
+      saveUserState(updatedUser);
+      confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+      alert(`🎉 Đăng nhập thành công qua Google OAuth!\n\nEmail: ${oauthUser.email}\nHọ tên: ${oauthUser.name}`);
     }
   }, []);
 
