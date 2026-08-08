@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import confetti from 'canvas-confetti';
 import { Navbar } from './components/Navbar';
 import { DemoBanner } from './components/DemoBanner';
@@ -13,6 +13,10 @@ import { ShippingExportModal } from './components/ShippingExportModal';
 import { DisputeClaimModal } from './components/DisputeClaimModal';
 import { PricingModal } from './components/PricingModal';
 import { AuthModal } from './components/AuthModal';
+import { AdminDashboard } from './components/AdminDashboard';
+import { ContactWidget } from './components/ContactWidget';
+import { MobileNotice } from './components/MobileNotice';
+import { TermsModal } from './components/TermsModal';
 import { Footer } from './components/Footer';
 
 import { OrderItem, PlatformType, SKUData, UserState } from './types';
@@ -29,9 +33,11 @@ import { parseUploadedFile } from './utils/parser';
 import { exportAuditedExcel } from './utils/export';
 import { trackEventSilent } from './utils/analytics';
 import { saveAuditHistorySnapshot } from './utils/historyTracker';
+import { getInitialLanguage, saveLanguagePreference, Language } from './utils/i18n';
 
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
+  const [currentLang, setCurrentLang] = useState<Language>(getInitialLanguage());
   const [platform, setPlatform] = useState<PlatformType>('shopee');
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [extractedSkus, setExtractedSkus] = useState<SKUData[]>([]);
@@ -45,6 +51,20 @@ export function App() {
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [showPricingModal, setShowPricingModal] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
+  const [showTermsModal, setShowTermsModal] = useState(false);
+
+  // Auto detect `/admin` route in URL hash/path
+  useEffect(() => {
+    if (window.location.pathname.includes('/admin') || window.location.hash.includes('admin')) {
+      setShowAdminDashboard(true);
+    }
+  }, []);
+
+  const handleLanguageChange = (lang: Language) => {
+    setCurrentLang(lang);
+    saveLanguagePreference(lang);
+  };
 
   // Auto-recalculate summary whenever orders, packagingCost, or feeThreshold change
   const summary = calculateSummary(orders, settings.packagingCost, settings.feeThreshold);
@@ -232,13 +252,19 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-navy-950 font-sans">
+    <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
       
+      {/* Mobile Smartphone Optimization Banner */}
+      <MobileNotice />
+
       {/* Header & Navigation */}
       <Navbar
         user={user}
+        currentLang={currentLang}
+        onLanguageChange={handleLanguageChange}
         onOpenAuth={() => setShowAuthModal(true)}
-        onOpenUpgrade={() => setShowPricingModal(true)}
+        onOpenAdmin={() => setShowAdminDashboard(true)}
+        onOpenTerms={() => setShowTermsModal(true)}
       />
 
       {/* Security Banner & Quick Demo Loaders */}
@@ -273,13 +299,13 @@ export function App() {
               platform={platform}
             />
 
-            {/* Phase 2: Ad ROAS & CIR Performance Table (Module 3.1) */}
+            {/* Ad ROAS & CIR Performance Table */}
             <AdPerformanceTable orders={orders} />
 
-            {/* Phase 2: Multi-Period Growth Comparison (Module 3.2) */}
+            {/* Multi-Period Growth Comparison */}
             <GrowthComparison summary={summary} />
 
-            {/* Low-Stock Red Alert (Module 2.1) */}
+            {/* Low-Stock Red Alert */}
             <LowStockAlert
               skus={extractedSkus}
               user={user}
@@ -287,7 +313,7 @@ export function App() {
               onOpenUpgradeModal={() => setShowPricingModal(true)}
             />
 
-            {/* Anomalies & Loss Detection Engine Tables (Module 2.2 & Module 3.3) */}
+            {/* Anomalies & Loss Detection Engine Tables */}
             <div className="space-y-4">
               <div className="flex justify-end">
                 <button
@@ -310,6 +336,9 @@ export function App() {
         )}
 
       </main>
+
+      {/* Floating Support Widget (Zalo, FB, WhatsApp, Telegram) */}
+      <ContactWidget />
 
       {/* Modals */}
       {showCogsModal && (
@@ -352,6 +381,18 @@ export function App() {
           user={user}
           onClose={() => setShowAuthModal(false)}
           onLoginSuccess={handleLoginSuccess}
+        />
+      )}
+
+      {showAdminDashboard && (
+        <AdminDashboard
+          onClose={() => setShowAdminDashboard(false)}
+        />
+      )}
+
+      {showTermsModal && (
+        <TermsModal
+          onClose={() => setShowTermsModal(false)}
         />
       )}
 
