@@ -1,6 +1,6 @@
-# 🚀 HƯỚNG DẪN CHI TIẾT DEPLOY PROFITCAL LÊN VERCEL VÀ SUPABASE
+# 🚀 HƯỚNG DẪN CHI TIẾT DEPLOY PROFITCAL LÊN VERCEL, SUPABASE VÀ CẤU HÌNH AUTH / EMAIL OTP
 
-Tài liệu này hướng dẫn bạn từng bước từ A-Z để **kết nối Database Supabase** và **Deploy ứng dụng ProfitCal lên Vercel** hoàn toàn miễn phí.
+Tài liệu này hướng dẫn bạn từng bước từ A-Z để **kết nối Database Supabase**, **Deploy ứng dụng ProfitCal lên Vercel**, **Cấu hình Google OAuth 2.0 Single Sign-On** và **Cấu hình dịch vụ gửi Email OTP xác thực thật về hòm thư người dùng**.
 
 ---
 
@@ -50,23 +50,6 @@ Tài liệu này hướng dẫn bạn từng bước từ A-Z để **kết nố
 
 ---
 
-### Cách 2: Deploy Nhanh Bằng Vercel CLI (Dành Cho Máy Đã Cài Vercel)
-
-Nếu bạn muốn deploy trực tiếp từ dòng lệnh máy tính:
-
-```bash
-# 1. Cài đặt Vercel CLI nếu chưa có
-npm install -g vercel
-
-# 2. Đăng nhập Vercel
-vercel login
-
-# 3. Chạy lệnh deploy
-vercel --prod
-```
-
----
-
 ## BƯỚC 3: CẤU HÌNH DOMAIN CHÍNH THỨC (`profitcal.tagki.com`)
 
 1. Trên Vercel Dashboard, chọn Project `profitcal` $\rightarrow$ **Settings** $\rightarrow$ **Domains**.
@@ -79,7 +62,52 @@ vercel --prod
 
 ---
 
-## BƯỚC 4: XEM BÁO CÁO TELEMETRY TRÊN SUPABASE (DÀNH CHO ADMIN)
+## BƯỚC 4: CẤU HÌNH GOOGLE OAUTH 2.0 (ĐĂNG NHẬP GOOGLE THẬT)
+
+Để kích hoạt tính năng **Đăng nhập bằng Google** thật trên domain `profitcal.tagki.com`:
+
+1. Truy cập [Google Cloud Console](https://console.cloud.google.com/).
+2. Bấm **Select a project** $\rightarrow$ **New Project** (Đặt tên: `ProfitCal SSO`).
+3. Ở menu bên trái chọn **APIs & Services** $\rightarrow$ **OAuth consent screen**:
+   - Chọn User Type: **External** $\rightarrow$ Bấm **Create**.
+   - Điền App Name: `ProfitCal`, User support email, Authorized domains: `tagki.com`, `vercel.app`.
+4. Chọn **Credentials** $\rightarrow$ **Create Credentials** $\rightarrow$ **OAuth client ID**:
+   - Application type: **Web application**.
+   - Name: `ProfitCal Web Client`.
+   - Authorized JavaScript origins: `https://profitcal.tagki.com`, `https://profitcal-app.vercel.app`, `http://localhost:5173`.
+   - Authorized redirect URIs: `https://profitcal.tagki.com`, `https://<YOUR_SUPABASE_ID>.supabase.co/auth/v1/callback`.
+5. Copy **Client ID** và **Client Secret** thu được.
+6. Vào Supabase Dashboard $\rightarrow$ **Authentication** $\rightarrow$ **Providers** $\rightarrow$ Chọn **Google**:
+   - Bật **Enable Google provider**.
+   - Dán **Client ID** và **Client Secret** vừa copy vào $\rightarrow$ Bấm **Save**.
+
+---
+
+## BƯỚC 5: CẤU HÌNH GỬI EMAIL XÁC THỰC OTP THẬT (RESEND / SENDGRID / SUPABASE SMTP)
+
+Khi người dùng đăng ký tài khoản qua Form bằng Email, ứng dụng cần một Dịch vụ Gửi Email (Email Service Provider) để chuyển mã OTP 6 số về Hòm thư (Inbox) của người dùng:
+
+### Cách 1: Sử dụng Resend.com (Miễn Phí 3.000 Email/tháng - Khuyên Dùng)
+1. Truy cập [https://resend.com/](https://resend.com/) $\rightarrow$ Đăng ký tài khoản miễn phí.
+2. Tạo **API Key** mới (copy chuỗi `re_123456...`).
+3. Thêm Domain `tagki.com` vào mục **Domains** của Resend và thêm các bản ghi DNS (TXT/MX/CNAME) vào Cloudflare / Nhà cung cấp tên miền của bạn để xác thực tên miền gửi email chính chủ.
+4. Mở trang Admin Portal `https://profitcal.tagki.com/admin` $\rightarrow$ Chọn tab **Cấu Hình Email / SMTP** $\rightarrow$ Dán Resend API Key vào.
+
+### Cách 2: Sử dụng Supabase Auth Custom SMTP
+1. Vào Supabase Dashboard $\rightarrow$ **Project Settings** $\rightarrow$ **Authentication** $\rightarrow$ **SMTP Settings**.
+2. Bật **Enable Custom SMTP**.
+3. Điền thông số SMTP từ nhà cung cấp của bạn:
+   - **Sender email**: `no-reply@profitcal.tagki.com`
+   - **Sender name**: `ProfitCal Security Team`
+   - **Host**: `smtp.resend.com` (hoặc `smtp.sendgrid.net` / `smtp.gmail.com`)
+   - **Port**: `587`
+   - **Username**: `resend` (hoặc `apikey`)
+   - **Password**: `<API Key của bạn>`
+4. Bấm **Save**. Từ lúc này, mọi mã OTP 6 số kích hoạt sẽ được tự động chuyển thẳng về Hòm thư (Inbox) của người dùng!
+
+---
+
+## BƯỚC 6: XEM BÁO CÁO TELEMETRY TRÊN SUPABASE (DÀNH CHO ADMIN)
 
 Mỗi khi người dùng thả file đối soát Excel, nạp dữ liệu mẫu hoặc xuất file Excel, ứng dụng sẽ gửi bản ghi ngầm về Supabase.
 
