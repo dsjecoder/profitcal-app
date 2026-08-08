@@ -53,17 +53,28 @@ export function getUserState(): UserState {
     const user: UserState = JSON.parse(raw);
     
     // Check 7-day token reset for free users
-    const lastReset = new Date(user.lastTokenReset).getTime();
+    const lastResetStr = user.lastTokenReset || new Date().toISOString();
+    const lastReset = new Date(lastResetStr).getTime();
     const now = new Date().getTime();
     const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
-    if (user.tier === 'free' && now - lastReset >= SEVEN_DAYS_MS) {
-      user.tokens = 2; // Reset free weekly tokens
-      user.lastTokenReset = new Date().toISOString();
-      saveUserState(user);
+    const sanitizedUser: UserState = {
+      isLoggedIn: Boolean(user.isLoggedIn),
+      email: user.email,
+      name: user.name,
+      tier: user.tier || 'free',
+      tokens: typeof user.tokens === 'number' ? user.tokens : 20,
+      lastTokenReset: lastResetStr,
+      lastShippingExportTime: user.lastShippingExportTime,
+    };
+
+    if (sanitizedUser.tier === 'free' && now - lastReset >= SEVEN_DAYS_MS) {
+      sanitizedUser.tokens = 20; // Reset free weekly tokens
+      sanitizedUser.lastTokenReset = new Date().toISOString();
+      saveUserState(sanitizedUser);
     }
 
-    return user;
+    return sanitizedUser;
   } catch (e) {
     return defaultUser;
   }

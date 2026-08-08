@@ -106,7 +106,7 @@ export const UpgradeModal: React.FC<UpgradeModalProps> = ({
                 </div>
               </div>
 
-              {user.tokens <= 0 ? (
+              {(user.tokens ?? 0) <= 0 ? (
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-amber-400 tracking-tight">
                   Bạn đã dùng hết Token miễn phí tuần này!
                 </h2>

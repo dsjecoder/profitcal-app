@@ -8,9 +8,9 @@ export interface UserState {
   isLoggedIn: boolean;
   email?: string;
   name?: string;
-  tier?: UserTier;
-  tokens?: number;
-  lastTokenReset?: string; // ISO string
+  tier: UserTier;
+  tokens: number;
+  lastTokenReset: string; // ISO string
   lastShippingExportTime?: string; // ISO timestamp of last Free shipping export
 }
 
