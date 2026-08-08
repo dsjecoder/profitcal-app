@@ -62,10 +62,10 @@ export const AdPerformanceTable: React.FC<AdPerformanceTableProps> = ({ orders, 
                   {item.sku}
                   <span className="font-sans font-normal text-slate-400 block text-[11px] truncate max-w-xs">{item.productName}</span>
                 </td>
-                <td className="p-3 text-right font-mono">{formatVND(item.grossRevenue)}</td>
+                <td className="p-3 text-right font-mono">{formatVND(item.totalRevenue)}</td>
                 <td className="p-3 text-right font-mono text-amber-400">{formatVND(item.adSpend)}</td>
                 <td className="p-3 text-right font-mono font-bold text-indigo-300">{item.roas}x</td>
-                <td className="p-3 text-right font-mono font-bold text-rose-400">{item.cir}%</td>
+                <td className="p-3 text-right font-mono font-bold text-rose-400">{item.cirPct}%</td>
                 <td className="p-3 text-center">
                   {item.statusTag === 'burner' ? (
                     <span className="px-2.5 py-1 bg-rose-500/20 text-rose-400 rounded-lg font-bold border border-rose-500/30">

@@ -112,10 +112,12 @@ export interface AdPerformanceSKU {
   sku: string;
   productName: string;
   totalRevenue: number;
+  grossRevenue?: number;    // Alias for totalRevenue
   adSpend: number;          // Phí Ads + Affiliate Commission
   totalNetProfit: number;
   roas: number;             // ROAS = totalRevenue / adSpend
   cirPct: number;           // CIR% = (adSpend / totalRevenue) * 100
+  cir?: number;             // Alias for cirPct
   statusTag: 'winner' | 'optimal' | 'burner'; // Winner SKU vs Burner SKU
 }
 
