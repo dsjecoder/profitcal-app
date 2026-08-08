@@ -5,6 +5,7 @@ export interface PaymentGatewaysConfig {
   binancePayId: string;
   oxapayMerchantKey: string;
   oxapayEnabled: boolean;
+  googleClientId?: string; // Real Google OAuth 2.0 Client ID for profitcal.tagki.com
 }
 
 export interface SocialContactsConfig {
@@ -32,8 +33,8 @@ export function getAdminSecurityState(): AdminSecurityState {
 
   return {
     adminEmail: 'admin@tagki.com',
-    adminPass: 'admin123', // Mặc định ban đầu
-    isFirstLogin: true,    // Bắt buộc đổi ngay lần đăng nhập đầu tiên
+    adminPass: 'admin123',
+    isFirstLogin: true,
   };
 }
 
@@ -56,6 +57,7 @@ export function getPaymentGatewaysConfig(): PaymentGatewaysConfig {
     binancePayId: '285918392',
     oxapayMerchantKey: 'oxapay_live_merchant_key_tagki_2026',
     oxapayEnabled: true,
+    googleClientId: (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '',
   };
 }
 

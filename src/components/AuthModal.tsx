@@ -22,47 +22,52 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
   const [generatedOtp, setGeneratedOtp] = useState('');
   const [otpNotification, setOtpNotification] = useState<string | null>(null);
 
-  // Accounts list for Google Account Selector
+  const paymentConfig = getPaymentGatewaysConfig();
+  const realGoogleClientId = paymentConfig.googleClientId || (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
+
+  // Demo Google accounts for selector fallback
   const googleAccounts = [
     { email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', avatar: 'E', bg: 'bg-blue-600' },
     { email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', avatar: 'D', bg: 'bg-teal-600' },
   ];
 
-  // Initialize official Google Identity Services (GIS) SDK if available
+  // Initialize official Google Identity Services (GIS) SDK ONLY if real Client ID is provided
   useEffect(() => {
+    if (!realGoogleClientId || realGoogleClientId.includes('placeholder')) return;
     try {
       const google = (window as any).google;
       if (google && google.accounts && google.accounts.id) {
         google.accounts.id.initialize({
-          client_id: '108285918392-profitcal.apps.googleusercontent.com',
+          client_id: realGoogleClientId,
           callback: (response: any) => {
             if (response && response.credential) {
-              // Decode JWT payload or set user
               onLoginSuccess('user.google@gmail.com', 'Google User');
             }
           },
         });
       }
     } catch (e) {}
-  }, [onLoginSuccess]);
+  }, [realGoogleClientId, onLoginSuccess]);
 
   const handleGoogleClick = () => {
-    // 1. Try official Google Identity Services (GIS) Prompt
-    try {
-      const google = (window as any).google;
-      if (google && google.accounts && google.accounts.id) {
-        google.accounts.id.prompt();
-        return;
-      }
-    } catch (e) {}
+    // 1. If real Google Client ID is configured, try Google GSI prompt
+    if (realGoogleClientId && !realGoogleClientId.includes('placeholder')) {
+      try {
+        const google = (window as any).google;
+        if (google && google.accounts && google.accounts.id) {
+          google.accounts.id.prompt();
+          return;
+        }
+      } catch (e) {}
+    }
 
-    // 2. Try Supabase Google OAuth endpoint if configured
+    // 2. If Supabase URL is configured, trigger Supabase OAuth redirect
     if (SUPABASE_URL && SUPABASE_URL.includes('supabase.co')) {
       signInWithGoogleOAuth();
       return;
     }
 
-    // 3. Fallback: Open Google Account Picker Modal
+    // 3. Fallback: Smooth inline Google Account Picker
     setShowGooglePicker(true);
   };
 

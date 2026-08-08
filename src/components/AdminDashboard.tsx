@@ -383,11 +383,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     />
                   </div>
 
+                  <div>
+                    <label className="text-slate-400 block mb-1">Google OAuth Client ID (Google Cloud Console cho profitcal.tagki.com):</label>
+                    <input
+                      type="text"
+                      value={paymentConfig.googleClientId || ''}
+                      onChange={(e) => setPaymentConfig({ ...paymentConfig, googleClientId: e.target.value })}
+                      placeholder="vd: 123456789-xyz.apps.googleusercontent.com"
+                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono text-[11px]"
+                    />
+                    <p className="text-[10px] text-slate-500 mt-1">Dán Google OAuth Client ID từ Google Cloud Console để mở luồng đăng nhập Google thật trên domain.</p>
+                  </div>
+
                   <button
                     type="submit"
                     className="py-2.5 px-5 bg-emerald-500 text-navy-950 font-bold rounded-xl shadow-lg hover:bg-emerald-400"
                   >
-                    Lưu Cấu Hình Thanh Toán
+                    Lưu Cấu Hình
                   </button>
                 </form>
               )}
