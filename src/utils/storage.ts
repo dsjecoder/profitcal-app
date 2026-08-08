@@ -44,6 +44,38 @@ export function saveCOGS(cogsMap: Record<string, number>): void {
   }
 }
 
+export function calculateExtendedProExpiration(currentExpiresAt?: string, daysToAdd: number = 30): string {
+  const now = Date.now();
+  let baseTime = now;
+
+  if (currentExpiresAt) {
+    const existingTime = new Date(currentExpiresAt).getTime();
+    if (!isNaN(existingTime) && existingTime > now) {
+      baseTime = existingTime; // Base on existing active expiration date (Cộng dồn!)
+    }
+  }
+
+  const newTime = baseTime + (daysToAdd * 24 * 60 * 60 * 1000);
+  return new Date(newTime).toISOString();
+}
+
+export function getRemainingProDays(proExpiresAt?: string): { isExpired: boolean; daysLeft: number; formattedDate: string } {
+  if (!proExpiresAt) return { isExpired: true, daysLeft: 0, formattedDate: 'N/A' };
+
+  const expireTime = new Date(proExpiresAt).getTime();
+  if (isNaN(expireTime)) return { isExpired: true, daysLeft: 0, formattedDate: 'N/A' };
+
+  const now = Date.now();
+  const diffMs = expireTime - now;
+
+  if (diffMs <= 0) return { isExpired: true, daysLeft: 0, formattedDate: new Date(expireTime).toLocaleDateString('vi-VN') };
+
+  const daysLeft = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+  const formattedDate = new Date(expireTime).toLocaleDateString('vi-VN');
+
+  return { isExpired: false, daysLeft, formattedDate };
+}
+
 // --- User & Token Storage ---
 export function getUserState(): UserState {
   try {
@@ -66,7 +98,20 @@ export function getUserState(): UserState {
       tokens: typeof user.tokens === 'number' ? user.tokens : 20,
       lastTokenReset: lastResetStr,
       lastShippingExportTime: user.lastShippingExportTime,
+      upgradeStatus: user.upgradeStatus || 'none',
+      pendingPlan: user.pendingPlan,
+      proExpiresAt: user.proExpiresAt,
     };
+
+    // Check PRO expiration
+    if (sanitizedUser.tier === 'pro' && sanitizedUser.proExpiresAt) {
+      const expTime = new Date(sanitizedUser.proExpiresAt).getTime();
+      if (!isNaN(expTime) && now > expTime) {
+        sanitizedUser.tier = 'free'; // Automatically revert to free tier if expired
+        sanitizedUser.tokens = 20;
+        saveUserState(sanitizedUser);
+      }
+    }
 
     if (sanitizedUser.tier === 'free' && now - lastReset >= SEVEN_DAYS_MS) {
       sanitizedUser.tokens = 20; // Reset free weekly tokens

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { ShieldCheck, Zap, User, Globe, Shield, FileText, LogOut } from 'lucide-react';
 import { UserState } from '../types';
 import { Language, t } from '../utils/i18n';
+import { getRemainingProDays } from '../utils/storage';
 
 interface NavbarProps {
   user: UserState;
@@ -25,6 +26,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenUpgradeModal,
 }) => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const proInfo = getRemainingProDays(user.proExpiresAt);
 
   return (
     <header className="sticky top-0 z-40 bg-navy-950/90 backdrop-blur-md border-b border-navy-800/80">
@@ -106,8 +108,14 @@ export const Navbar: React.FC<NavbarProps> = ({
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
                 <span className="hidden sm:inline font-bold text-emerald-300">{user.name}</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/20 uppercase">
-                  {user.tier || 'FREE'}
+                <span className={`text-[10px] px-2 py-0.5 rounded font-bold border uppercase ${
+                  user.tier === 'pro'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                }`}>
+                  {user.tier === 'pro'
+                    ? `👑 PRO (${proInfo.daysLeft} ngày)`
+                    : 'FREE'}
                 </span>
               </button>
             ) : (
@@ -124,25 +132,38 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Profile Dropdown Menu */}
             {user.isLoggedIn && showUserDropdown && (
-              <div className="absolute right-0 mt-2 w-56 bg-navy-900 border border-navy-700 rounded-2xl shadow-2xl p-2 z-50 text-xs space-y-1 animate-fade-in">
-                <div className="px-3 py-2 border-b border-navy-800 text-left">
+              <div className="absolute right-0 mt-2 w-64 bg-navy-900 border border-navy-700 rounded-2xl shadow-2xl p-2 z-50 text-xs space-y-1 animate-fade-in">
+                <div className="px-3 py-2 border-b border-navy-800 text-left space-y-0.5">
                   <div className="font-bold text-white truncate">{user.name}</div>
                   <div className="text-[11px] text-slate-400 font-mono truncate">{user.email || 'user@tagki.com'}</div>
-                  <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold">
-                    <span>Gói: {user.tier?.toUpperCase() || 'FREE'}</span>
-                    <span>• {user.tokens ?? 20} Token</span>
-                  </div>
+                  
+                  {user.tier === 'pro' ? (
+                    <div className="pt-1 space-y-0.5">
+                      <div className="text-[11px] font-bold text-amber-300">
+                        👑 Gói PRO Unlimited
+                      </div>
+                      <div className="text-[10px] text-emerald-400 font-mono">
+                        Hạn dùng: {proInfo.formattedDate} (Còn {proInfo.daysLeft} ngày)
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold">
+                      <span>Gói: FREE</span>
+                      <span>• {user.tokens ?? 20} Token</span>
+                    </div>
+                  )}
                 </div>
 
-                {onOpenUpgradeModal && user.tier !== 'pro' && (
+                {onOpenUpgradeModal && (
                   <button
                     onClick={() => {
                       setShowUserDropdown(false);
                       onOpenUpgradeModal();
                     }}
-                    className="w-full px-3 py-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold text-left flex items-center gap-2 transition-colors border border-amber-500/30"
+                    className="w-full px-3 py-2 rounded-xl bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-300 font-bold text-left flex items-center justify-between transition-colors border border-amber-500/30"
                   >
-                    <span>👑 {currentLang === 'en' ? 'Upgrade PRO Plan' : 'Nâng Cấp Gói PRO'}</span>
+                    <span>{user.tier === 'pro' ? '⚡ Gia Hạn / Cộng Dồn Thêm Gói PRO' : '👑 Nâng Cấp Gói PRO'}</span>
+                    <span className="text-[10px] bg-amber-500 text-navy-950 font-black px-1.5 py-0.5 rounded">+30d/+365d</span>
                   </button>
                 )}
 

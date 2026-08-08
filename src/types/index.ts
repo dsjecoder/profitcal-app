@@ -13,6 +13,7 @@ export interface UpgradeRequest {
   paymentMethod: string;
   requestedAt: string;
   status: 'pending' | 'approved' | 'rejected';
+  durationDays?: number; // 30 or 365
 }
 
 export interface UserState {
@@ -25,6 +26,7 @@ export interface UserState {
   lastShippingExportTime?: string; // ISO timestamp of last Free shipping export
   upgradeStatus?: 'none' | 'pending' | 'approved' | 'rejected';
   pendingPlan?: 'monthly' | 'yearly';
+  proExpiresAt?: string; // ISO string of expiration date
 }
 
 export interface OrderItem {

@@ -16,6 +16,7 @@ import {
   approveUpgradeRequest,
   rejectUpgradeRequest,
 } from '../utils/upgradeTracker';
+import { calculateExtendedProExpiration, getRemainingProDays } from '../utils/storage';
 import { getFreemiumRule, saveFreemiumRule, FreemiumRule } from '../utils/freemium';
 import { getStoredAnalyticsEvents } from '../utils/analytics';
 
@@ -48,19 +49,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   // Analytics Logs
   const [telemetryLogs, setTelemetryLogs] = useState(getStoredAnalyticsEvents());
 
-  // Sample Users List
+  // Sample Users List with Expiration Date Tracking
   const [usersList, setUsersList] = useState([
-    { id: '1', email: 'owner.shop1@gmail.com', name: 'Chủ Shop Thời Trang', tier: 'free', tokensLeft: 18, lastActive: '10 phút trước' },
-    { id: '2', email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', tier: 'pro', tokensLeft: 9999, lastActive: 'Vừa xong' },
-    { id: '3', email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', tier: 'pro', tokensLeft: 9999, lastActive: '5 phút trước' },
+    { id: '1', email: 'owner.shop1@gmail.com', name: 'Chủ Shop Thời Trang', tier: 'free', tokensLeft: 18, lastActive: '10 phút trước', proExpiresAt: undefined as string | undefined },
+    { id: '2', email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', tier: 'pro', tokensLeft: 9999, lastActive: 'Vừa xong', proExpiresAt: new Date(Date.now() + 45 * 86400000).toISOString() },
+    { id: '3', email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', tier: 'pro', tokensLeft: 9999, lastActive: '5 phút trước', proExpiresAt: new Date(Date.now() + 365 * 86400000).toISOString() },
   ]);
 
-  const handleApproveRequest = (reqId: string, email: string) => {
+  const handleApproveRequest = (reqId: string, email: string, durationDays: number = 30) => {
     approveUpgradeRequest(reqId);
     setUpgradeRequests(getUpgradeRequests());
-    // Also update usersList
-    setUsersList(usersList.map(u => u.email === email ? { ...u, tier: 'pro', tokensLeft: 9999 } : u));
-    alert(`🎉 Đã duyệt kích hoạt Gói PRO thành công cho tài khoản: ${email}!`);
+
+    // Calculate cumulative expiration date (+30 days or +365 days)
+    let updatedExpDate = '';
+    setUsersList(usersList.map(u => {
+      if (u.email === email || u.id === reqId) {
+        const newExp = calculateExtendedProExpiration(u.proExpiresAt, durationDays);
+        updatedExpDate = new Date(newExp).toLocaleDateString('vi-VN');
+        return {
+          ...u,
+          tier: 'pro',
+          tokensLeft: 9999,
+          proExpiresAt: newExp,
+        };
+      }
+      return u;
+    }));
+
+    alert(`🎉 Đã duyệt cộng dồn +${durationDays} ngày thành công cho ${email}!\n\nThời hạn PRO mới của khách hàng: ${updatedExpDate || 'Kích hoạt ngay'}`);
+  };
+
+  const handleAddDaysToUser = (userId: string, daysToAdd: number) => {
+    let updatedExpDate = '';
+    setUsersList(usersList.map(u => {
+      if (u.id === userId) {
+        const newExp = calculateExtendedProExpiration(u.proExpiresAt, daysToAdd);
+        updatedExpDate = new Date(newExp).toLocaleDateString('vi-VN');
+        return {
+          ...u,
+          tier: 'pro',
+          tokensLeft: 9999,
+          proExpiresAt: newExp,
+        };
+      }
+      return u;
+    }));
+
+    alert(`🎉 Đã cộng dồn +${daysToAdd} ngày thành công!\nThời hạn PRO mới: ${updatedExpDate}`);
   };
 
   const handleRejectRequest = (reqId: string) => {
@@ -345,10 +380,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                 {req.status === 'pending' ? (
                                   <div className="flex items-center justify-center gap-2">
                                     <button
-                                      onClick={() => handleApproveRequest(req.id, req.userEmail)}
+                                      onClick={() => handleApproveRequest(req.id, req.userEmail, req.durationDays || (req.plan === 'yearly' ? 365 : 30))}
                                       className="px-3 py-1.5 bg-emerald-500 text-navy-950 rounded-xl font-black shadow hover:bg-emerald-400 transition-all text-xs"
                                     >
-                                      ✅ Duyệt Kích Hoạt PRO
+                                      ✅ Duyệt Cộng Dồn +{req.durationDays || (req.plan === 'yearly' ? 365 : 30)} Ngày PRO
                                     </button>
                                     <button
                                       onClick={() => handleRejectRequest(req.id)}
@@ -385,39 +420,69 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                         <tr>
                           <th className="p-3">Họ Tên / Email</th>
                           <th className="p-3">Phân Quyền Gói</th>
+                          <th className="p-3">Thời Hạn PRO (Cộng Dồn)</th>
                           <th className="p-3">Token Còn Lại</th>
                           <th className="p-3">Hoạt Động Cuối</th>
-                          <th className="p-3 text-center">Hành Động</th>
+                          <th className="p-3 text-center">Cộng Dồn Thời Hạn (Admin Action)</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-navy-800/60 font-medium">
-                        {usersList.map((u) => (
-                          <tr key={u.id} className="hover:bg-navy-900/50">
-                            <td className="p-3">
-                              <div className="font-bold text-white">{u.name}</div>
-                              <div className="text-slate-400 font-mono text-[11px]">{u.email}</div>
-                            </td>
-                            <td className="p-3">
-                              <span className={`px-2.5 py-1 rounded-lg font-bold uppercase text-[10px] ${
-                                u.tier === 'pro' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-300'
-                              }`}>
-                                {u.tier.toUpperCase()}
-                              </span>
-                            </td>
-                            <td className="p-3 font-mono font-bold text-emerald-400">{u.tokensLeft} token</td>
-                            <td className="p-3 text-slate-400">{u.lastActive}</td>
-                            <td className="p-3 text-center">
-                              <button
-                                onClick={() => {
-                                  setUsersList(usersList.map(x => x.id === u.id ? { ...x, tier: x.tier === 'free' ? 'pro' : 'free' } : x));
-                                }}
-                                className="px-2.5 py-1 bg-navy-800 hover:bg-navy-700 rounded-lg border border-navy-600 text-xs font-bold text-amber-300"
-                              >
-                                {u.tier === 'free' ? 'Nâng Cấp PRO' : 'Hạ Gói Free'}
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
+                        {usersList.map((u) => {
+                          const proInfo = getRemainingProDays(u.proExpiresAt);
+                          return (
+                            <tr key={u.id} className="hover:bg-navy-900/50">
+                              <td className="p-3">
+                                <div className="font-bold text-white">{u.name}</div>
+                                <div className="text-slate-400 font-mono text-[11px]">{u.email}</div>
+                              </td>
+                              <td className="p-3">
+                                <span className={`px-2.5 py-1 rounded-lg font-bold uppercase text-[10px] ${
+                                  u.tier === 'pro' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-300'
+                                }`}>
+                                  {u.tier.toUpperCase()}
+                                </span>
+                              </td>
+                              <td className="p-3 font-mono">
+                                {u.tier === 'pro' ? (
+                                  <div>
+                                    <div className="font-bold text-amber-300 text-[11px]">{proInfo.formattedDate}</div>
+                                    <div className="text-emerald-400 text-[10px]">Còn {proInfo.daysLeft} ngày</div>
+                                  </div>
+                                ) : (
+                                  <span className="text-slate-500 text-[11px]">Chưa kích hoạt</span>
+                                )}
+                              </td>
+                              <td className="p-3 font-mono font-bold text-emerald-400">{u.tokensLeft} token</td>
+                              <td className="p-3 text-slate-400">{u.lastActive}</td>
+                              <td className="p-3 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button
+                                    onClick={() => handleAddDaysToUser(u.id, 30)}
+                                    className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg border border-amber-500/40 text-[11px] font-bold"
+                                    title="Cộng dồn +30 ngày PRO (Gói 1 Tháng)"
+                                  >
+                                    +30 Ngày
+                                  </button>
+                                  <button
+                                    onClick={() => handleAddDaysToUser(u.id, 365)}
+                                    className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg border border-emerald-500/40 text-[11px] font-bold"
+                                    title="Cộng dồn +365 ngày PRO (Gói 1 Năm)"
+                                  >
+                                    +365 Ngày
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setUsersList(usersList.map(x => x.id === u.id ? { ...x, tier: x.tier === 'free' ? 'pro' : 'free' } : x));
+                                    }}
+                                    className="px-2 py-1 bg-navy-800 hover:bg-navy-700 rounded-lg border border-navy-600 text-[10px] font-bold text-slate-300"
+                                  >
+                                    {u.tier === 'free' ? 'Khởi Tạo' : 'Hạ Free'}
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

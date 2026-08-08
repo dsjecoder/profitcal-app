@@ -46,6 +46,7 @@ export function submitUpgradeRequest(req: Omit<UpgradeRequest, 'id' | 'requested
     id: 'req_' + Math.random().toString(36).substring(2, 9),
     requestedAt: new Date().toISOString(),
     status: 'pending',
+    durationDays: req.durationDays || (req.plan === 'yearly' ? 365 : 30),
   };
 
   requests.unshift(newReq);
