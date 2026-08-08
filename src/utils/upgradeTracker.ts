@@ -54,12 +54,80 @@ export function submitUpgradeRequest(req: Omit<UpgradeRequest, 'id' | 'requested
   return newReq;
 }
 
+const APPROVED_PRO_USERS_KEY = 'profitcal_approved_pro_users_v1';
+
+export interface ProUserRecord {
+  email: string;
+  tier: 'pro';
+  proExpiresAt: string;
+  approvedAt: string;
+}
+
+export function getApprovedProUsersMap(): Record<string, ProUserRecord> {
+  try {
+    const raw = localStorage.getItem(APPROVED_PRO_USERS_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch (e) {}
+
+  // Pre-approved demo PRO accounts (including ecoder108)
+  const oneYearFromNow = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+  return {
+    'ecoder108@gmail.com': { email: 'ecoder108@gmail.com', tier: 'pro', proExpiresAt: oneYearFromNow, approvedAt: new Date().toISOString() },
+    'ecoder108108108@gmail.com': { email: 'ecoder108108108@gmail.com', tier: 'pro', proExpiresAt: oneYearFromNow, approvedAt: new Date().toISOString() },
+    'dsjecoder@gmail.com': { email: 'dsjecoder@gmail.com', tier: 'pro', proExpiresAt: oneYearFromNow, approvedAt: new Date().toISOString() },
+    'ecodervn@gmail.com': { email: 'ecodervn@gmail.com', tier: 'pro', proExpiresAt: oneYearFromNow, approvedAt: new Date().toISOString() },
+  };
+}
+
+export function setApprovedProUserRecord(email: string, proExpiresAt: string): void {
+  try {
+    const map = getApprovedProUsersMap();
+    const normalizedEmail = email.toLowerCase().trim();
+    map[normalizedEmail] = {
+      email: normalizedEmail,
+      tier: 'pro',
+      proExpiresAt,
+      approvedAt: new Date().toISOString(),
+    };
+    localStorage.setItem(APPROVED_PRO_USERS_KEY, JSON.stringify(map));
+  } catch (e) {}
+}
+
+export function checkEmailProRecord(email?: string): { isPro: boolean; proExpiresAt?: string } {
+  if (!email) return { isPro: false };
+  const normalized = email.toLowerCase().trim();
+  const map = getApprovedProUsersMap();
+
+  // Try exact match or prefix match (e.g. ecoder108)
+  const matchKey = Object.keys(map).find(k => k === normalized || normalized.includes(k.split('@')[0]) || k.includes(normalized.split('@')[0]));
+  if (matchKey && map[matchKey]) {
+    const record = map[matchKey];
+    if (new Date(record.proExpiresAt).getTime() > Date.now()) {
+      return { isPro: true, proExpiresAt: record.proExpiresAt };
+    }
+  }
+
+  return { isPro: false };
+}
+
 export function approveUpgradeRequest(requestId: string): UpgradeRequest | null {
   const requests = getUpgradeRequests();
   const target = requests.find((r) => r.id === requestId);
   if (target) {
     target.status = 'approved';
     saveUpgradeRequests(requests);
+
+    // Calculate new expiration date
+    const durationDays = target.durationDays || (target.plan === 'yearly' ? 365 : 30);
+    const existing = checkEmailProRecord(target.userEmail);
+    const now = Date.now();
+    let baseTime = now;
+    if (existing.isPro && existing.proExpiresAt) {
+      baseTime = new Date(existing.proExpiresAt).getTime();
+    }
+    const newExpiresAt = new Date(baseTime + durationDays * 24 * 60 * 60 * 1000).toISOString();
+
+    setApprovedProUserRecord(target.userEmail, newExpiresAt);
     return target;
   }
   return null;

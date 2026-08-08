@@ -1,4 +1,5 @@
 import { SKUData, UserState } from '../types';
+import { checkEmailProRecord } from './upgradeTracker';
 
 const COGS_STORAGE_KEY = 'profitcal_sku_cogs_v1';
 const USER_STORAGE_KEY = 'profitcal_user_state_v1';
@@ -102,6 +103,16 @@ export function getUserState(): UserState {
       pendingPlan: user.pendingPlan,
       proExpiresAt: user.proExpiresAt,
     };
+
+    // Automatic PRO License Check by User Email (e.g. ecoder108)
+    if (sanitizedUser.email) {
+      const proRecord = checkEmailProRecord(sanitizedUser.email);
+      if (proRecord.isPro && proRecord.proExpiresAt) {
+        sanitizedUser.tier = 'pro';
+        sanitizedUser.tokens = 9999;
+        sanitizedUser.proExpiresAt = proRecord.proExpiresAt;
+      }
+    }
 
     // Check PRO expiration
     if (sanitizedUser.tier === 'pro' && sanitizedUser.proExpiresAt) {

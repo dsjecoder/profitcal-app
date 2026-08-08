@@ -70,13 +70,17 @@ export function App() {
     // Catch Real Google OAuth Token Callback
     const oauthUser = parseOAuthRedirectHash();
     if (oauthUser) {
+      const proRecord = checkEmailProRecord(oauthUser.email);
+      const isPro = proRecord.isPro || user.tier === 'pro';
+
       const updatedUser: UserState = {
         ...user,
         isLoggedIn: true,
         email: oauthUser.email,
         name: oauthUser.name,
-        tier: user.tier || 'free',
-        tokens: user.tokens ?? 20,
+        tier: isPro ? 'pro' : 'free',
+        tokens: isPro ? 9999 : (user.tokens ?? 20),
+        proExpiresAt: proRecord.proExpiresAt || user.proExpiresAt,
         lastTokenReset: user.lastTokenReset || new Date().toISOString(),
       };
       setUser(updatedUser);
@@ -257,11 +261,17 @@ export function App() {
 
   // 7. Login Success
   const handleLoginSuccess = (email: string, name: string) => {
+    const proRecord = checkEmailProRecord(email);
+    const isPro = proRecord.isPro || user.tier === 'pro';
+
     const updated: UserState = {
       ...user,
       isLoggedIn: true,
       email,
       name,
+      tier: isPro ? 'pro' : 'free',
+      tokens: isPro ? 9999 : (user.tokens ?? 20),
+      proExpiresAt: proRecord.proExpiresAt || user.proExpiresAt,
     };
     saveUserState(updated);
     setUser(updated);
