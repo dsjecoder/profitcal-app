@@ -8,8 +8,9 @@ export const SUPABASE_ANON_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KE
 export function signInWithGoogleOAuth(): void {
   try {
     if (SUPABASE_URL && SUPABASE_URL.includes('supabase.co')) {
-      // Redirect to Supabase Google OAuth Provider endpoint
-      const redirectUrl = encodeURIComponent(window.location.origin);
+      // Dynamic Redirect URL based on current origin (e.g., https://profitcal.tagki.com)
+      const currentUrl = window.location.href.split('#')[0];
+      const redirectUrl = encodeURIComponent(currentUrl);
       const authEndpoint = `${SUPABASE_URL}/auth/v1/authorize?provider=google&redirect_to=${redirectUrl}`;
       window.location.href = authEndpoint;
       return;
