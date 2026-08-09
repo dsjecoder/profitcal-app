@@ -32,6 +32,9 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   onExportExcel,
   onOpenShippingModal,
   platform,
+  onPlatformChange,
+  onFileUpload,
+  onLoadDemo,
   currentLang,
 }) => {
   // Quick Single Item Calculator State
