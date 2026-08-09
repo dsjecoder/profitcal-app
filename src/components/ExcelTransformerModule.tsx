@@ -74,7 +74,7 @@ export const ExcelTransformerModule: React.FC<ExcelTransformerModuleProps> = ({
     }
 
     try {
-      exportAuditedExcel(orders, platform, carrier);
+      exportAuditedExcel(orders, `ProfitCal_Export_${carrier.toUpperCase()}.xlsx`, carrier);
       showToast('success', `Đã xuất thành công file chuẩn hóa cho đơn vị ${carrier.toUpperCase()}!`);
     } catch (e) {
       showToast('error', 'Lỗi khi xuất file Excel. Vui lòng thử lại.');

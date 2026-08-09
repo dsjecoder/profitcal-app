@@ -2,7 +2,7 @@ import * as XLSX from 'xlsx';
 import { OrderItem } from '../types';
 import { formatVND } from './storage';
 
-export function exportAuditedExcel(orders: OrderItem[], fileName: string = 'ProfitCal_BaoCaoDoiSoatLoiNhuan.xlsx'): void {
+export function exportAuditedExcel(orders: OrderItem[], fileName: string = 'ProfitCal_BaoCaoDoiSoatLoiNhuan.xlsx', carrier?: string): void {
   if (!orders || orders.length === 0) {
     alert('Không có dữ liệu đơn hàng để xuất!');
     return;

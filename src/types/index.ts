@@ -51,6 +51,8 @@ export interface OrderItem {
   orderStatus: 'completed' | 'returned' | 'cancelled';
   
   // Shipping info (extracted from report for GHTK / Viettel Post / GHN / SPX export)
+  carrierName?: string;
+  trackingNumber?: string;
   receiverName?: string;
   receiverPhone?: string;
   receiverAddress?: string;
