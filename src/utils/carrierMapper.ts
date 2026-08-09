@@ -61,6 +61,10 @@ export function exportCarrierExcel(
     return false;
   }
 
+  // Filter out cancelled and returned orders for shipping export
+  const validOrders = orders.filter((o) => o.orderStatus !== 'cancelled' && o.orderStatus !== 'returned');
+  const targetOrders = validOrders.length > 0 ? validOrders : orders;
+
   // 1. Check Free Cooldown (24 hours = 1 day)
   if (user.tier === 'free') {
     const cooldown = checkFreeShippingCooldown();
@@ -75,13 +79,13 @@ export function exportCarrierExcel(
   }
 
   // 2. Check Free Max Rows (100 orders per export)
-  let exportList = orders;
-  if (user.tier === 'free' && orders.length > 100) {
+  let exportList = targetOrders;
+  if (user.tier === 'free' && targetOrders.length > 100) {
     if (onLimitExceeded) {
-      onLimitExceeded(orders.length);
+      onLimitExceeded(targetOrders.length);
     }
-    alert(`Gói FREE giới hạn xuất tối đa 100 đơn / lượt. Hệ thống đã tự động lấy 100 đơn đầu tiên. Nâng cấp PRO (130k/tháng) để xuất không giới hạn!`);
-    exportList = orders.slice(0, 100);
+    alert(`Gói FREE giới hạn xuất tối đa 100 đơn / lượt. Hệ thống đã tự động lấy 100 đơn hợp lệ đầu tiên. Nâng cấp PRO (130k/tháng) để xuất không giới hạn!`);
+    exportList = targetOrders.slice(0, 100);
   }
 
   let formattedRows: any[] = [];

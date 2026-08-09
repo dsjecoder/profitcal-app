@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { DollarSign, TrendingUp, AlertTriangle, CheckCircle, Percent, Zap, Calculator } from 'lucide-react';
-import { OrderItem, AuditSummary } from '../types';
+import React, { useState, useRef } from 'react';
+import { DollarSign, TrendingUp, AlertTriangle, CheckCircle, Percent, Zap, Calculator, Upload, FileSpreadsheet, AlertCircle } from 'lucide-react';
+import { OrderItem, AuditSummary, PlatformType } from '../types';
 import { Language } from '../utils/i18n';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
 
@@ -14,7 +14,10 @@ interface ProfitCalculatorModuleProps {
   onOpenCogsModal: () => void;
   onExportExcel: () => void;
   onOpenShippingModal: () => void;
-  platform: string;
+  platform: PlatformType;
+  onPlatformChange?: (platform: PlatformType) => void;
+  onFileUpload?: (file: File) => void;
+  onLoadDemo?: (platform: PlatformType) => void;
   currentLang: Language;
 }
 
@@ -69,6 +72,9 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
   const isProfitPositive = itemNetProfit > 0;
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const negativeOrders = orders.filter((o) => o.netProfit < 0 || o.isNegativeProfit);
+
   return (
     <div className="space-y-8 animate-fade-in">
       
@@ -83,7 +89,87 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             Bóc tách chi tiết 100% doanh thu thành Giá vốn, Phí sàn, Thuế và Lãi ròng thực tế.
           </p>
         </div>
+
+        {/* Platform Selector Switcher */}
+        {onPlatformChange && (
+          <div className="bg-navy-950 p-1 rounded-2xl border border-navy-800 flex gap-1 text-xs font-bold">
+            <button
+              onClick={() => onPlatformChange('shopee')}
+              className={`px-3.5 py-1.5 rounded-xl transition-all min-h-[44px] ${
+                platform === 'shopee'
+                  ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-navy-950 shadow-lg'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              🟧 Shopee
+            </button>
+            <button
+              onClick={() => onPlatformChange('tiktok')}
+              className={`px-3.5 py-1.5 rounded-xl transition-all min-h-[44px] ${
+                platform === 'tiktok'
+                  ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-navy-950 shadow-lg'
+                  : 'text-slate-400 hover:text-white'
+              }`}
+            >
+              ⬛ TikTok Shop
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* UPLOAD FILE ZONE AT TOP OF CALCULATOR */}
+      {onFileUpload && (
+        <div className="bg-navy-900 border-2 border-dashed border-navy-700 hover:border-emerald-500/50 rounded-3xl p-6 text-center cursor-pointer transition-all shadow-xl">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".xlsx, .xls, .csv"
+            onChange={(e) => {
+              if (e.target.files && e.target.files[0]) {
+                onFileUpload(e.target.files[0]);
+              }
+            }}
+            className="hidden"
+          />
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center space-x-4 text-left">
+              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <FileSpreadsheet className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-sm font-extrabold text-white">
+                  Tải Lên File Báo Cáo Shopee / TikTok Shop Để Phân Tích Lô Đơn Hàng
+                </h3>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">
+                  Hỗ trợ định dạng .xlsx, .xls, .csv (Xử lý trực tiếp trên trình duyệt 🔒)
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-navy-950 font-black text-xs min-h-[44px] flex items-center justify-center gap-1.5 shadow-lg"
+              >
+                <Upload className="w-4 h-4" />
+                <span>Chọn File Báo Cáo</span>
+              </button>
+
+              {onLoadDemo && (
+                <button
+                  type="button"
+                  onClick={() => onLoadDemo(platform)}
+                  className="px-3 py-2.5 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-300 font-bold text-xs min-h-[44px] border border-navy-700"
+                >
+                  ⚡ Nạp Mẫu
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* QUICK SINGLE ITEM CALCULATOR & PROGRESS BAR */}
       <div className="bg-navy-900 border border-navy-800 rounded-3xl p-6 shadow-2xl space-y-6">
@@ -345,6 +431,59 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
           platform={platform}
           currentLang={currentLang}
         />
+      )}
+
+      {/* NEGATIVE PROFIT ANOMALY TABLE */}
+      {orders.length > 0 && negativeOrders.length > 0 && (
+        <div className="bg-navy-900 border border-rose-500/40 rounded-3xl p-6 shadow-2xl space-y-4">
+          <div className="flex items-center justify-between border-b border-navy-800 pb-3">
+            <div className="flex items-center gap-2 text-rose-400 font-extrabold text-sm uppercase tracking-wider">
+              <AlertCircle className="w-5 h-5 animate-pulse" />
+              <span>Cảnh Báo: Phát Hiện {negativeOrders.length} Đơn Hàng Bán Bị Lỗ (Negative Profit)</span>
+            </div>
+            <span className="px-3 py-1 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold rounded-xl font-mono">
+              Tổng Lỗ: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(negativeOrders.reduce((sum, o) => sum + o.netProfit, 0))}
+            </span>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+            <table className="w-full text-xs text-left">
+              <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                <tr>
+                  <th className="p-3">Mã Đơn Hàng</th>
+                  <th className="p-3">Tên Sản Phẩm / SKU</th>
+                  <th className="p-3 text-right">Giá Bán</th>
+                  <th className="p-3 text-right">Phí Sàn</th>
+                  <th className="p-3 text-right">Giá Vốn COGS</th>
+                  <th className="p-3 text-right text-rose-400 font-bold">Lợi Nhuận Ròng</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-navy-800/60 font-mono">
+                {negativeOrders.map((ord) => (
+                  <tr key={ord.id} className="hover:bg-rose-950/20">
+                    <td className="p-3 text-white font-bold">{ord.orderId}</td>
+                    <td className="p-3 text-slate-300">
+                      <div className="font-bold truncate max-w-xs">{ord.productName}</div>
+                      <div className="text-[10px] text-slate-500">{ord.sku}</div>
+                    </td>
+                    <td className="p-3 text-right text-slate-300">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(ord.grossRevenue)}
+                    </td>
+                    <td className="p-3 text-right text-amber-400 font-bold">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(ord.totalFees)} ({ord.feeRatio.toFixed(1)}%)
+                    </td>
+                    <td className="p-3 text-right text-slate-400">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(ord.cogs)}
+                    </td>
+                    <td className="p-3 text-right text-rose-400 font-black text-sm">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(ord.netProfit)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
 
     </div>

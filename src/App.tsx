@@ -357,6 +357,9 @@ export function App() {
               onExportExcel={handleExportExcel}
               onOpenShippingModal={() => setShowShippingModal(true)}
               platform={platform}
+              onPlatformChange={setPlatform}
+              onFileUpload={handleFileUpload}
+              onLoadDemo={handleLoadDemo}
               currentLang={currentLang}
             />
           )}
