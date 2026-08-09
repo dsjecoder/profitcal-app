@@ -286,6 +286,7 @@ export function App() {
       tier: isPro ? 'pro' : 'free',
       tokens: isPro ? 9999 : (user.tokens ?? 20),
       proExpiresAt: proRecord.proExpiresAt || user.proExpiresAt,
+      lastTokenReset: user.lastTokenReset || new Date().toISOString(),
     };
     saveUserState(updated);
     setUser(updated);
