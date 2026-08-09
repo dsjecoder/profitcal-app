@@ -76,6 +76,16 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
   const [customPackCost, setCustomPackCost] = useState<number>(packagingCost || 3000);
 
+  // Auto-sync Quick Single Item Simulator to average values of loaded dataset when orders changes
+  React.useEffect(() => {
+    if (orders && orders.length > 0) {
+      const avgGross = orders.reduce((sum, o) => sum + o.grossRevenue, 0) / orders.length;
+      const avgCogs = orders.reduce((sum, o) => sum + o.cogs, 0) / orders.length;
+      if (avgGross > 0) setSellPrice(Math.round(avgGross));
+      if (avgCogs > 0) setCostPrice(Math.round(avgCogs));
+    }
+  }, [orders]);
+
   // Calculations for Single Item Simulator
   const activeFixedFee = enableFixedFee ? (sellPrice * fixedFeePct) / 100 : 0;
   const activeServiceFee = enableServiceFee ? (sellPrice * serviceFeePct) / 100 : 0;
@@ -99,6 +109,37 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
   return (
     <div className="space-y-6 animate-fade-in w-full">
+      
+      {/* DATA SOURCE SUCCESS NOTIFICATION BANNER */}
+      {orders.length > 0 && (
+        <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-200 shadow-xl">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-black text-base shrink-0">
+              ✓
+            </div>
+            <div>
+              <div className="font-black text-white flex items-center gap-2 text-base">
+                <span>Đã Nạp & Bóc Tách Thành Công {orders.length} Đơn Hàng</span>
+                <span className={`px-2.5 py-0.5 rounded text-xs font-mono font-black ${
+                  dataSourceMode === 'API'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : dataSourceMode === 'EXCEL'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                }`}>
+                  {dataSourceMode}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Nguồn dữ liệu: <strong className="text-emerald-300 font-mono">{dataSourceName}</strong> (Sàn: <span className="uppercase text-white font-bold">{platform}</span>)
+              </p>
+            </div>
+          </div>
+          <div className="text-xs font-mono text-emerald-400 font-bold self-end sm:self-auto bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
+            Tổng Doanh Thu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(summary.grossRevenue)}
+          </div>
+        </div>
+      )}
       
       {/* MAIN UNIFIED PANEL (bg-slate-900) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xl w-full">

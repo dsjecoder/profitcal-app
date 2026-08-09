@@ -147,12 +147,19 @@ export function App() {
   // 1. Handle File Upload
   const handleFileUpload = async (file: File) => {
     try {
-      const parsed = await parseUploadedFile(
+      const res = await parseUploadedFile(
         file,
         platform,
         settings.packagingCost,
         settings.feeThreshold
       );
+
+      const { orders: parsed, detectedPlatform, isPlatformMismatch } = res;
+
+      if (isPlatformMismatch) {
+        setPlatform(detectedPlatform);
+        alert(`⚡ PHÁT HIỆN ĐỊNH DẠNG FILE BÁO CÁO SÀN ${detectedPlatform.toUpperCase()}!\n\nHệ thống đã tự động chuyển đổi gian hàng sang ${detectedPlatform === 'shopee' ? '🟧 Shopee Mall' : '⬛ TikTok Shop'} để bóc tách chính xác tỷ lệ phí sàn & thuế 1.5%.`);
+      }
 
       setOrders(parsed);
       setDataSourceMode('EXCEL');
@@ -173,10 +180,10 @@ export function App() {
 
       // Track Silent Analytics & Save Period Snapshot
       const fileSummary = calculateSummary(parsed, settings.packagingCost, settings.feeThreshold);
-      saveAuditHistorySnapshot(file.name, platform, fileSummary);
+      saveAuditHistorySnapshot(file.name, detectedPlatform, fileSummary);
       trackEventSilent({
         eventName: 'upload_report',
-        platform,
+        platform: detectedPlatform,
         summary: fileSummary,
         uniqueSkusCount: skus.length,
         fileName: file.name,

@@ -2,12 +2,19 @@ import * as XLSX from 'xlsx';
 import { OrderItem, PlatformType } from '../types';
 import { getSavedCOGS } from './storage';
 
+export interface ParseFileResult {
+  orders: OrderItem[];
+  detectedPlatform: PlatformType;
+  isPlatformMismatch: boolean;
+  message?: string;
+}
+
 export async function parseUploadedFile(
   file: File,
-  platform: PlatformType,
+  currentPlatform: PlatformType,
   packagingCost: number,
   feeThreshold: number
-): Promise<OrderItem[]> {
+): Promise<ParseFileResult> {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -32,6 +39,22 @@ export async function parseUploadedFile(
           alert(`File của bạn có ${rawJson.length.toLocaleString('vi-VN')} dòng. Để bảo đảm tốc độ và hiệu năng tính toán tại Trình duyệt, hệ thống đã tự động giới hạn phân tích 2.000 dòng đầu tiên.`);
           rawJson = rawJson.slice(0, 2000);
         }
+
+        // Auto-detect platform from Excel headers
+        const allHeaders = Object.keys(rawJson[0] || {}).join(' ').toLowerCase();
+        let detectedPlatform: PlatformType = currentPlatform;
+
+        const hasTikTokKeywords = allHeaders.includes('tiktok') || allHeaders.includes('seller sku') || allHeaders.includes('sku id') || allHeaders.includes('subtotal') || allHeaders.includes('platform_commission');
+        const hasShopeeKeywords = allHeaders.includes('shopee') || allHeaders.includes('mã đơn hàng') || allHeaders.includes('phí cố định') || allHeaders.includes('phí dịch vụ') || allHeaders.includes('freeship xtra');
+
+        if (hasTikTokKeywords && !hasShopeeKeywords) {
+          detectedPlatform = 'tiktok';
+        } else if (hasShopeeKeywords) {
+          detectedPlatform = 'shopee';
+        }
+
+        const isPlatformMismatch = detectedPlatform !== currentPlatform;
+        const targetPlatform = detectedPlatform;
 
         const savedCOGS = getSavedCOGS();
         const parsedOrders: OrderItem[] = [];
@@ -116,11 +139,12 @@ export async function parseUploadedFile(
           }
 
           // Lookup COGS from local storage or default to 50% of gross price
-          const cogsPerUnit = savedCOGS[sku] !== undefined ? savedCOGS[sku] : Math.round((grossRevenue / quantity) * 0.5);
+          const cogsPerUnit = savedCOGS[sku] !== undefined ? savedCOGS[sku] : Math.round((grossRevenue / Math.max(1, quantity)) * 0.5);
           const cogs = cogsPerUnit * quantity;
 
+          const taxAmount = Math.round(grossRevenue * 0.015);
           const feeRatio = grossRevenue > 0 ? (totalFees / grossRevenue) * 100 : 0;
-          const netProfit = netSettlement - cogs - packagingCost;
+          const netProfit = netSettlement - cogs - packagingCost - taxAmount;
 
           const isHighFee = feeRatio > feeThreshold;
           const isRefundAnomaly = (orderStatus === 'returned' || orderStatus === 'cancelled') && netSettlement < 0;
@@ -132,10 +156,10 @@ export async function parseUploadedFile(
           if (isNegativeProfit) anomalyReason += `Đơn bị lỗ (-${Math.abs(netProfit)}đ). `;
 
           parsedOrders.push({
-            id: `${platform.toUpperCase()}-${index + 1}`,
+            id: `${targetPlatform.toUpperCase()}-${index + 1}`,
             orderId,
             orderDate,
-            platform,
+            platform: targetPlatform,
             sku,
             productName,
             quantity,
@@ -149,6 +173,7 @@ export async function parseUploadedFile(
             totalFees,
             cogs,
             packagingCost,
+            taxAmount,
             orderStatus,
             feeRatio,
             netProfit,
@@ -156,17 +181,23 @@ export async function parseUploadedFile(
             isRefundAnomaly,
             isNegativeProfit,
             anomalyReason: anomalyReason.trim() || undefined,
+            carrierName: String(getValue(['Đơn vị vận chuyển', 'Carrier', 'Shipping Provider']) || 'SPX Express'),
+            trackingNumber: String(getValue(['Mã vận đơn', 'Tracking Number', 'Waybill']) || `SPX${Date.now()}`),
           });
         });
 
-        resolve(parsedOrders);
+        resolve({
+          orders: parsedOrders,
+          detectedPlatform,
+          isPlatformMismatch,
+        });
       } catch (err: any) {
-        reject(new Error(err.message || 'Lỗi khi đọc file Excel/CSV!'));
+        reject(err);
       }
     };
 
     reader.onerror = () => {
-      reject(new Error('Lỗi truy cập file trên hệ thống!'));
+      reject(new Error('Lỗi đọc file Excel từ hệ thống!'));
     };
 
     reader.readAsArrayBuffer(file);
