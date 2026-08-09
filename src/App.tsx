@@ -35,7 +35,10 @@ import { trackEventSilent } from './utils/analytics';
 import { saveAuditHistorySnapshot } from './utils/historyTracker';
 import { getInitialLanguage, saveLanguagePreference, Language } from './utils/i18n';
 
-import { TabNavigation, MainTabType } from './components/TabNavigation';
+import { Sidebar, ModuleType } from './components/Sidebar';
+import { ProfitCalculatorModule } from './components/ProfitCalculatorModule';
+import { ExcelTransformerModule } from './components/ExcelTransformerModule';
+import { SkuSettingsModule } from './components/SkuSettingsModule';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
 import { submitUpgradeRequest, checkEmailProRecord } from './utils/upgradeTracker';
 
@@ -46,8 +49,8 @@ export function App() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [extractedSkus, setExtractedSkus] = useState<SKUData[]>([]);
 
-  // Main Dashboard Tab Navigation
-  const [activeMainTab, setActiveMainTab] = useState<MainTabType>('financial');
+  // Active Navigation Module State ('calc' | 'transformer' | 'inventory' | 'settings')
+  const [activeModule, setActiveModule] = useState<ModuleType>('calc');
 
   // Settings
   const [settings, setSettings] = useState(getAppSettings());
@@ -307,115 +310,91 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 flex flex-col selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
+    <div className="min-h-screen bg-navy-950 text-slate-100 flex selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
       
-      {/* Mobile Smartphone Optimization Banner */}
-      <MobileNotice />
-
-      {/* Header & Navigation */}
-      <Navbar
+      {/* FIXED LEFT SIDEBAR NAVIGATION */}
+      <Sidebar
+        activeModule={activeModule}
+        onSelectModule={setActiveModule}
         user={user}
         currentLang={currentLang}
         onLanguageChange={handleLanguageChange}
         onOpenAuth={() => setShowAuthModal(true)}
-        onOpenAdmin={() => setShowAdminDashboard(true)}
+        onOpenUpgradeModal={() => setShowPricingModal(true)}
         onOpenTerms={() => setShowTermsModal(true)}
         onLogout={handleLogout}
-        onOpenUpgradeModal={() => setShowPricingModal(true)}
       />
 
-      {/* Security Banner & Quick Demo Loaders */}
-      <DemoBanner onLoadDemo={handleLoadDemo} />
-
-      {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-10">
+      {/* RIGHT MAIN CONTENT AREA */}
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 pt-16 lg:pt-0">
         
-        {/* Upload Zone */}
-        <FileUpload
-          platform={platform}
-          onPlatformChange={setPlatform}
-          onFileUpload={handleFileUpload}
-          onLoadDemo={handleLoadDemo}
-        />
+        {/* Mobile Smartphone Optimization Banner */}
+        <MobileNotice />
 
-        {/* Dashboard Results (Only shown when orders are parsed/loaded) */}
-        {orders.length > 0 && (
-          <div className="animate-fade-in space-y-8">
-            
-            {/* Feature Modular Tab Navigation */}
-            <TabNavigation
-              activeTab={activeMainTab}
-              onTabChange={setActiveMainTab}
+        {/* Security Banner & Quick Demo Loaders */}
+        <DemoBanner onLoadDemo={handleLoadDemo} />
+
+        {/* Main Content Area */}
+        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+          
+          {/* MODULE 1: TÍNH LỢI NHUẬN & THUẾ (/calculator) */}
+          {activeModule === 'calc' && (
+            <ProfitCalculatorModule
+              summary={summary}
+              orders={orders}
+              packagingCost={settings.packagingCost}
+              feeThreshold={settings.feeThreshold}
+              onPackagingCostChange={handlePackagingCostChange}
+              onFeeThresholdChange={handleFeeThresholdChange}
+              onOpenCogsModal={() => setShowCogsModal(true)}
+              onExportExcel={handleExportExcel}
+              onOpenShippingModal={() => setShowShippingModal(true)}
+              platform={platform}
               currentLang={currentLang}
+            />
+          )}
+
+          {/* MODULE 2: XỬ LÝ FILE VẬN CHUYỂN (/excel-transformer) */}
+          {activeModule === 'transformer' && (
+            <ExcelTransformerModule
+              platform={platform}
+              onPlatformChange={setPlatform}
+              onFileUpload={handleFileUpload}
+              orders={orders}
               onOpenShippingModal={() => setShowShippingModal(true)}
             />
+          )}
 
-            {/* TAB 1: EXECUTIVE FINANCIAL AUDIT DASHBOARD */}
-            {activeMainTab === 'financial' && (
-              <ExecutiveDashboard
-                summary={summary}
-                orders={orders}
-                packagingCost={settings.packagingCost}
-                feeThreshold={settings.feeThreshold}
-                onPackagingCostChange={handlePackagingCostChange}
-                onFeeThresholdChange={handleFeeThresholdChange}
-                onOpenCogsModal={() => setShowCogsModal(true)}
-                onExportExcel={handleExportExcel}
-                onOpenShippingModal={() => setShowShippingModal(true)}
-                platform={platform}
-                currentLang={currentLang}
-              />
-            )}
+          {/* MODULE 3: CẢNH BÁO TỒN KHO (/inventory-alert) */}
+          {activeModule === 'inventory' && (
+            <LowStockAlert
+              skus={extractedSkus}
+              user={user}
+              onUpdateThreshold={handleUpdateThreshold}
+              onOpenUpgradeModal={() => setShowPricingModal(true)}
+              currentLang={currentLang}
+            />
+          )}
 
-            {/* TAB 2: AD ROAS & CIR PERFORMANCE */}
-            {activeMainTab === 'ads' && (
-              <AdPerformanceTable orders={orders} currentLang={currentLang} />
-            )}
+          {/* MODULE 4: CẤU HÌNH & BẢNG GIÁ VỐN (/sku-settings) */}
+          {activeModule === 'settings' && (
+            <SkuSettingsModule
+              packagingCost={settings.packagingCost}
+              feeThreshold={settings.feeThreshold}
+              onPackagingCostChange={handlePackagingCostChange}
+              onFeeThresholdChange={handleFeeThresholdChange}
+              onOpenCogsModal={() => setShowCogsModal(true)}
+            />
+          )}
 
-            {/* TAB 3: GROWTH COMPARISON & ANOMALY TABLES */}
-            {activeMainTab === 'growth' && (
-              <div className="space-y-8">
-                <GrowthComparison summary={summary} />
-                <div className="space-y-4">
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => setShowDisputeModal(true)}
-                      className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-orange-500 text-white font-bold text-xs shadow-lg shadow-rose-500/20 hover:scale-105 transition-all"
-                    >
-                      <span>Tự Động Lập Hồ Sơ Kháng Nại CSKH Sàn 🚀</span>
-                    </button>
-                  </div>
+        </main>
 
-                  <AnomalyTables
-                    orders={orders}
-                    summary={summary}
-                    feeThreshold={settings.feeThreshold}
-                    onExportExcel={handleExportExcel}
-                  />
-                </div>
-              </div>
-            )}
+        {/* Floating Support Widget (Zalo, FB, WhatsApp, Telegram) */}
+        <ContactWidget />
 
-            {/* TAB 4: LOW-STOCK RED ALERT */}
-            {activeMainTab === 'inventory' && (
-              <LowStockAlert
-                skus={extractedSkus}
-                user={user}
-                onUpdateThreshold={handleUpdateThreshold}
-                onOpenUpgradeModal={() => setShowPricingModal(true)}
-                currentLang={currentLang}
-              />
-            )}
-
-          </div>
-        )}
-
-      </main>
-
-      {/* Floating Support Widget (Zalo, FB, WhatsApp, Telegram) */}
-      <ContactWidget />
-
-      {/* Modals */}
+        {/* Footer */}
+        <Footer />
+      </div>
       {showCogsModal && (
         <CogsModal
           skus={extractedSkus}
