@@ -216,52 +216,54 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
           </div>
 
-          {/* 100% REVENUE STACKED COST BREAKDOWN PROGRESS BAR */}
-          <div className="space-y-2 bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
-            <div className="flex justify-between items-center text-xs font-bold text-slate-300">
-              <span>Bóc Tách Tỷ Lệ Chi Phí Trên Doanh Thu (100%)</span>
-              <span className="font-mono text-emerald-400">100% Doanh Thu</span>
-            </div>
-
-            <div className="h-5 w-full bg-slate-900 rounded-xl overflow-hidden flex p-0.5 border border-slate-800">
-              <div
-                style={{ width: `${cogsPct}%` }}
-                className="bg-indigo-500 h-full transition-all duration-300 flex items-center justify-center text-[10px] font-black text-white truncate"
-                title={`Giá vốn: ${cogsPct.toFixed(1)}%`}
-              >
-                {cogsPct > 10 ? `Giá vốn ${cogsPct.toFixed(0)}%` : ''}
+          {/* HORIZONTAL DATA GRID FOR COST & NET PROFIT BREAKDOWN */}
+          <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+              
+              {/* Cột 1: Giá vốn COGS */}
+              <div className="space-y-1">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                  Giá Vốn COGS
+                </span>
+                <div className="text-slate-100 text-sm font-medium font-mono">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(costPrice)}
+                  <span className="text-slate-400 text-xs ml-1.5 font-normal">({cogsPct.toFixed(1)}%)</span>
+                </div>
               </div>
 
-              <div
-                style={{ width: `${platformFeeRatioPct}%` }}
-                className="bg-amber-500 h-full transition-all duration-300 flex items-center justify-center text-[10px] font-black text-slate-950 truncate"
-                title={`Phí sàn: ${platformFeeRatioPct.toFixed(1)}%`}
-              >
-                {platformFeeRatioPct > 10 ? `Phí sàn ${platformFeeRatioPct.toFixed(0)}%` : ''}
+              {/* Cột 2: Phí sàn */}
+              <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                  Phí Sàn
+                </span>
+                <div className="text-slate-100 text-sm font-medium font-mono">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalPlatformFees)}
+                  <span className="text-slate-400 text-xs ml-1.5 font-normal">({platformFeeRatioPct.toFixed(1)}%)</span>
+                </div>
               </div>
 
-              <div
-                style={{ width: `${taxRatioPct}%` }}
-                className="bg-rose-500 h-full transition-all duration-300 flex items-center justify-center text-[10px] font-black text-white truncate"
-                title={`Thuế: ${taxRatioPct.toFixed(1)}%`}
-              >
-                {taxRatioPct > 5 ? `Thuế 1.5%` : ''}
+              {/* Cột 3: Thuế TMĐT (1.5%) */}
+              <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                  Thuế TMĐT (1.5%)
+                </span>
+                <div className="text-slate-100 text-sm font-medium font-mono">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(taxAmount)}
+                  <span className="text-slate-400 text-xs ml-1.5 font-normal">({taxRatioPct.toFixed(1)}%)</span>
+                </div>
               </div>
 
-              <div
-                style={{ width: `${netMarginPct}%` }}
-                className="bg-[#10b981] h-full transition-all duration-300 flex items-center justify-center text-[10px] font-black text-slate-950 truncate"
-                title={`Lãi ròng: ${netMarginPct.toFixed(1)}%`}
-              >
-                {netMarginPct > 10 ? `Lãi ${netMarginPct.toFixed(0)}%` : ''}
+              {/* Cột 4: Lãi ròng (CHỈ DÙNG MÀU EMERALD GREEN #10b981 CHO CHỈ SỐ LÃI RÒNG NÀY) */}
+              <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
+                <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                  Lãi Ròng
+                </span>
+                <div className="text-[#10b981] text-sm font-bold font-mono">
+                  {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(itemNetProfit)}
+                  <span className="text-[#10b981]/80 text-xs ml-1.5 font-semibold">({netMarginPct.toFixed(1)}%)</span>
+                </div>
               </div>
-            </div>
 
-            <div className="flex flex-wrap items-center justify-between text-[11px] font-bold text-slate-400 pt-1 font-mono">
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-indigo-500 inline-block"></span>Giá vốn ({cogsPct.toFixed(1)}%)</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-amber-500 inline-block"></span>Phí sàn ({platformFeeRatioPct.toFixed(1)}%)</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-rose-500 inline-block"></span>Thuế 1.5% ({taxRatioPct.toFixed(1)}%)</span>
-              <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded bg-[#10b981] inline-block"></span>Lãi ròng ({netMarginPct.toFixed(1)}%)</span>
             </div>
           </div>
 
