@@ -310,9 +310,9 @@ export function App() {
   };
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#0a0d14] text-slate-100 selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
+    <div className="flex h-screen w-full overflow-hidden bg-[#0a0d14] text-white selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
       
-      {/* FIXED LEFT SIDEBAR NAVIGATION (w-64 / 256px) */}
+      {/* 1. SIDEBAR TRÁI - Cố định không cuộn */}
       <Sidebar
         activeModule={activeModule}
         onSelectModule={setActiveModule}
@@ -325,18 +325,18 @@ export function App() {
         onLogout={handleLogout}
       />
 
-      {/* RIGHT MAIN CONTENT AREA (flex-1 h-full overflow-y-auto p-6 lg:p-8) */}
-      <div className="flex-1 h-full overflow-y-auto p-6 lg:p-8 flex flex-col min-w-0 bg-[#0a0d14]">
+      {/* 2. KHU VỰC NỘI DUNG CHÍNH - Tự động cuộn dọc khi dài */}
+      <main className="flex-1 h-full overflow-y-auto flex flex-col justify-between bg-[#0a0d14]">
         
-        {/* Mobile Smartphone Optimization Banner */}
-        <MobileNotice />
-
-        {/* Security Banner & Quick Demo Loaders */}
-        <DemoBanner onLoadDemo={handleLoadDemo} />
-
-        {/* Main Content Area (Full Widescreen Desktop) */}
-        <main className="flex-1 w-full py-2 space-y-8">
+        {/* Phần chứa Viewport chức năng (Calculator, Excel Transformer, SKU...) */}
+        <div className="p-6 lg:p-8 flex-1 w-full space-y-8">
           
+          {/* Mobile Smartphone Optimization Banner */}
+          <MobileNotice />
+
+          {/* Security Banner & Quick Demo Loaders */}
+          <DemoBanner onLoadDemo={handleLoadDemo} />
+
           {/* MODULE 1: TÍNH LỢI NHUẬN & THUẾ (/calculator) */}
           {activeModule === 'calc' && (
             <ProfitCalculatorModule
@@ -387,14 +387,14 @@ export function App() {
             />
           )}
 
-        </main>
+        </div>
 
         {/* Floating Support Widget (Zalo, FB, WhatsApp, Telegram) */}
         <ContactWidget />
 
-        {/* Footer */}
+        {/* Phần Footer: Khối BÌNH THƯỜNG nằm ở ĐÁY trang cuộn (KHÔNG DÙNG absolute/fixed) */}
         <Footer />
-      </div>
+      </main>
       {showCogsModal && (
         <CogsModal
           skus={extractedSkus}
