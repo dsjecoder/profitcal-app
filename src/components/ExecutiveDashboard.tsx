@@ -74,23 +74,23 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xl w-full">
         
         {/* 1. HEADER PANEL: TITLE + PLATFORM BADGE + ACTION BUTTON GROUP ON 1 HORIZONTAL ROW */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 bg-slate-950/80 rounded-2xl border border-slate-800">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-5 bg-slate-950/80 rounded-2xl border border-slate-800">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xl font-black text-white">Báo Cáo Kiểm Toán Tài Chính Lô Đơn Hàng</span>
-            <span className="px-3 py-1 text-xs font-extrabold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+            <span className="text-2xl lg:text-3xl font-black text-white">Báo Cáo Kiểm Toán Tài Chính Lô Đơn Hàng</span>
+            <span className="px-3.5 py-1 text-sm font-extrabold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
               SÀN {platform.toUpperCase()} ({summary.totalOrders} ĐƠN)
             </span>
           </div>
 
           {/* Action Button Group */}
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2.5">
             {onOpenShippingModal && (
               <button
                 type="button"
                 onClick={onOpenShippingModal}
-                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-xs border border-slate-700 transition-colors flex items-center gap-1.5 min-h-[40px]"
+                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-sm border border-slate-700 transition-colors flex items-center gap-2 min-h-[44px]"
               >
-                <Truck className="w-4 h-4 text-cyan-400" />
+                <Truck className="w-4.5 h-4.5 text-cyan-400" />
                 <span>Ghép File Vận Chuyển Excel</span>
               </button>
             )}
@@ -98,74 +98,74 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             <button
               type="button"
               onClick={onOpenCogsModal}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-colors flex items-center gap-1.5 min-h-[40px]"
+              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-colors flex items-center gap-2 min-h-[44px]"
             >
-              <Settings className="w-4 h-4 text-emerald-400" />
+              <Settings className="w-4.5 h-4.5 text-emerald-400" />
               <span>Sửa Giá Vốn (COGS)</span>
             </button>
 
             <button
               type="button"
               onClick={onExportExcel}
-              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs transition-all flex items-center gap-1.5 min-h-[40px] shadow-lg"
+              className="px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm transition-all flex items-center gap-2 min-h-[44px] shadow-lg"
             >
-              <FileSpreadsheet className="w-4 h-4" />
+              <FileSpreadsheet className="w-4.5 h-4.5" />
               <span>Xuất Báo Cáo Excel</span>
             </button>
           </div>
         </div>
 
-        {/* 2. CHUẨN HÓA HÀNG CHỈ SỐ (HORIZONTAL METRICS ROW GRID - NO MULTICOLOR ICONS) */}
-        <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800">
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+        {/* 2. CHUẨN HÓA HÀNG CHỈ SỐ (HORIZONTAL METRICS ROW GRID - ENHANCED FONT SIZE) */}
+        <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-5 divide-y md:divide-y-0 md:divide-x divide-slate-800">
             
             {/* Cell 1: Doanh thu */}
-            <div className="space-y-1">
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+            <div className="space-y-1.5">
+              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
                 Doanh Thu Thô
               </span>
-              <div className="text-slate-100 text-sm font-medium font-mono">
+              <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.grossRevenue)}
               </div>
             </div>
 
-            {/* Cell 2: Phí sàn (Warning red ONLY if exceeding threshold) */}
-            <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+            {/* Cell 2: Phí sàn */}
+            <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
+              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
                 Phí Sàn ({formatPercent(summary.avgFeeRatio)})
               </span>
-              <div className={`text-sm font-medium font-mono ${isFeeHigh ? 'text-rose-400 font-bold' : 'text-slate-100'}`}>
+              <div className={`text-base lg:text-lg font-bold font-mono ${isFeeHigh ? 'text-rose-400' : 'text-slate-100'}`}>
                 {formatVND(summary.totalFees)}
-                {isFeeHigh && <span className="text-[10px] ml-1 px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-400 font-sans font-bold">VƯỢT NGƯỠNG</span>}
+                {isFeeHigh && <span className="text-xs ml-1.5 px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-sans font-bold">VƯỢT NGƯỠNG</span>}
               </div>
             </div>
 
             {/* Cell 3: Thực nhận ví */}
-            <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+            <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
+              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
                 Thực Nhận Về Ví
               </span>
-              <div className="text-slate-100 text-sm font-medium font-mono">
+              <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.netSettlement)}
               </div>
             </div>
 
             {/* Cell 4: Giá vốn COGS */}
-            <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+            <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
+              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
                 Giá Vốn (COGS)
               </span>
-              <div className="text-slate-100 text-sm font-medium font-mono">
+              <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.totalCOGS)}
               </div>
             </div>
 
             {/* Cell 5: Thuế TMĐT 1.5% */}
-            <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
-              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+            <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
+              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
                 Thuế TMĐT (1.5%)
               </span>
-              <div className="text-slate-100 text-sm font-medium font-mono">
+              <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.totalTaxAmount || 0)}
               </div>
             </div>
@@ -173,31 +173,31 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           </div>
         </div>
 
-        {/* 3. HIGHLIGHT HERO METRIC (LỢI NHUẬN RÒNG STRIP - EMERALD GREEN #10b981) */}
-        <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-slate-400">
-              <Sparkles className="w-4 h-4 text-emerald-400" />
+        {/* 3. HIGHLIGHT HERO METRIC (LỢI NHUẬN RÒNG STRIP - ENHANCED FONT SIZE) */}
+        <div className="bg-slate-950/80 p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wider text-slate-400">
+              <Sparkles className="w-5 h-5 text-emerald-400" />
               <span>HERO METRIC • LỢI NHUẬN RÒNG BẮT ĐỐI SOÁT (NET PROFIT)</span>
             </div>
-            <div className="text-4xl lg:text-5xl font-black font-mono text-[#10b981] tracking-tight">
+            <div className="text-5xl lg:text-6xl font-black font-mono text-[#10b981] tracking-tight">
               {formatVND(summary.netProfit)}
             </div>
           </div>
 
-          <div className="font-mono text-sm text-right self-stretch sm:self-auto flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-6">
-            <span className="text-xs text-slate-400 uppercase font-sans font-bold">Tỷ Suất Lợi Nhuận Ròng</span>
-            <span className="text-2xl font-extrabold text-white">{formatPercent(summary.profitMargin)}</span>
+          <div className="font-mono text-base text-right self-stretch sm:self-auto flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-8">
+            <span className="text-sm text-slate-400 uppercase font-sans font-bold block mb-1">Tỷ Suất Lợi Nhuận Ròng</span>
+            <span className="text-3xl font-black text-white">{formatPercent(summary.profitMargin)}</span>
           </div>
         </div>
 
-        {/* 4. TINH GỌN QUICK CONTROLS (FOOTER TOOLBAR MỎNG Ở ĐÁY PANEL) */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 p-4 bg-slate-950/60 rounded-2xl border border-slate-800 text-xs text-slate-300 font-sans">
+        {/* 4. TINH GỌN QUICK CONTROLS (FOOTER TOOLBAR MỎNG - ENHANCED FONT SIZE) */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 p-4.5 bg-slate-950/60 rounded-2xl border border-slate-800 text-sm text-slate-300 font-sans">
           
           {/* Packaging Cost Input */}
           <div className="flex items-center gap-3">
-            <span className="font-bold text-slate-300">Chi phí đóng gói/đơn:</span>
-            <div className="flex items-center gap-1">
+            <span className="font-bold text-slate-200">Chi phí đóng gói/đơn:</span>
+            <div className="flex items-center gap-1.5">
               <input
                 type="text"
                 value={packagingCost.toLocaleString('vi-VN')}
@@ -205,15 +205,15 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                   const val = parseInt(e.target.value.replace(/[^0-9]/g, ''), 10) || 0;
                   onPackagingCostChange(val);
                 }}
-                className="w-28 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 font-mono text-sm font-bold text-white focus:outline-none focus:border-emerald-500 text-right min-h-[36px]"
+                className="w-32 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-base font-bold text-white focus:outline-none focus:border-emerald-500 text-right min-h-[40px]"
               />
-              <span className="text-slate-400 font-mono text-[11px]">VNĐ</span>
+              <span className="text-slate-400 font-mono text-xs font-bold">VNĐ</span>
             </div>
           </div>
 
           {/* Fee Threshold Slider */}
-          <div className="flex items-center gap-3 flex-1 max-w-md">
-            <span className="font-bold text-slate-300 shrink-0">Ngưỡng cảnh báo phí sàn:</span>
+          <div className="flex items-center gap-4 flex-1 max-w-md">
+            <span className="font-bold text-slate-200 shrink-0">Ngưỡng cảnh báo phí sàn:</span>
             <input
               type="range"
               min="5"
@@ -221,9 +221,9 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               step="1"
               value={feeThreshold}
               onChange={(e) => onFeeThresholdChange(parseInt(e.target.value, 10))}
-              className="w-full accent-emerald-500 cursor-pointer"
+              className="w-full accent-emerald-500 cursor-pointer h-2 bg-slate-900 rounded-lg"
             />
-            <span className="font-mono text-emerald-400 font-bold shrink-0">{feeThreshold}%</span>
+            <span className="font-mono text-emerald-400 text-base font-black shrink-0">{feeThreshold}%</span>
           </div>
 
         </div>
