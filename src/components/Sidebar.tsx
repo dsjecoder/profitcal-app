@@ -52,6 +52,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onOpenAuth,
   onOpenUpgradeModal,
   onOpenTerms,
+  onOpenApiIntegration,
   onLogout,
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);

@@ -126,7 +126,7 @@ export function addOrUpdateIntegration(record: Partial<ShopIntegrationRecord>): 
 
 export function addIntegrationLog(log: Omit<IntegrationLog, 'id' | 'timestamp'>): void {
   try {
-    const raw = localStorage.getItem(INTEGRATIONS_LOGS_KEY);
+    const raw = localStorage.getItem(INTEGRATION_LOGS_KEY);
     const logs: IntegrationLog[] = raw ? JSON.parse(raw) : [];
 
     const newLog: IntegrationLog = {
@@ -137,13 +137,13 @@ export function addIntegrationLog(log: Omit<IntegrationLog, 'id' | 'timestamp'>)
 
     logs.unshift(newLog);
     if (logs.length > 50) logs.pop();
-    localStorage.setItem(INTEGRATIONS_LOGS_KEY, JSON.stringify(logs));
+    localStorage.setItem(INTEGRATION_LOGS_KEY, JSON.stringify(logs));
   } catch (e) {}
 }
 
 export function getIntegrationLogs(): IntegrationLog[] {
   try {
-    const raw = localStorage.getItem(INTEGRATIONS_LOGS_KEY);
+    const raw = localStorage.getItem(INTEGRATION_LOGS_KEY);
     if (raw) return JSON.parse(raw);
   } catch (e) {}
 
