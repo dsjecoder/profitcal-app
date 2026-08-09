@@ -17,6 +17,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { ContactWidget } from './components/ContactWidget';
 import { MobileNotice } from './components/MobileNotice';
 import { TermsModal } from './components/TermsModal';
+import { ApiIntegrationModal } from './components/ApiIntegrationModal';
 import { Footer } from './components/Footer';
 
 import { OrderItem, PlatformType, SKUData, UserState } from './types';
@@ -63,6 +64,7 @@ export function App() {
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [showTermsModal, setShowTermsModal] = useState(false);
+  const [showApiIntegrationModal, setShowApiIntegrationModal] = useState(false);
 
   // Auto detect `/admin` route or Google OAuth `#access_token=` in URL
   useEffect(() => {
@@ -329,6 +331,7 @@ export function App() {
         onOpenAuth={() => setShowAuthModal(true)}
         onOpenUpgradeModal={() => setShowPricingModal(true)}
         onOpenTerms={() => setShowTermsModal(true)}
+        onOpenApiIntegration={() => setShowApiIntegrationModal(true)}
         onLogout={handleLogout}
       />
 
@@ -460,6 +463,16 @@ export function App() {
       {showTermsModal && (
         <TermsModal
           onClose={() => setShowTermsModal(false)}
+        />
+      )}
+
+      {showApiIntegrationModal && (
+        <ApiIntegrationModal
+          onClose={() => setShowApiIntegrationModal(false)}
+          onSyncSuccess={(apiOrders) => {
+            setOrders(apiOrders);
+            setShowApiIntegrationModal(false);
+          }}
         />
       )}
 

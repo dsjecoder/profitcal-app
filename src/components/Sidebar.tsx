@@ -39,6 +39,7 @@ interface SidebarProps {
   onOpenAuth: () => void;
   onOpenUpgradeModal: () => void;
   onOpenTerms: () => void;
+  onOpenApiIntegration?: () => void;
   onLogout: () => void;
 }
 
@@ -223,6 +224,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Bottom User Account & Language Section */}
         <div className="p-3 border-t border-navy-800/80 space-y-2 bg-navy-950">
           
+          {/* Direct API Integration Button */}
+          {onOpenApiIntegration && !isCollapsed && (
+            <button
+              onClick={onOpenApiIntegration}
+              className="w-full py-2.5 px-3 rounded-2xl bg-gradient-to-r from-cyan-500 to-blue-600 text-navy-950 font-black text-xs shadow-lg hover:scale-[1.02] transition-all flex items-center justify-center gap-2 min-h-[44px]"
+            >
+              <span>🔌 Tích Hợp API Shopee / TikTok</span>
+            </button>
+          )}
+
           {/* Language Switcher */}
           {!isCollapsed ? (
             <div className="bg-navy-900 border border-navy-800 p-1 rounded-xl flex items-center justify-between text-xs font-bold">
