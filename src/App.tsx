@@ -394,16 +394,16 @@ export function App() {
           {(activeModule === 'inventory' || activeModule === '/inventory-alert') && (
             <LowStockAlert
               skus={extractedSkus}
-              orders={orders}
+              user={user}
               onUpdateThreshold={handleUpdateThreshold}
-              onOpenCogsModal={() => setShowCogsModal(true)}
+              onOpenUpgradeModal={() => setShowPricingModal(true)}
+              currentLang={currentLang}
             />
           )}
 
           {/* MODULE 4: CẤU HÌNH & BẢNG GIÁ VỐN (/sku-settings) */}
           {(activeModule === 'settings' || activeModule === '/sku-settings') && (
             <SkuSettingsModule
-              orders={orders}
               packagingCost={settings.packagingCost}
               feeThreshold={settings.feeThreshold}
               onPackagingCostChange={handlePackagingCostChange}
@@ -423,9 +423,9 @@ export function App() {
       {/* MODAL DIALOGS */}
       {showCogsModal && (
         <CogsModal
-          orders={orders}
+          skus={extractedSkus}
           onClose={() => setShowCogsModal(false)}
-          onSave={handleConfirmCOGS}
+          onConfirm={handleConfirmCOGS}
         />
       )}
 
