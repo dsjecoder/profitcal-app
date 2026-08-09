@@ -3,10 +3,10 @@ import { ShieldCheck, Zap, Lock, Heart } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="bg-navy-950 border-t border-navy-800/80 pt-12 pb-8 px-4 text-slate-400 text-xs">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+    <footer className="mt-auto w-full pt-12 pb-8 px-6 lg:px-8 border-t border-slate-800 bg-[#0a0d14] text-slate-400 text-xs">
+      <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         
-        {/* Brand */}
+        {/* Cột 1: ProfitCal Brand */}
         <div className="space-y-3">
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
@@ -25,7 +25,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Features */}
+        {/* Cột 2: Tính Năng Chính */}
         <div>
           <h4 className="font-bold text-white uppercase text-[11px] tracking-wider mb-3">Tính Năng Chính</h4>
           <ul className="space-y-2">
@@ -37,7 +37,7 @@ export const Footer: React.FC = () => {
           </ul>
         </div>
 
-        {/* Security & Privacy */}
+        {/* Cột 3: Bảo Mật Bắt Buộc */}
         <div>
           <h4 className="font-bold text-white uppercase text-[11px] tracking-wider mb-3">Bảo Mật Bắt Buộc</h4>
           <div className="p-3 rounded-xl bg-navy-900 border border-navy-800 space-y-2">
@@ -51,7 +51,7 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Contact & Subdomain */}
+        {/* Cột 4: Hệ Sinh Thái Tagki */}
         <div>
           <h4 className="font-bold text-white uppercase text-[11px] tracking-wider mb-3">Hệ Sinh Thái Tagki</h4>
           <p className="leading-relaxed">
@@ -65,7 +65,7 @@ export const Footer: React.FC = () => {
 
       </div>
 
-      <div className="max-w-7xl mx-auto pt-6 border-t border-navy-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+      <div className="w-full pt-6 border-t border-navy-900 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
         <p>© 2026 ProfitCal Tagki Inc. All rights reserved.</p>
         <p className="flex items-center gap-1">
           <span>Phát triển với</span>

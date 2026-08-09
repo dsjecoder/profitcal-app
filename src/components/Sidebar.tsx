@@ -126,10 +126,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Sidebar Main Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 bg-navy-950 border-r border-navy-800 flex flex-col justify-between transition-all duration-300 shadow-2xl ${
+        className={`bg-navy-950 border-r border-slate-800 flex flex-col justify-between shrink-0 h-full transition-all duration-300 shadow-2xl ${
           isCollapsed ? 'w-20' : 'w-64'
         } ${
-          isMobileOpen ? 'translate-x-0 w-72' : '-translate-x-full lg:translate-x-0'
+          isMobileOpen ? 'fixed inset-y-0 left-0 z-50 translate-x-0 w-72' : 'hidden lg:flex'
         }`}
       >
         {/* Top Header & Brand */}

@@ -310,9 +310,9 @@ export function App() {
   };
 
   return (
-    <div className="min-h-screen bg-navy-950 text-slate-100 flex selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
+    <div className="flex h-screen w-full overflow-hidden bg-[#0a0d14] text-slate-100 selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
       
-      {/* FIXED LEFT SIDEBAR NAVIGATION */}
+      {/* FIXED LEFT SIDEBAR NAVIGATION (w-64 / 256px) */}
       <Sidebar
         activeModule={activeModule}
         onSelectModule={setActiveModule}
@@ -325,8 +325,8 @@ export function App() {
         onLogout={handleLogout}
       />
 
-      {/* RIGHT MAIN CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 pt-16 lg:pt-0">
+      {/* RIGHT MAIN CONTENT AREA (flex-1 h-full overflow-y-auto p-6 lg:p-8) */}
+      <div className="flex-1 h-full overflow-y-auto p-6 lg:p-8 flex flex-col min-w-0 bg-[#0a0d14]">
         
         {/* Mobile Smartphone Optimization Banner */}
         <MobileNotice />
@@ -334,8 +334,8 @@ export function App() {
         {/* Security Banner & Quick Demo Loaders */}
         <DemoBanner onLoadDemo={handleLoadDemo} />
 
-        {/* Main Content Area */}
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        {/* Main Content Area (Full Widescreen Desktop) */}
+        <main className="flex-1 w-full py-2 space-y-8">
           
           {/* MODULE 1: TÍNH LỢI NHUẬN & THUẾ (/calculator) */}
           {activeModule === 'calc' && (
