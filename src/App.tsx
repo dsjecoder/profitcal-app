@@ -309,6 +309,13 @@ export function App() {
     alert('🎉 Yêu cầu nâng cấp Gói PRO của bạn đã được gửi tới Admin!\n\nAdmin sẽ kiểm tra giao dịch chuyển khoản và kích hoạt tài khoản PRO của bạn trong 5-15 phút.');
   };
 
+  // Auto-load initial demo data if orders list is empty
+  useEffect(() => {
+    if (orders.length === 0) {
+      handleLoadDemo('shopee');
+    }
+  }, []);
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#0a0d14] text-white selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
       
@@ -328,8 +335,8 @@ export function App() {
       {/* 2. KHU VỰC NỘI DUNG CHÍNH - Tự động cuộn dọc khi dài */}
       <main className="flex-1 h-full overflow-y-auto flex flex-col justify-between bg-[#0a0d14]">
         
-        {/* Phần chứa Viewport chức năng (Calculator, Excel Transformer, SKU...) */}
-        <div className="p-6 lg:p-8 flex-1 w-full space-y-8">
+        {/* CONTAINER CHỨA UI CỦA TỪNG TAB */}
+        <div className="p-6 lg:p-8 flex-1 w-full max-w-7xl mx-auto space-y-8">
           
           {/* Mobile Smartphone Optimization Banner */}
           <MobileNotice />
@@ -338,7 +345,7 @@ export function App() {
           <DemoBanner onLoadDemo={handleLoadDemo} />
 
           {/* MODULE 1: TÍNH LỢI NHUẬN & THUẾ (/calculator) */}
-          {activeModule === 'calc' && (
+          {(activeModule === 'calc' || activeModule === '/calculator') && (
             <ProfitCalculatorModule
               summary={summary}
               orders={orders}
@@ -355,7 +362,7 @@ export function App() {
           )}
 
           {/* MODULE 2: XỬ LÝ FILE VẬN CHUYỂN (/excel-transformer) */}
-          {activeModule === 'transformer' && (
+          {(activeModule === 'transformer' || activeModule === '/excel-transformer') && (
             <ExcelTransformerModule
               platform={platform}
               onPlatformChange={setPlatform}
@@ -366,7 +373,7 @@ export function App() {
           )}
 
           {/* MODULE 3: CẢNH BÁO TỒN KHO (/inventory-alert) */}
-          {activeModule === 'inventory' && (
+          {(activeModule === 'inventory' || activeModule === '/inventory-alert') && (
             <LowStockAlert
               skus={extractedSkus}
               user={user}
@@ -377,7 +384,7 @@ export function App() {
           )}
 
           {/* MODULE 4: CẤU HÌNH & BẢNG GIÁ VỐN (/sku-settings) */}
-          {activeModule === 'settings' && (
+          {(activeModule === 'settings' || activeModule === '/sku-settings') && (
             <SkuSettingsModule
               packagingCost={settings.packagingCost}
               feeThreshold={settings.feeThreshold}
@@ -392,9 +399,12 @@ export function App() {
         {/* Floating Support Widget (Zalo, FB, WhatsApp, Telegram) */}
         <ContactWidget />
 
-        {/* Phần Footer: Khối BÌNH THƯỜNG nằm ở ĐÁY trang cuộn (KHÔNG DÙNG absolute/fixed) */}
-        <Footer />
+        {/* 3. FOOTER NẰM Ở CỦA DÒNG CUỘN (DUY NHẤT 1 THẺ NẰM TRONG MAIN) */}
+        <footer className="w-full border-t border-slate-800/80 bg-[#07090e] p-8 mt-auto">
+          <Footer />
+        </footer>
       </main>
+
       {showCogsModal && (
         <CogsModal
           skus={extractedSkus}
@@ -449,9 +459,6 @@ export function App() {
           onClose={() => setShowTermsModal(false)}
         />
       )}
-
-      {/* Footer */}
-      <Footer />
 
     </div>
   );

@@ -20,7 +20,15 @@ import { UserState } from '../types';
 import { Language } from '../utils/i18n';
 import { getRemainingProDays } from '../utils/storage';
 
-export type ModuleType = 'calc' | 'transformer' | 'inventory' | 'settings';
+export type ModuleType =
+  | 'calc'
+  | 'transformer'
+  | 'inventory'
+  | 'settings'
+  | '/calculator'
+  | '/excel-transformer'
+  | '/inventory-alert'
+  | '/sku-settings';
 
 interface SidebarProps {
   activeModule: ModuleType;
@@ -175,12 +183,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {navItems.map((item) => {
             const Icon = item.icon;
-            const isActive = activeModule === item.id;
+            const isActive = activeModule === item.id || activeModule === (item.path as ModuleType);
             return (
               <button
                 key={item.id}
                 onClick={() => {
-                  onSelectModule(item.id);
+                  onSelectModule(item.path as ModuleType);
                   setIsMobileOpen(false);
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-3 rounded-2xl font-bold transition-all text-xs min-h-[48px] group relative ${
