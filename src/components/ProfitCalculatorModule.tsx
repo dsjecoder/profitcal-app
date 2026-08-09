@@ -32,6 +32,9 @@ interface ProfitCalculatorModuleProps {
   onPlatformChange?: (platform: PlatformType) => void;
   onFileUpload?: (file: File) => void;
   onLoadDemo?: (platform: PlatformType) => void;
+  onOpenApiIntegration?: () => void;
+  dataSourceMode?: 'DEMO' | 'EXCEL' | 'API';
+  dataSourceName?: string;
   currentLang: Language;
 }
 
@@ -49,6 +52,9 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   onPlatformChange,
   onFileUpload,
   onLoadDemo,
+  onOpenApiIntegration,
+  dataSourceMode = 'DEMO',
+  dataSourceName = 'Dữ liệu Mẫu',
   currentLang,
 }) => {
   // Quick Single Item Simulator State
@@ -97,11 +103,11 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
       {/* MAIN UNIFIED PANEL (bg-slate-900) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xl w-full">
         
-        {/* 1. TOOLBAR NGUỒN DỮ LIỆU (THIN DATA SOURCE TOOLBAR AT TOP - ENHANCED FONT SIZE) */}
+        {/* 1. TOOLBAR NGUỒN DỮ LIỆU (THIN DATA SOURCE TOOLBAR AT TOP - CONSOLIDATED 3 MODES) */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 bg-slate-950/80 rounded-2xl border border-slate-800/80">
           
           {/* Left: Module Badge & Platform Selector */}
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
               <Calculator className="w-6 h-6 text-emerald-400" />
               <span className="font-black text-base text-white">Profit & Tax Calculator</span>
@@ -133,8 +139,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             )}
           </div>
 
-          {/* Right: Data Source Actions (Upload File / Load Demo) */}
-          <div className="flex items-center gap-2.5">
+          {/* Right: Data Source Actions (3 explicit choices: Excel File / API Direct / Load Demo) */}
+          <div className="flex flex-wrap items-center gap-2">
             <input
               ref={fileInputRef}
               type="file"
@@ -151,10 +157,29 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-colors flex items-center gap-2 min-h-[44px]"
+                className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition-colors flex items-center gap-2 min-h-[40px] ${
+                  dataSourceMode === 'EXCEL'
+                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                }`}
               >
-                <Upload className="w-4.5 h-4.5 text-emerald-400" />
-                <span>Tải File Báo Cáo Excel</span>
+                <Upload className="w-4 h-4 text-cyan-400" />
+                <span>📂 Tải File Excel</span>
+              </button>
+            )}
+
+            {onOpenApiIntegration && (
+              <button
+                type="button"
+                onClick={onOpenApiIntegration}
+                className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition-colors flex items-center gap-2 min-h-[40px] ${
+                  dataSourceMode === 'API'
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                }`}
+              >
+                <Plug className="w-4 h-4 text-emerald-400" />
+                <span>🔌 API Direct</span>
               </button>
             )}
 
@@ -162,10 +187,14 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <button
                 type="button"
                 onClick={() => onLoadDemo(platform)}
-                className="px-4 py-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 font-bold text-sm border border-emerald-500/30 transition-colors flex items-center gap-2 min-h-[44px]"
+                className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition-colors flex items-center gap-2 min-h-[40px] ${
+                  dataSourceMode === 'DEMO'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
+                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                }`}
               >
-                <Zap className="w-4.5 h-4.5 text-emerald-400" />
-                <span>Nạp Mẫu Dữ Liệu</span>
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span>⚡ Nạp Dữ Liệu Mẫu</span>
               </button>
             )}
           </div>
@@ -434,6 +463,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
           onExportExcel={onExportExcel}
           onOpenShippingModal={onOpenShippingModal}
           platform={platform}
+          dataSourceMode={dataSourceMode}
+          dataSourceName={dataSourceName}
           currentLang={currentLang}
         />
       )}

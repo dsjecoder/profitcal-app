@@ -24,6 +24,8 @@ interface ExecutiveDashboardProps {
   onExportExcel: () => void;
   onOpenShippingModal?: () => void;
   platform: string;
+  dataSourceMode?: 'DEMO' | 'EXCEL' | 'API';
+  dataSourceName?: string;
   currentLang?: Language;
 }
 
@@ -38,6 +40,8 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
   onExportExcel,
   onOpenShippingModal,
   platform,
+  dataSourceMode = 'DEMO',
+  dataSourceName = 'Dữ liệu Mẫu',
   currentLang = 'vi',
 }) => {
   const isFeeHigh = summary.avgFeeRatio > feeThreshold;
@@ -73,12 +77,22 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       {/* UNIFIED SINGLE MAIN PANEL FOR FINANCIAL AUDIT (bg-slate-900) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xl w-full">
         
-        {/* 1. HEADER PANEL: TITLE + PLATFORM BADGE + ACTION BUTTON GROUP ON 1 HORIZONTAL ROW */}
+        {/* 1. HEADER PANEL: TITLE + DATA SOURCE BADGE + ACTION BUTTON GROUP */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-5 bg-slate-950/80 rounded-2xl border border-slate-800">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-2xl lg:text-3xl font-black text-white">Báo Cáo Kiểm Toán Tài Chính Lô Đơn Hàng</span>
-            <span className="px-3.5 py-1 text-sm font-extrabold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              SÀN {platform.toUpperCase()} ({summary.totalOrders} ĐƠN)
+            <span className="text-2xl lg:text-3xl font-black text-white">Báo Cáo Kiểm Toán Tài Chính</span>
+            
+            {/* Clear Data Source Badge */}
+            <span className={`px-3.5 py-1 text-sm font-black rounded-full border ${
+              dataSourceMode === 'API'
+                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                : dataSourceMode === 'EXCEL'
+                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+            }`}>
+              {dataSourceMode === 'API' && `🟢 KẾT NỐI API TRỰC TIẾP (${platform.toUpperCase()})`}
+              {dataSourceMode === 'EXCEL' && `🔵 FILE BÁO CÁO EXCEL (${dataSourceName})`}
+              {dataSourceMode === 'DEMO' && `🟡 DỮ LIỆU MẪU DÙNG THỬ (${platform.toUpperCase()})`}
             </span>
           </div>
 

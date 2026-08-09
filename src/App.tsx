@@ -53,6 +53,10 @@ export function App() {
   // Active Navigation Module State ('calc' | 'transformer' | 'inventory' | 'settings')
   const [activeModule, setActiveModule] = useState<ModuleType>('calc');
 
+  // Data Source Provenance Tracking ('DEMO' | 'EXCEL' | 'API')
+  const [dataSourceMode, setDataSourceMode] = useState<'DEMO' | 'EXCEL' | 'API'>('DEMO');
+  const [dataSourceName, setDataSourceName] = useState<string>('Dữ liệu Mẫu');
+
   // Settings
   const [settings, setSettings] = useState(getAppSettings());
 
@@ -151,6 +155,9 @@ export function App() {
       );
 
       setOrders(parsed);
+      setDataSourceMode('EXCEL');
+      setDataSourceName(file.name);
+
       const skus = extractSkus(parsed);
       setExtractedSkus(skus);
       
@@ -187,6 +194,8 @@ export function App() {
     // Deep clone demo data
     const cloned = JSON.parse(JSON.stringify(demoData)) as OrderItem[];
     setOrders(cloned);
+    setDataSourceMode('DEMO');
+    setDataSourceName(`Dữ Liệu Mẫu ${targetPlatform.toUpperCase()}`);
 
     const skus = extractSkus(cloned);
     setExtractedSkus(skus);
@@ -340,12 +349,11 @@ export function App() {
         
         {/* CONTAINER CHỨA UI CỦA TỪNG TAB */}
         <div className="p-6 lg:p-8 flex-1 w-full max-w-7xl mx-auto space-y-8">
-          
           {/* Mobile Smartphone Optimization Banner */}
           <MobileNotice />
 
-          {/* Security Banner & Quick Demo Loaders */}
-          <DemoBanner onLoadDemo={handleLoadDemo} />
+          {/* Security Client-Side Banner */}
+          <DemoBanner />
 
           {/* MODULE 1: TÍNH LỢI NHUẬN & THUẾ (/calculator) */}
           {(activeModule === 'calc' || activeModule === '/calculator') && (
@@ -363,6 +371,9 @@ export function App() {
               onPlatformChange={setPlatform}
               onFileUpload={handleFileUpload}
               onLoadDemo={handleLoadDemo}
+              onOpenApiIntegration={() => setShowApiIntegrationModal(true)}
+              dataSourceMode={dataSourceMode}
+              dataSourceName={dataSourceName}
               currentLang={currentLang}
             />
           )}
@@ -382,16 +393,16 @@ export function App() {
           {(activeModule === 'inventory' || activeModule === '/inventory-alert') && (
             <LowStockAlert
               skus={extractedSkus}
-              user={user}
+              orders={orders}
               onUpdateThreshold={handleUpdateThreshold}
-              onOpenUpgradeModal={() => setShowPricingModal(true)}
-              currentLang={currentLang}
+              onOpenCogsModal={() => setShowCogsModal(true)}
             />
           )}
 
           {/* MODULE 4: CẤU HÌNH & BẢNG GIÁ VỐN (/sku-settings) */}
           {(activeModule === 'settings' || activeModule === '/sku-settings') && (
             <SkuSettingsModule
+              orders={orders}
               packagingCost={settings.packagingCost}
               feeThreshold={settings.feeThreshold}
               onPackagingCostChange={handlePackagingCostChange}
@@ -402,39 +413,26 @@ export function App() {
 
         </div>
 
-        {/* Floating Support Widget (Zalo, FB, WhatsApp, Telegram) */}
-        <ContactWidget />
-
-        {/* 3. FOOTER NẰM Ở CỦA DÒNG CUỘN (DUY NHẤT 1 THẺ NẰM TRONG MAIN) */}
+        {/* FOOTER DASHBOARD CỐ ĐỊNH Ở ĐÁY MÀN HÌNH NỘI DUNG */}
         <footer className="w-full border-t border-slate-800/80 bg-[#07090e] p-8 mt-auto">
           <Footer />
         </footer>
       </main>
 
+      {/* MODAL DIALOGS */}
       {showCogsModal && (
         <CogsModal
-          skus={extractedSkus}
-          onConfirm={handleConfirmCOGS}
+          orders={orders}
           onClose={() => setShowCogsModal(false)}
+          onSave={handleConfirmCOGS}
         />
       )}
 
       {showShippingModal && (
         <ShippingExportModal
           orders={orders}
-          user={user}
           onClose={() => setShowShippingModal(false)}
-          onOpenUpgradeModal={() => {
-            setShowShippingModal(false);
-            setShowPricingModal(true);
-          }}
-        />
-      )}
-
-      {showDisputeModal && (
-        <DisputeClaimModal
-          orders={orders}
-          onClose={() => setShowDisputeModal(false)}
+          platform={platform}
         />
       )}
 
@@ -471,6 +469,8 @@ export function App() {
           onClose={() => setShowApiIntegrationModal(false)}
           onSyncSuccess={(apiOrders) => {
             setOrders(apiOrders);
+            setDataSourceMode('API');
+            setDataSourceName('Direct API Connection');
             setShowApiIntegrationModal(false);
           }}
         />
