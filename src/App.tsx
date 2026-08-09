@@ -432,8 +432,12 @@ export function App() {
       {showShippingModal && (
         <ShippingExportModal
           orders={orders}
+          user={user}
           onClose={() => setShowShippingModal(false)}
-          platform={platform}
+          onOpenUpgradeModal={() => {
+            setShowShippingModal(false);
+            setShowPricingModal(true);
+          }}
         />
       )}
 
