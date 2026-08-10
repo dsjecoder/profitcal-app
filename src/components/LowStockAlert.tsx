@@ -51,7 +51,6 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
   };
 
   return (
-  return (
     <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6 my-8">
       
       {/* Header */}
