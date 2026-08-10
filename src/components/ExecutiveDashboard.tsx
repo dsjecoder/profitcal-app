@@ -78,53 +78,47 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xl w-full">
         
         {/* 1. HEADER PANEL: TITLE + DATA SOURCE BADGE + ACTION BUTTON GROUP */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-5 bg-slate-950/80 rounded-2xl border border-slate-800">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 bg-slate-950/80 rounded-2xl border border-slate-800">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-2xl lg:text-3xl font-black text-white">Báo Cáo Kiểm Toán Tài Chính</span>
+            <span className="text-xl font-bold text-white">Báo cáo kiểm toán tài chính</span>
             
-            {/* Clear Data Source Badge */}
-            <span className={`px-3.5 py-1 text-sm font-black rounded-full border ${
-              dataSourceMode === 'API'
-                ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                : dataSourceMode === 'EXCEL'
-                ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                : 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-            }`}>
-              {dataSourceMode === 'API' && `🟢 KẾT NỐI API TRỰC TIẾP (${platform.toUpperCase()})`}
-              {dataSourceMode === 'EXCEL' && `🔵 FILE BÁO CÁO EXCEL (${dataSourceName})`}
-              {dataSourceMode === 'DEMO' && `🟡 DỮ LIỆU MẪU DÙNG THỬ (${platform.toUpperCase()})`}
+            {/* Data Source Badge */}
+            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700">
+              {dataSourceMode === 'API' && `API Direct (${platform.toUpperCase()})`}
+              {dataSourceMode === 'EXCEL' && `Excel (${dataSourceName})`}
+              {dataSourceMode === 'DEMO' && `Dữ liệu mẫu (${platform.toUpperCase()})`}
             </span>
           </div>
 
           {/* Action Button Group */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             {onOpenShippingModal && (
               <button
                 type="button"
                 onClick={onOpenShippingModal}
-                className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-cyan-300 font-bold text-sm border border-slate-700 transition-colors flex items-center gap-2 min-h-[44px]"
+                className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700 transition-colors flex items-center gap-2"
               >
-                <Truck className="w-4.5 h-4.5 text-cyan-400" />
-                <span>Ghép File Vận Chuyển Excel</span>
+                <Truck className="w-4 h-4 text-slate-400" />
+                <span>Ghép file vận chuyển</span>
               </button>
             )}
 
             <button
               type="button"
               onClick={onOpenCogsModal}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-sm border border-slate-700 transition-colors flex items-center gap-2 min-h-[44px]"
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-sm border border-slate-700 transition-colors flex items-center gap-2"
             >
-              <Settings className="w-4.5 h-4.5 text-emerald-400" />
-              <span>Sửa Giá Vốn (COGS)</span>
+              <Settings className="w-4 h-4 text-slate-400" />
+              <span>Sửa giá vốn</span>
             </button>
 
             <button
               type="button"
               onClick={onExportExcel}
-              className="px-4.5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-sm transition-all flex items-center gap-2 min-h-[44px] shadow-lg"
+              className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-colors flex items-center gap-2 shadow-md"
             >
-              <FileSpreadsheet className="w-4.5 h-4.5" />
-              <span>Xuất Báo Cáo Excel</span>
+              <FileSpreadsheet className="w-4 h-4" />
+              <span>Xuất báo cáo Excel</span>
             </button>
           </div>
         </div>

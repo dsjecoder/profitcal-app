@@ -101,38 +101,38 @@ export const ExcelTransformerModule: React.FC<ExcelTransformerModuleProps> = ({
       )}
 
       {/* HEADER TITLE */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-navy-900/60 p-4 rounded-3xl border border-navy-800">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-slate-900 p-5 rounded-3xl border border-slate-800">
         <div>
-          <h2 className="text-xl font-black text-white flex items-center gap-2">
-            <Truck className="w-6 h-6 text-cyan-400" />
-            <span>Mô-đun 2: Xử Lý File Đơn Hàng & Chuẩn Hóa Vận Chuyển</span>
+          <h2 className="text-xl font-bold text-white flex items-center gap-2">
+            <Truck className="w-5 h-5 text-emerald-400" />
+            <span>Xử lý file vận chuyển</span>
           </h2>
           <p className="text-xs text-slate-400 mt-1">
-            Kéo thả file báo cáo đối soát từ Shopee hoặc TikTok Shop để tách thông tin vận chuyển.
+            Bóc tách dữ liệu vận chuyển từ báo cáo đối soát sàn.
           </p>
         </div>
 
-        {/* Platform Selector Switcher */}
-        <div className="bg-navy-950 p-1 rounded-2xl border border-navy-800 flex gap-1 text-xs font-bold">
+        {/* Platform Selector */}
+        <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 text-xs font-semibold">
           <button
             onClick={() => onPlatformChange('shopee')}
-            className={`px-4 py-2 rounded-xl transition-all min-h-[44px] ${
+            className={`px-3 py-1.5 rounded-lg transition-all ${
               platform === 'shopee'
-                ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-navy-950 shadow-lg'
+                ? 'bg-slate-800 text-emerald-400 border border-slate-700'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            🟧 Shopee Mall / Shop
+            Shopee
           </button>
           <button
             onClick={() => onPlatformChange('tiktok')}
-            className={`px-4 py-2 rounded-xl transition-all min-h-[44px] ${
+            className={`px-3 py-1.5 rounded-lg transition-all ${
               platform === 'tiktok'
-                ? 'bg-gradient-to-r from-cyan-400 to-blue-500 text-navy-950 shadow-lg'
+                ? 'bg-slate-800 text-emerald-400 border border-slate-700'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            ⬛ TikTok Shop
+            TikTok Shop
           </button>
         </div>
       </div>
@@ -144,10 +144,10 @@ export const ExcelTransformerModule: React.FC<ExcelTransformerModuleProps> = ({
         onDragOver={handleDrag}
         onDrop={handleDrop}
         onClick={() => fileInputRef.current?.click()}
-        className={`bg-navy-900 border-2 border-dashed rounded-3xl p-10 text-center cursor-pointer transition-all duration-300 shadow-2xl relative overflow-hidden group ${
+        className={`bg-slate-900 border-2 border-dashed rounded-3xl p-8 text-center cursor-pointer transition-all duration-300 relative overflow-hidden group ${
           dragActive
-            ? 'border-emerald-400 bg-emerald-950/20 scale-[1.01]'
-            : 'border-navy-700 hover:border-emerald-500/50 hover:bg-navy-850'
+            ? 'border-emerald-500 bg-emerald-950/20'
+            : 'border-slate-800 hover:border-slate-700 hover:bg-slate-900/80'
         }`}
       >
         <input
@@ -159,80 +159,79 @@ export const ExcelTransformerModule: React.FC<ExcelTransformerModuleProps> = ({
         />
 
         <div className="max-w-md mx-auto space-y-4">
-          <div className="w-16 h-16 rounded-3xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center mx-auto text-emerald-400 group-hover:scale-110 transition-transform">
-            <FileSpreadsheet className="w-8 h-8" />
+          <div className="w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+            <FileSpreadsheet className="w-7 h-7" />
           </div>
 
           <div className="space-y-1">
-            <h3 className="text-lg font-black text-white">
-              Kéo thả file báo cáo Shopee / TikTok vào đây hoặc Bấm để chọn file
+            <h3 className="text-base font-semibold text-white">
+              Kéo thả file vào đây hoặc
             </h3>
-            <p className="text-xs text-slate-400 font-mono">
-              Hỗ trợ định dạng Excel chuẩn: .xlsx, .xls, .csv (Tải lên tới 10,000 đơn/lần)
+            <p className="text-xs text-slate-400">
+              Hỗ trợ định dạng file Excel: .xlsx, .xls, .csv
             </p>
           </div>
 
           <button
             type="button"
-            className="px-6 py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-teal-400 text-navy-950 font-black text-xs shadow-xl group-hover:scale-105 transition-all min-h-[48px] inline-flex items-center gap-2"
+            className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-md transition-colors inline-flex items-center gap-2"
           >
             <Upload className="w-4 h-4" />
-            <span>Chọn File Báo Cáo Từ Máy Tính</span>
+            <span>Chọn file</span>
           </button>
         </div>
 
         {/* SECURITY GUARANTEE NOTICE */}
-        <div className="mt-6 pt-4 border-t border-navy-800/80 flex items-center justify-center gap-2 text-[11px] text-slate-400 font-mono">
-          <span className="text-emerald-400">🔒</span>
-          <span>Dữ liệu Excel của bạn được xử lý trực tiếp trên trình duyệt và không được lưu trữ tại máy chủ.</span>
+        <div className="mt-6 pt-4 border-t border-slate-800/80 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <span>🔒 Dữ liệu được xử lý trực tiếp trên trình duyệt, bảo mật 100%.</span>
         </div>
       </div>
 
       {/* LIVE PREVIEW TABLE & FAST-ACTION EXPORT BUTTONS */}
       {orders.length > 0 && (
-        <div className="bg-navy-900 border border-navy-800 rounded-3xl p-6 space-y-6 shadow-2xl">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 space-y-6 shadow-2xl">
           
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-navy-800 pb-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
             <div>
-              <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                <span>Xem Trước Dữ Liệu Sau Khi Chuẩn Hóa ({orders.length} Đơn Hàng)</span>
+                <span>Xem trước dữ liệu ({orders.length} đơn hàng)</span>
               </h3>
-              <p className="text-xs text-slate-400">Dưới đây là 5 dòng dữ liệu đầu tiên đã bóc tách các trường vận chuyển.</p>
+              <p className="text-xs text-slate-400">Dưới đây là 5 đơn hàng đầu tiên.</p>
             </div>
 
-            {/* FAST-ACTION EXPORT BUTTONS */}
+            {/* FAST-ACTION EXPORT BUTTONS - UNIFORM SECONDARY STYLE */}
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => handleExportCarrier('viettelpost')}
-                className="px-3.5 py-2.5 rounded-xl bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-bold text-xs border border-rose-500/40 flex items-center gap-1.5 min-h-[44px]"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition-colors flex items-center gap-1.5"
               >
-                <Download className="w-4 h-4 text-rose-400" />
-                <span>Xuất File Viettel Post</span>
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+                <span>Viettel Post</span>
               </button>
 
               <button
                 onClick={() => handleExportCarrier('ghtk')}
-                className="px-3.5 py-2.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs border border-emerald-500/40 flex items-center gap-1.5 min-h-[44px]"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition-colors flex items-center gap-1.5"
               >
-                <Download className="w-4 h-4 text-emerald-400" />
-                <span>Xuất File GHTK</span>
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+                <span>GHTK</span>
               </button>
 
               <button
                 onClick={() => handleExportCarrier('ghn')}
-                className="px-3.5 py-2.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 font-bold text-xs border border-amber-500/40 flex items-center gap-1.5 min-h-[44px]"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition-colors flex items-center gap-1.5"
               >
-                <Download className="w-4 h-4 text-amber-400" />
-                <span>Xuất File GHN</span>
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+                <span>GHN</span>
               </button>
 
               <button
                 onClick={() => handleExportCarrier('spx')}
-                className="px-3.5 py-2.5 rounded-xl bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-bold text-xs border border-cyan-500/40 flex items-center gap-1.5 min-h-[44px]"
+                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium text-xs border border-slate-700 transition-colors flex items-center gap-1.5"
               >
-                <Download className="w-4 h-4 text-cyan-400" />
-                <span>Xuất File SPX Express</span>
+                <Download className="w-3.5 h-3.5 text-slate-400" />
+                <span>SPX Express</span>
               </button>
             </div>
           </div>

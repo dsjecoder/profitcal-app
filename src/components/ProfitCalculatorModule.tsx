@@ -144,43 +144,45 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
       {/* MAIN UNIFIED PANEL (bg-slate-900) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xl w-full">
         
-        {/* 1. TOOLBAR NGUỒN DỮ LIỆU (THIN DATA SOURCE TOOLBAR AT TOP - CONSOLIDATED 3 MODES) */}
+        {/* 1. TOOLBAR NGUỒN DỮ LIỆU (DATA SOURCE TOOLBAR) */}
         <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 p-4 bg-slate-950/80 rounded-2xl border border-slate-800/80">
           
-          {/* Left: Module Badge & Platform Selector */}
+          {/* Left: Title & Segmented Platform Selector */}
           <div className="flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <Calculator className="w-6 h-6 text-emerald-400" />
-              <span className="font-black text-base text-white">Profit & Tax Calculator</span>
+              <Calculator className="w-5 h-5 text-emerald-400" />
+              <span className="font-bold text-base text-white">Tính lợi nhuận & thuế</span>
             </div>
 
             {onPlatformChange && (
-              <div className="bg-slate-900 p-1 rounded-xl border border-slate-800 flex gap-1 text-sm font-bold ml-2">
+              <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center gap-1 text-sm font-medium ml-2 shadow-inner">
                 <button
+                  type="button"
                   onClick={() => onPlatformChange('shopee')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                  className={`px-3 py-1 rounded-lg transition-all text-xs font-semibold ${
                     platform === 'shopee'
-                      ? 'bg-orange-500 text-slate-950 font-black'
+                      ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  🟧 Shopee
+                  Shopee
                 </button>
                 <button
+                  type="button"
                   onClick={() => onPlatformChange('tiktok')}
-                  className={`px-3.5 py-1.5 rounded-lg transition-all ${
+                  className={`px-3 py-1 rounded-lg transition-all text-xs font-semibold ${
                     platform === 'tiktok'
-                      ? 'bg-cyan-400 text-slate-950 font-black'
+                      ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
                       : 'text-slate-400 hover:text-white'
                   }`}
                 >
-                  ⬛ TikTok Shop
+                  TikTok Shop
                 </button>
               </div>
             )}
           </div>
 
-          {/* Right: Data Source Actions (3 explicit choices: Excel File / API Direct / Load Demo) */}
+          {/* Right: Data Source Actions (Primary CTA: Excel File, Secondary: Demo Data & API Direct) */}
           <div className="flex flex-wrap items-center gap-2">
             <input
               ref={fileInputRef}
@@ -198,29 +200,10 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition-colors flex items-center gap-2 min-h-[40px] ${
-                  dataSourceMode === 'EXCEL'
-                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-                }`}
+                className="px-4 py-2 rounded-xl text-sm font-semibold bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors flex items-center gap-2 shadow-md"
               >
-                <Upload className="w-4 h-4 text-cyan-400" />
-                <span>📂 Tải File Excel</span>
-              </button>
-            )}
-
-            {onOpenApiIntegration && (
-              <button
-                type="button"
-                onClick={onOpenApiIntegration}
-                className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition-colors flex items-center gap-2 min-h-[40px] ${
-                  dataSourceMode === 'API'
-                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40 shadow-sm'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
-                }`}
-              >
-                <Plug className="w-4 h-4 text-emerald-400" />
-                <span>🔌 API Direct</span>
+                <Upload className="w-4 h-4" />
+                <span>Chọn file Excel</span>
               </button>
             )}
 
@@ -228,43 +211,41 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <button
                 type="button"
                 onClick={() => onLoadDemo(platform)}
-                className={`px-3.5 py-2 rounded-xl text-sm font-bold border transition-colors flex items-center gap-2 min-h-[40px] ${
-                  dataSourceMode === 'DEMO'
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
-                }`}
+                className="px-3.5 py-2 rounded-xl text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
               >
-                <Zap className="w-4 h-4 text-amber-400" />
-                <span>⚡ Nạp Dữ Liệu Mẫu</span>
+                <Zap className="w-4 h-4 text-slate-400" />
+                <span>Nạp dữ liệu mẫu</span>
+              </button>
+            )}
+
+            {onOpenApiIntegration && (
+              <button
+                type="button"
+                onClick={onOpenApiIntegration}
+                className="px-3.5 py-2 rounded-xl text-sm font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors flex items-center gap-1.5"
+              >
+                <Plug className="w-4 h-4 text-slate-400" />
+                <span>API Direct</span>
               </button>
             )}
           </div>
 
         </div>
 
-        {/* 2. HERO METRIC & SECONDARY METRICS DISPLAY SECTION - ENHANCED FONT SIZE */}
+        {/* 2. HERO METRIC & SECONDARY METRICS DISPLAY SECTION */}
         <div className="space-y-5 pt-2">
           
           <div className="flex flex-col lg:flex-row items-start lg:items-end justify-between gap-6 pb-2">
             
-            {/* HERO METRIC: LỢI NHUẬN RÒNG (NET PROFIT) */}
-            <div className="space-y-1.5">
-              <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wider text-slate-400">
-                <span>HERO METRIC • LỢI NHUẬN RÒNG (NET PROFIT)</span>
-                {isProfitPositive ? (
-                  <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30">
-                    🟢 LÃI THỰC TẾ
-                  </span>
-                ) : (
-                  <span className="px-2.5 py-0.5 rounded-full bg-rose-500/20 text-rose-400 text-xs font-bold border border-rose-500/30 animate-pulse">
-                    🔴 CẢNH BÁO BÁN LỖ
-                  </span>
-                )}
+            {/* HERO METRIC: LỢI NHUẬN RÒNG */}
+            <div className="space-y-1">
+              <div className="text-sm font-medium text-slate-400">
+                Lợi nhuận ròng
               </div>
 
               {/* HUGE EMERALD GREEN FONT (#10b981) */}
-              <div className={`text-6xl lg:text-7xl font-black font-mono tracking-tight ${
-                isProfitPositive ? 'text-[#10b981]' : 'text-rose-500'
+              <div className={`text-5xl lg:text-6xl font-bold font-mono tracking-tight ${
+                isProfitPositive ? 'text-[#10b981]' : 'text-rose-400'
               }`}>
                 {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(itemNetProfit)}
               </div>
@@ -273,12 +254,12 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             {/* SECONDARY METRICS: TỶ SUẤT & DOANH THU THÔ */}
             <div className="flex flex-wrap items-center gap-6 font-mono text-slate-300">
               <div>
-                <span className="text-xs text-slate-400 block uppercase font-sans font-bold mb-1">Tỷ Suất Lợi Nhuận</span>
-                <span className="text-3xl font-black text-white">{itemProfitMargin.toFixed(1)}%</span>
+                <span className="text-xs text-slate-400 block font-sans font-medium mb-1">Tỷ suất lợi nhuận</span>
+                <span className="text-2xl font-bold text-white">{itemProfitMargin.toFixed(1)}%</span>
               </div>
               <div className="border-l border-slate-800 pl-6">
-                <span className="text-xs text-slate-400 block uppercase font-sans font-bold mb-1">Giá Bán Hóa Đơn</span>
-                <span className="text-2xl font-bold text-slate-200">
+                <span className="text-xs text-slate-400 block font-sans font-medium mb-1">Giá bán hóa đơn</span>
+                <span className="text-xl font-bold text-slate-200">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(sellPrice)}
                 </span>
               </div>
@@ -286,51 +267,51 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
           </div>
 
-          {/* HORIZONTAL DATA GRID FOR COST & NET PROFIT BREAKDOWN - ENHANCED FONT SIZE */}
-          <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800/80">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-5 divide-y md:divide-y-0 md:divide-x divide-slate-800">
+          {/* HORIZONTAL DATA GRID FOR COST & NET PROFIT BREAKDOWN */}
+          <div className="bg-slate-950/60 p-4 rounded-2xl border border-slate-800/80">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 divide-y md:divide-y-0 md:divide-x divide-slate-800">
               
               {/* Cột 1: Giá vốn COGS */}
-              <div className="space-y-1.5">
-                <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                  Giá Vốn COGS
+              <div className="space-y-1">
+                <span className="text-slate-400 text-xs font-medium block font-sans">
+                  Giá vốn COGS
                 </span>
-                <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
+                <div className="text-slate-100 text-base font-medium font-mono">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(costPrice)}
-                  <span className="text-slate-400 text-sm ml-1.5 font-normal">({cogsPct.toFixed(1)}%)</span>
+                  <span className="text-slate-400 text-xs ml-1 font-normal">({cogsPct.toFixed(1)}%)</span>
                 </div>
               </div>
 
               {/* Cột 2: Phí sàn */}
-              <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-                <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                  Phí Sàn
+              <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
+                <span className="text-slate-400 text-xs font-medium block font-sans">
+                  Phí sàn
                 </span>
-                <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
+                <div className="text-slate-100 text-base font-medium font-mono">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalPlatformFees)}
-                  <span className="text-slate-400 text-sm ml-1.5 font-normal">({platformFeeRatioPct.toFixed(1)}%)</span>
+                  <span className="text-slate-400 text-xs ml-1 font-normal">({platformFeeRatioPct.toFixed(1)}%)</span>
                 </div>
               </div>
 
               {/* Cột 3: Thuế TMĐT (1.5%) */}
-              <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-                <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
+              <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
+                <span className="text-slate-400 text-xs font-medium block font-sans">
                   Thuế TMĐT (1.5%)
                 </span>
-                <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
+                <div className="text-slate-100 text-base font-medium font-mono">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(taxAmount)}
-                  <span className="text-slate-400 text-sm ml-1.5 font-normal">({taxRatioPct.toFixed(1)}%)</span>
+                  <span className="text-slate-400 text-xs ml-1 font-normal">({taxRatioPct.toFixed(1)}%)</span>
                 </div>
               </div>
 
-              {/* Cột 4: Lãi ròng (CHỈ DÙNG MÀU EMERALD GREEN #10b981 CHO CHỈ SỐ LÃI RÒNG NÀY) */}
-              <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-                <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                  Lãi Ròng
+              {/* Cột 4: Lãi ròng */}
+              <div className="space-y-1 pt-3 md:pt-0 md:pl-4">
+                <span className="text-slate-400 text-xs font-medium block font-sans">
+                  Lãi ròng
                 </span>
-                <div className="text-[#10b981] text-base lg:text-lg font-black font-mono">
+                <div className="text-[#10b981] text-base font-bold font-mono">
                   {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(itemNetProfit)}
-                  <span className="text-[#10b981]/80 text-sm ml-1.5 font-bold">({netMarginPct.toFixed(1)}%)</span>
+                  <span className="text-[#10b981]/80 text-xs ml-1 font-medium">({netMarginPct.toFixed(1)}%)</span>
                 </div>
               </div>
 
@@ -339,69 +320,81 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
         </div>
 
-        {/* 3. NORMALIZED FORM INPUT LAYOUT (ENHANCED FONT SIZE) */}
+        {/* 3. FORM INPUT LAYOUT */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 border-t border-slate-800/80">
           
           {/* COLUMN 1: PRODUCT PRICE & COST INPUTS */}
           <div className="space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-400">
-              1. Thông Số Giá Sản Phẩm & Bao Bì
-            </h3>
-
-            <div className="space-y-3.5">
-              <div>
-                <label className="text-sm font-bold text-slate-200 block mb-1.5">Giá Bán Sản Phẩm (VNĐ):</label>
-                <input
-                  type="number"
-                  value={sellPrice}
-                  onChange={(e) => setSellPrice(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-white font-mono font-bold text-lg focus:border-emerald-500 transition-colors min-h-[48px]"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-bold text-slate-200 block mb-1.5">Giá Vốn Nhập Kho COGS (VNĐ):</label>
-                <input
-                  type="number"
-                  value={costPrice}
-                  onChange={(e) => setCostPrice(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-amber-300 font-mono font-bold text-lg focus:border-amber-500 transition-colors min-h-[48px]"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm font-bold text-slate-200 block mb-1.5">Chi Phí Đóng Gói Bao Bì (VNĐ):</label>
-                <input
-                  type="number"
-                  value={customPackCost}
-                  onChange={(e) => {
-                    const val = Number(e.target.value);
-                    setCustomPackCost(val);
-                    onPackagingCostChange(val);
-                  }}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 font-mono font-bold text-base transition-colors min-h-[48px]"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* COLUMN 2: PLATFORM FEE TOGGLE SWITCHES */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-400">
-              2. Công Tắc Tinh Chỉnh Phí Sàn & Thuế (Toggle Switches)
+            <h3 className="text-base font-bold text-slate-200">
+              Thông tin sản phẩm
             </h3>
 
             <div className="space-y-3">
-              {/* Toggle 1: Phí Cố Định */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
+              
+              <div className="flex items-center justify-between gap-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                <span className="text-sm text-slate-300 font-medium">Giá bán niêm yết</span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    value={sellPrice}
+                    onChange={(e) => setSellPrice(Number(e.target.value))}
+                    className="w-32 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-right font-mono text-sm font-bold text-emerald-400 focus:outline-none focus:border-emerald-500"
+                  />
+                  <span className="text-xs text-slate-400 font-mono">đ</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                <span className="text-sm text-slate-300 font-medium">Giá vốn sản phẩm (COGS)</span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    value={costPrice}
+                    onChange={(e) => setCostPrice(Number(e.target.value))}
+                    className="w-32 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-right font-mono text-sm font-bold text-slate-200 focus:outline-none focus:border-slate-600"
+                  />
+                  <span className="text-xs text-slate-400 font-mono">đ</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between gap-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
+                <span className="text-sm text-slate-300 font-medium">Chi phí bao bì / đóng gói</span>
+                <div className="flex items-center gap-1">
+                  <input
+                    type="number"
+                    value={customPackCost}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      setCustomPackCost(val);
+                      onPackagingCostChange(val);
+                    }}
+                    className="w-32 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-right font-mono text-sm font-bold text-slate-200 focus:outline-none focus:border-slate-600"
+                  />
+                  <span className="text-xs text-slate-400 font-mono">đ</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* COLUMN 2: PLATFORM FEES & TAX TOGGLES */}
+          <div className="space-y-4">
+            <h3 className="text-base font-bold text-slate-200">
+              Phí sàn & thuế
+            </h3>
+
+            <div className="space-y-3">
+              
+              {/* Toggle 1: Phí cố định */}
+              <div className="flex items-center justify-between gap-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={enableFixedFee}
                     onChange={(e) => setEnableFixedFee(e.target.checked)}
-                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer"
+                    className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
                   />
-                  <span className="text-sm font-bold text-slate-200">Phí Cố Định Sàn</span>
+                  <span className="text-sm text-slate-200 font-medium">Phí cố định sàn</span>
                 </div>
                 <div className="flex items-center gap-1 font-mono text-sm">
                   <input
@@ -409,22 +402,22 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     disabled={!enableFixedFee}
                     value={fixedFeePct}
                     onChange={(e) => setFixedFeePct(Number(e.target.value))}
-                    className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-center font-bold text-amber-400 min-h-[38px]"
+                    className="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-200"
                   />
-                  <span className="text-slate-400 font-bold">%</span>
+                  <span className="text-xs text-slate-400">%</span>
                 </div>
               </div>
 
-              {/* Toggle 2: Phí Dịch Vụ */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
+              {/* Toggle 2: Phí dịch vụ */}
+              <div className="flex items-center justify-between gap-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={enableServiceFee}
                     onChange={(e) => setEnableServiceFee(e.target.checked)}
-                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer"
+                    className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
                   />
-                  <span className="text-sm font-bold text-slate-200">Phí Dịch Vụ Sàn</span>
+                  <span className="text-sm text-slate-200 font-medium">Phí dịch vụ</span>
                 </div>
                 <div className="flex items-center gap-1 font-mono text-sm">
                   <input
@@ -432,22 +425,22 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     disabled={!enableServiceFee}
                     value={serviceFeePct}
                     onChange={(e) => setServiceFeePct(Number(e.target.value))}
-                    className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-center font-bold text-amber-400 min-h-[38px]"
+                    className="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-200"
                   />
-                  <span className="text-slate-400 font-bold">%</span>
+                  <span className="text-xs text-slate-400">%</span>
                 </div>
               </div>
 
               {/* Toggle 3: Freeship Xtra */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
+              <div className="flex items-center justify-between gap-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={enableFreeshipXtra}
                     onChange={(e) => setEnableFreeshipXtra(e.target.checked)}
-                    className="w-5 h-5 accent-emerald-500 rounded cursor-pointer"
+                    className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
                   />
-                  <span className="text-sm font-bold text-slate-200">Gói Freeship Xtra</span>
+                  <span className="text-sm text-slate-200 font-medium">Phí Freeship / Voucher Xtra</span>
                 </div>
                 <div className="flex items-center gap-1 font-mono text-sm">
                   <input
@@ -455,22 +448,22 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     disabled={!enableFreeshipXtra}
                     value={freeshipXtraPct}
                     onChange={(e) => setFreeshipXtraPct(Number(e.target.value))}
-                    className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-center font-bold text-amber-400 min-h-[38px]"
+                    className="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-200"
                   />
-                  <span className="text-slate-400 font-bold">%</span>
+                  <span className="text-xs text-slate-400">%</span>
                 </div>
               </div>
 
-              {/* Toggle 4: Thuế 1.5% */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-950/80 border border-slate-800">
+              {/* Toggle 4: Thuế TMĐT (1.5%) - NO RED COLOR */}
+              <div className="flex items-center justify-between gap-4 bg-slate-950/80 p-3 rounded-xl border border-slate-800">
                 <div className="flex items-center gap-3">
                   <input
                     type="checkbox"
                     checked={enableTax}
                     onChange={(e) => setEnableTax(e.target.checked)}
-                    className="w-5 h-5 accent-rose-500 rounded cursor-pointer"
+                    className="w-4 h-4 accent-emerald-500 rounded cursor-pointer"
                   />
-                  <span className="text-sm font-bold text-slate-200">Thuế TMĐT (1.5%)</span>
+                  <span className="text-sm text-slate-200 font-medium">Thuế TMĐT (1.5%)</span>
                 </div>
                 <div className="flex items-center gap-1 font-mono text-sm">
                   <input
@@ -478,9 +471,9 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     disabled={!enableTax}
                     value={taxPct}
                     onChange={(e) => setTaxPct(Number(e.target.value))}
-                    className="w-20 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-center font-bold text-rose-400 min-h-[38px]"
+                    className="w-16 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-center font-bold text-slate-200"
                   />
-                  <span className="text-slate-400 font-bold">%</span>
+                  <span className="text-xs text-slate-400">%</span>
                 </div>
               </div>
 
