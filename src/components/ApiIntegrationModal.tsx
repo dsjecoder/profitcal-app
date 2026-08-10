@@ -151,7 +151,7 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
             {(() => {
               const rec = getRecordForPlatform('SHOPEE');
               const isConnected = rec && rec.status === 'CONNECTED';
-              const isExpired = rec && rec.status === 'EXPIRED';
+              const isExpired = rec && rec.status === 'TOKEN_EXPIRED';
 
               return (
                 <div className="bg-slate-950 border border-slate-800 rounded-3xl p-5 space-y-4 relative overflow-hidden shadow-xl flex flex-col justify-between">
@@ -220,7 +220,7 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
             {(() => {
               const rec = getRecordForPlatform('TIKTOK');
               const isConnected = rec && rec.status === 'CONNECTED';
-              const isExpired = rec && rec.status === 'EXPIRED';
+              const isExpired = rec && rec.status === 'TOKEN_EXPIRED';
 
               return (
                 <div className="bg-slate-950 border border-slate-800 rounded-3xl p-5 space-y-4 relative overflow-hidden shadow-xl flex flex-col justify-between">
