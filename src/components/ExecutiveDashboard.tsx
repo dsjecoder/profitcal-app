@@ -170,7 +170,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
             {/* Cell 5: Thuế TMĐT 1.5% */}
             <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
+              <span className="text-slate-400 text-sm font-semibold block">
                 Thuế TMĐT (1.5%)
               </span>
               <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
@@ -181,30 +181,29 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           </div>
         </div>
 
-        {/* 3. HIGHLIGHT HERO METRIC (LỢI NHUẬN RÒNG STRIP - ENHANCED FONT SIZE) */}
-        <div className="bg-slate-950/80 p-6 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-          <div className="space-y-1.5">
-            <div className="flex items-center gap-2 text-sm font-extrabold uppercase tracking-wider text-slate-400">
-              <Sparkles className="w-5 h-5 text-emerald-400" />
-              <span>HERO METRIC • LỢI NHUẬN RÒNG BẮT ĐỐI SOÁT (NET PROFIT)</span>
+        {/* 3. HIGHLIGHT HERO METRIC (LỢI NHUẬN RÒNG STRIP) */}
+        <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="text-sm font-medium text-slate-400">
+              Lợi nhuận ròng đối soát
             </div>
-            <div className="text-5xl lg:text-6xl font-black font-mono text-[#10b981] tracking-tight">
+            <div className="text-4xl lg:text-5xl font-bold font-mono text-[#10b981] tracking-tight">
               {formatVND(summary.netProfit)}
             </div>
           </div>
 
           <div className="font-mono text-base text-right self-stretch sm:self-auto flex flex-col justify-center border-t sm:border-t-0 sm:border-l border-slate-800 pt-3 sm:pt-0 sm:pl-8">
-            <span className="text-sm text-slate-400 uppercase font-sans font-bold block mb-1">Tỷ Suất Lợi Nhuận Ròng</span>
-            <span className="text-3xl font-black text-white">{formatPercent(summary.profitMargin)}</span>
+            <span className="text-xs text-slate-400 font-sans font-medium block mb-1">Tỷ suất lợi nhuận</span>
+            <span className="text-2xl font-bold text-white">{formatPercent(summary.profitMargin)}</span>
           </div>
         </div>
 
-        {/* 4. TINH GỌN QUICK CONTROLS (FOOTER TOOLBAR MỎNG - ENHANCED FONT SIZE) */}
-        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 p-4.5 bg-slate-950/60 rounded-2xl border border-slate-800 text-sm text-slate-300 font-sans">
+        {/* 4. TINH GỌN QUICK CONTROLS (FOOTER TOOLBAR MỎNG) */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-6 p-4 bg-slate-950/60 rounded-2xl border border-slate-800 text-sm text-slate-300 font-sans">
           
           {/* Packaging Cost Input */}
           <div className="flex items-center gap-3">
-            <span className="font-bold text-slate-200">Chi phí đóng gói/đơn:</span>
+            <span className="font-medium text-slate-200">Chi phí đóng gói/đơn:</span>
             <div className="flex items-center gap-1.5">
               <input
                 type="text"
@@ -213,15 +212,15 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                   const val = parseInt(e.target.value.replace(/[^0-9]/g, ''), 10) || 0;
                   onPackagingCostChange(val);
                 }}
-                className="w-32 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 font-mono text-base font-bold text-white focus:outline-none focus:border-emerald-500 text-right min-h-[40px]"
+                className="w-32 bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 font-mono text-sm font-bold text-white focus:outline-none focus:border-emerald-500 text-right"
               />
-              <span className="text-slate-400 font-mono text-xs font-bold">VNĐ</span>
+              <span className="text-slate-400 font-mono text-xs">đ</span>
             </div>
           </div>
 
           {/* Fee Threshold Slider */}
           <div className="flex items-center gap-4 flex-1 max-w-md">
-            <span className="font-bold text-slate-200 shrink-0">Ngưỡng cảnh báo phí sàn:</span>
+            <span className="font-medium text-slate-200 shrink-0">Ngưỡng cảnh báo phí sàn:</span>
             <input
               type="range"
               min="5"
@@ -231,7 +230,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
               onChange={(e) => onFeeThresholdChange(parseInt(e.target.value, 10))}
               className="w-full accent-emerald-500 cursor-pointer h-2 bg-slate-900 rounded-lg"
             />
-            <span className="font-mono text-emerald-400 text-base font-black shrink-0">{feeThreshold}%</span>
+            <span className="font-mono text-emerald-400 text-sm font-bold shrink-0">{feeThreshold}%</span>
           </div>
 
         </div>
@@ -242,25 +241,20 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           {/* Bar Chart: Financial Overview */}
           <div className="lg:col-span-2 bg-slate-950/60 border border-slate-800 rounded-2xl p-5">
             <div className="mb-4">
-              <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">Biểu Đồ Dòng Tiền & Bóc Tách Chi Phí</h3>
+              <h3 className="text-sm font-semibold text-white">Biểu đồ dòng tiền & bóc tách chi phí</h3>
             </div>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={financialData} margin={{ top: 10, right: 10, left: 15, bottom: 20 }}>
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={11} tickLine={false} />
-                  <YAxis
-                    stroke="#94a3b8"
-                    fontSize={10}
-                    tickFormatter={(v) => `${(v / 1000).toLocaleString()}k`}
-                    tickLine={false}
-                  />
+                  <YAxis stroke="#94a3b8" fontSize={11} tickFormatter={(val) => `${(val / 1e6).toFixed(1)}M`} />
                   <Tooltip
-                    formatter={(value: any) => [formatVND(Number(value)), 'Giá trị']}
+                    formatter={(val: any) => [formatVND(Number(val)), 'Số tiền']}
                     contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px', color: '#fff' }}
                   />
                   <Bar dataKey="Amount" radius={[6, 6, 0, 0]}>
                     {financialData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.fill} />
+                      <Cell key={`cell-bar-${index}`} fill={entry.fill} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -271,7 +265,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           {/* Pie Chart: Platform Fees Breakdown */}
           <div className="bg-slate-950/60 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
             <div className="mb-2">
-              <h3 className="text-sm font-extrabold text-white uppercase tracking-wider">Phân Tích Loại Phí Sàn</h3>
+              <h3 className="text-sm font-semibold text-white">Phân tích loại phí sàn</h3>
             </div>
 
             <div className="h-44 w-full">
