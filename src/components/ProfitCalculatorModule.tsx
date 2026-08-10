@@ -107,36 +107,40 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const negativeOrders = orders.filter((o) => o.netProfit < 0 || o.isNegativeProfit);
 
+  const getFullDataSourceLabel = () => {
+    if (dataSourceMode === 'API') {
+      return platform === 'shopee' ? 'Dữ liệu API Shopee' : 'Dữ liệu API TikTok';
+    }
+    if (dataSourceMode === 'EXCEL') {
+      return `Dữ liệu EXCEL (${dataSourceName})`;
+    }
+    return platform === 'shopee' ? 'Dữ liệu DEMO Shopee' : 'Dữ liệu DEMO TikTok';
+  };
+
   return (
     <div className="space-y-6 animate-fade-in w-full">
       
-      {/* DATA SOURCE SUCCESS NOTIFICATION BANNER */}
+      {/* DATA CONTEXT BAR (STANDARDIZED DATA SOURCE STATUS) */}
       {orders.length > 0 && (
-        <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-200 shadow-xl">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-200 shadow-xl">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-black text-base shrink-0">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-sm shrink-0">
               ✓
             </div>
             <div>
-              <div className="font-black text-white flex items-center gap-2 text-base">
-                <span>Đã Nạp & Bóc Tách Thành Công {orders.length} Đơn Hàng</span>
-                <span className={`px-2.5 py-0.5 rounded text-xs font-mono font-black ${
-                  dataSourceMode === 'API'
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : dataSourceMode === 'EXCEL'
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
-                    : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
-                }`}>
-                  {dataSourceMode}
+              <div className="font-bold text-white flex items-center gap-2 text-sm">
+                <span>{getFullDataSourceLabel()}</span>
+                <span className="px-2 py-0.5 rounded text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
+                  {orders.length} đơn hàng
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Nguồn dữ liệu: <strong className="text-emerald-300 font-mono">{dataSourceName}</strong> (Sàn: <span className="uppercase text-white font-bold">{platform}</span>)
+                ✓ Đã đối soát thành công (Sàn: <span className="uppercase font-semibold text-slate-200">{platform}</span>)
               </p>
             </div>
           </div>
-          <div className="text-xs font-mono text-emerald-400 font-bold self-end sm:self-auto bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/20">
-            Tổng Doanh Thu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(summary.grossRevenue)}
+          <div className="text-xs font-mono text-emerald-400 font-semibold self-end sm:self-auto bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
+            Doanh thu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(summary.grossRevenue)}
           </div>
         </div>
       )}

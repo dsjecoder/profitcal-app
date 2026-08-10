@@ -151,33 +151,41 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
             {(() => {
               const rec = getRecordForPlatform('SHOPEE');
               const isConnected = rec && rec.status === 'CONNECTED';
+              const isExpired = rec && rec.status === 'EXPIRED';
 
               return (
-                <div className="bg-navy-950 border border-navy-800 rounded-3xl p-5 space-y-4 relative overflow-hidden shadow-xl flex flex-col justify-between">
+                <div className="bg-slate-950 border border-slate-800 rounded-3xl p-5 space-y-4 relative overflow-hidden shadow-xl flex flex-col justify-between">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2 font-extrabold text-white text-base">
-                        <span className="text-orange-500 text-xl">🟧</span>
-                        <span>Shopee Partner API v2</span>
+                      <div className="flex items-center gap-2 font-bold text-white text-base">
+                        <span className="text-emerald-400 font-bold">Shopee</span>
+                        <span>Partner API v2</span>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono border ${
-                        isConnected
-                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}>
-                        {isConnected ? '🟢 ĐÃ KẾT NỐI' : '⚪ CHƯA KẾT NỐI'}
+
+                      {/* Standardized Connection Status Badge */}
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-900 text-slate-300 border-slate-700">
+                        {isConnected && '✓ Đã kết nối'}
+                        {isExpired && '⚠ Cần kết nối lại'}
+                        {!isConnected && !isExpired && '○ Chưa kết nối'}
                       </span>
                     </div>
 
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Tự động kéo đơn hàng, phí cố định, phí dịch vụ Shopee Mall & Freeship Xtra qua Shopee Partner API.
+                      Tự động kéo đơn hàng, phí cố định, phí dịch vụ Shopee Mall & Freeship Xtra qua API.
                     </p>
 
                     {isConnected && (
-                      <div className="bg-navy-900 border border-navy-800 p-3 rounded-2xl space-y-1 font-mono text-[11px]">
-                        <div className="text-slate-300 font-bold">Gian hàng: {rec.shopName}</div>
-                        <div className="text-slate-400">Shop ID: <span className="text-cyan-400">{rec.shopId}</span></div>
-                        <div className="text-slate-400">Lượt đồng bộ gần nhất: <span className="text-emerald-400">{rec.lastSyncAt ? new Date(rec.lastSyncAt).toLocaleTimeString() : 'Vừa xong'}</span></div>
+                      <div className="bg-slate-900 border border-slate-800 p-3 rounded-2xl space-y-1 text-xs">
+                        <div className="text-slate-200 font-semibold">Cửa hàng: {rec.shopName}</div>
+                        <div className="text-slate-400">Mã gian hàng: <span className="font-mono text-slate-300">{rec.shopId}</span></div>
+                        <div className="text-slate-400">Cập nhật gần nhất: <span className="text-emerald-400">{rec.lastSyncAt ? new Date(rec.lastSyncAt).toLocaleTimeString('vi-VN') : 'Vừa xong'}</span></div>
+                      </div>
+                    )}
+
+                    {isExpired && (
+                      <div className="bg-rose-950/40 border border-rose-500/30 p-3 rounded-2xl text-xs space-y-1">
+                        <div className="text-rose-300 font-medium">⚠ Phiên kết nối đã hết hạn</div>
+                        <p className="text-slate-400 text-[11px]">Vui lòng kết nối lại để tiếp tục đồng bộ tự động.</p>
                       </div>
                     )}
                   </div>
@@ -185,24 +193,23 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
                   <div className="space-y-2 pt-2">
                     <button
                       onClick={() => handleSyncOrdersNow('SHOPEE')}
-                      disabled={isSyncing}
-                      className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 text-navy-950 font-black text-xs shadow-lg hover:scale-[1.02] transition-all min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-50"
+                      disabled={isSyncing || !isConnected}
+                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold text-sm transition-colors flex items-center justify-center gap-2"
                     >
                       <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                      <span>⚡ Đồng Bộ Đơn Hàng Shopee API</span>
+                      <span>{isSyncing ? '↻ Đang đồng bộ...' : 'Đồng bộ ngay'}</span>
                     </button>
 
                     <button
                       onClick={() => handleSimulateOAuthConnect('SHOPEE')}
                       disabled={connectingPlatform === 'SHOPEE'}
-                      className="w-full py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-300 font-bold text-xs min-h-[44px] border border-navy-700 flex items-center justify-center gap-2"
+                      className="w-full py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium text-xs border border-slate-700 transition-colors flex items-center justify-center gap-2"
                     >
                       {connectingPlatform === 'SHOPEE' ? (
-                        <RefreshCw className="w-4 h-4 text-amber-400 animate-spin" />
+                        <span>↻ Đang kết nối...</span>
                       ) : (
-                        <ExternalLink className="w-4 h-4 text-orange-400" />
+                        <span>{isConnected ? 'Kết nối lại' : 'Kết nối Shopee'}</span>
                       )}
-                      <span>{isConnected ? 'Ủy Quyền Lại (Re-auth OAuth 2.0)' : 'Ủy Quyền 1-Click Shopee'}</span>
                     </button>
                   </div>
                 </div>
@@ -213,33 +220,41 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
             {(() => {
               const rec = getRecordForPlatform('TIKTOK');
               const isConnected = rec && rec.status === 'CONNECTED';
+              const isExpired = rec && rec.status === 'EXPIRED';
 
               return (
-                <div className="bg-navy-950 border border-navy-800 rounded-3xl p-5 space-y-4 relative overflow-hidden shadow-xl flex flex-col justify-between">
+                <div className="bg-slate-950 border border-slate-800 rounded-3xl p-5 space-y-4 relative overflow-hidden shadow-xl flex flex-col justify-between">
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2 font-extrabold text-white text-base">
-                        <span className="text-cyan-400 text-xl">⬛</span>
-                        <span>TikTok Shop Open API</span>
+                      <div className="flex items-center gap-2 font-bold text-white text-base">
+                        <span className="text-emerald-400 font-bold">TikTok</span>
+                        <span>Open API v2</span>
                       </div>
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold font-mono border ${
-                        isConnected
-                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                          : 'bg-slate-800 text-slate-400 border-slate-700'
-                      }`}>
-                        {isConnected ? '🟢 ĐÃ KẾT NỐI' : '⚪ CHƯA KẾT NỐI'}
+
+                      {/* Standardized Connection Status Badge */}
+                      <span className="px-2.5 py-1 rounded-full text-xs font-medium border bg-slate-900 text-slate-300 border-slate-700">
+                        {isConnected && '✓ Đã kết nối'}
+                        {isExpired && '⚠ Cần kết nối lại'}
+                        {!isConnected && !isExpired && '○ Chưa kết nối'}
                       </span>
                     </div>
 
                     <p className="text-xs text-slate-400 leading-relaxed">
-                      Kết nối TikTok Seller Center, tự động đồng bộ doanh thu, phí chiết khấu và đơn hàng qua Open API.
+                      Đồng bộ tự động doanh thu thực nhận, hoa hồng tiếp thị và thuế TMĐT TikTok Shop.
                     </p>
 
                     {isConnected && (
-                      <div className="bg-navy-900 border border-navy-800 p-3 rounded-2xl space-y-1 font-mono text-[11px]">
-                        <div className="text-slate-300 font-bold">Gian hàng: {rec.shopName}</div>
-                        <div className="text-slate-400">Shop ID: <span className="text-cyan-400">{rec.shopId}</span></div>
-                        <div className="text-slate-400">Lượt đồng bộ gần nhất: <span className="text-emerald-400">{rec.lastSyncAt ? new Date(rec.lastSyncAt).toLocaleTimeString() : 'Vừa xong'}</span></div>
+                      <div className="bg-slate-900 border border-slate-800 p-3 rounded-2xl space-y-1 text-xs">
+                        <div className="text-slate-200 font-semibold">Cửa hàng: {rec.shopName}</div>
+                        <div className="text-slate-400">Mã gian hàng: <span className="font-mono text-slate-300">{rec.shopId}</span></div>
+                        <div className="text-slate-400">Cập nhật gần nhất: <span className="text-emerald-400">{rec.lastSyncAt ? new Date(rec.lastSyncAt).toLocaleTimeString('vi-VN') : 'Vừa xong'}</span></div>
+                      </div>
+                    )}
+
+                    {isExpired && (
+                      <div className="bg-rose-950/40 border border-rose-500/30 p-3 rounded-2xl text-xs space-y-1">
+                        <div className="text-rose-300 font-medium">⚠ Phiên kết nối đã hết hạn</div>
+                        <p className="text-slate-400 text-[11px]">Vui lòng kết nối lại để tiếp tục đồng bộ tự động.</p>
                       </div>
                     )}
                   </div>
@@ -247,24 +262,23 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
                   <div className="space-y-2 pt-2">
                     <button
                       onClick={() => handleSyncOrdersNow('TIKTOK')}
-                      disabled={isSyncing}
-                      className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-cyan-400 to-blue-500 text-navy-950 font-black text-xs shadow-lg hover:scale-[1.02] transition-all min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-50"
+                      disabled={isSyncing || !isConnected}
+                      className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold text-sm transition-colors flex items-center justify-center gap-2"
                     >
                       <RefreshCw className={`w-4 h-4 ${isSyncing ? 'animate-spin' : ''}`} />
-                      <span>⚡ Đồng Bộ Đơn Hàng TikTok API</span>
+                      <span>{isSyncing ? '↻ Đang đồng bộ...' : 'Đồng bộ ngay'}</span>
                     </button>
 
                     <button
                       onClick={() => handleSimulateOAuthConnect('TIKTOK')}
                       disabled={connectingPlatform === 'TIKTOK'}
-                      className="w-full py-2.5 px-4 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-300 font-bold text-xs min-h-[44px] border border-navy-700 flex items-center justify-center gap-2"
+                      className="w-full py-2 px-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium text-xs border border-slate-700 transition-colors flex items-center justify-center gap-2"
                     >
                       {connectingPlatform === 'TIKTOK' ? (
-                        <RefreshCw className="w-4 h-4 text-cyan-400 animate-spin" />
+                        <span>↻ Đang kết nối...</span>
                       ) : (
-                        <ExternalLink className="w-4 h-4 text-cyan-400" />
+                        <span>{isConnected ? 'Kết nối lại' : 'Kết nối TikTok'}</span>
                       )}
-                      <span>{isConnected ? 'Ủy Quyền Lại (Re-auth OAuth 2.0)' : 'Ủy Quyền 1-Click TikTok'}</span>
                     </button>
                   </div>
                 </div>
