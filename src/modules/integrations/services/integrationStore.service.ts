@@ -23,7 +23,12 @@ export function setActiveEnvironment(env: IntegrationEnvironment): void {
 export function getShopIntegrations(): ShopIntegrationRecord[] {
   try {
     const raw = localStorage.getItem(INTEGRATIONS_STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
   } catch (e) {}
 
   // Initial Demo Connected Shop Records
@@ -31,7 +36,7 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
   const shopeeExpiry = new Date(now.getTime() + 14400000).toISOString();
   const tiktokExpiry = new Date(now.getTime() + 86400000).toISOString();
 
-  return [
+  const initialRecords: ShopIntegrationRecord[] = [
     {
       id: 'integ_shopee_demo',
       userId: 'user_ecoder108',
@@ -47,6 +52,24 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
       isActive: true,
       lastSyncAt: now.toISOString(),
       syncedOrdersCount: 24,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    },
+    {
+      id: 'integ_shopee_prod',
+      userId: 'user_ecoder108',
+      platform: 'SHOPEE',
+      environment: 'PRODUCTION',
+      shopId: '98765432',
+      shopName: 'Gian Hàng Shopee Mall Chính Thức',
+      accessTokenEncrypted: encryptAES256('shopee_access_token_prod_12345'),
+      refreshTokenEncrypted: encryptAES256('shopee_refresh_token_prod_99999'),
+      accessTokenExpiresAt: shopeeExpiry,
+      refreshTokenExpiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
+      status: 'CONNECTED',
+      isActive: true,
+      lastSyncAt: now.toISOString(),
+      syncedOrdersCount: 42,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     },
@@ -68,7 +91,28 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     },
+    {
+      id: 'integ_tiktok_prod',
+      userId: 'user_ecoder108',
+      platform: 'TIKTOK',
+      environment: 'PRODUCTION',
+      shopId: '74589213',
+      shopName: 'Gian Hàng TikTok Shop Official',
+      accessTokenEncrypted: encryptAES256('tiktok_access_token_prod_67890'),
+      refreshTokenEncrypted: encryptAES256('tiktok_refresh_token_prod_88888'),
+      accessTokenExpiresAt: tiktokExpiry,
+      refreshTokenExpiresAt: new Date(now.getTime() + 90 * 86400000).toISOString(),
+      status: 'CONNECTED',
+      isActive: true,
+      lastSyncAt: now.toISOString(),
+      syncedOrdersCount: 35,
+      createdAt: now.toISOString(),
+      updatedAt: now.toISOString(),
+    },
   ];
+
+  saveShopIntegrations(initialRecords);
+  return initialRecords;
 }
 
 export function saveShopIntegrations(records: ShopIntegrationRecord[]): void {

@@ -21,10 +21,16 @@ interface ApiIntegrationModalProps {
 
 export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClose, onSyncSuccess }) => {
   const [environment, setEnvironment] = useState<IntegrationEnvironment>(getActiveEnvironment());
-  const [records, setRecords] = useState<ShopIntegrationRecord[]>(getShopIntegrations());
-  const [logs, setLogs] = useState<IntegrationLog[]>(getIntegrationLogs());
+  const [records, setRecords] = useState<ShopIntegrationRecord[]>(() => getShopIntegrations());
+  const [logs, setLogs] = useState<IntegrationLog[]>(() => getIntegrationLogs());
   const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [connectingPlatform, setConnectingPlatform] = useState<PlatformType | null>(null);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'warning' } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' | 'warning' = 'success') => {
+    setToast({ message, type });
+    setTimeout(() => setToast(null), 4000);
+  };
 
   const handleEnvironmentChange = (env: IntegrationEnvironment) => {
     setEnvironment(env);
@@ -32,6 +38,7 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
   };
 
   const handleSimulateOAuthConnect = (platform: PlatformType) => {
+    if (connectingPlatform) return; // Duplicate click protection
     setConnectingPlatform(platform);
 
     setTimeout(() => {
@@ -44,25 +51,37 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
         shopName: isShopee
           ? environment === 'SANDBOX' ? 'Shopee Mall (Sandbox Test Store)' : 'Gian Hàng Shopee Mall Chính Thức'
           : environment === 'SANDBOX' ? 'TikTok Seller (Sandbox Test Store)' : 'Gian Hàng TikTok Shop Official',
+        lastSyncAt: new Date().toISOString(),
       });
 
-      setRecords(getShopIntegrations());
-      setLogs(getIntegrationLogs());
+      // 1. REHYDRATE SINGLE SOURCE OF TRUTH FIRST
+      const freshRecords = getShopIntegrations();
+      const freshLogs = getIntegrationLogs();
+
+      // 2. UPDATE REACT STATES SYNCHRONOUSLY
+      setRecords(freshRecords);
+      setLogs(freshLogs);
       setConnectingPlatform(null);
-      alert(`🎉 Đã kết nối thành công với gian hàng ${newRecord.shopName} qua OAuth 2.0! (Token đã được mã hóa AES-256)`);
-    }, 1500);
+
+      // 3. NON-BLOCKING TOAST NOTIFICATION
+      showToast(`✓ Đã kết nối thành công với gian hàng ${newRecord.shopName}`, 'success');
+    }, 1200);
   };
 
   const handleSyncOrdersNow = async (platform: PlatformType) => {
+    if (isSyncing) return;
     setIsSyncing(true);
     try {
       const res = await syncDirectApiOrders(platform, environment);
       onSyncSuccess(res.orderItems);
+
+      // Rehydrate state
       setRecords(getShopIntegrations());
       setLogs(getIntegrationLogs());
-      alert(`⚡ Đã đồng bộ trực tiếp ${res.orderItems.length} đơn hàng qua API ${platform} (${environment}) vào ProfitCal Dashboard!`);
+
+      showToast(`✓ Đã đồng bộ ${res.orderItems.length} đơn hàng qua API ${platform}`, 'success');
     } catch (e) {
-      alert('Lỗi khi đồng bộ đơn hàng API. Vui lòng thử lại.');
+      showToast('⚠ Lỗi khi đồng bộ đơn hàng API. Vui lòng thử lại.', 'error');
     } finally {
       setIsSyncing(false);
     }
@@ -73,11 +92,18 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md animate-fade-in">
-      <div className="bg-navy-900 border border-navy-700 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
+      <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden">
         
+        {/* NON-BLOCKING TOAST NOTIFICATION */}
+        {toast && (
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 z-50 bg-slate-950 border border-emerald-500/50 text-emerald-400 px-4 py-2 rounded-xl text-xs font-semibold shadow-2xl flex items-center gap-2 animate-bounce">
+            <span>{toast.message}</span>
+          </div>
+        )}
+
         {/* Header */}
-        <div className="p-6 border-b border-navy-800 flex items-center justify-between bg-navy-950/80">
+        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20">
               <div className="w-full h-full bg-navy-950 rounded-[14px] flex items-center justify-center">
