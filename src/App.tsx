@@ -43,19 +43,25 @@ import { SkuSettingsModule } from './components/SkuSettingsModule';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
 import { submitUpgradeRequest, checkEmailProRecord } from './utils/upgradeTracker';
 
+import { getActiveDataset, saveDataset, switchPlatform as switchPlatformDataset, switchSource as switchSourceDataset } from './services/datasetManager';
+import { ActiveDataset } from './types/dataset';
+
 export function App() {
   const [user, setUser] = useState<UserState>(getUserState());
   const [currentLang, setCurrentLang] = useState<Language>(getInitialLanguage());
-  const [platform, setPlatform] = useState<PlatformType>('shopee');
-  const [orders, setOrders] = useState<OrderItem[]>([]);
+  
+  // Active Dataset State Machine
+  const [activeDataset, setActiveDataset] = useState<ActiveDataset>(() => getActiveDataset());
+  const [platform, setPlatform] = useState<PlatformType>(() => activeDataset.platform);
+  const [orders, setOrders] = useState<OrderItem[]>(() => activeDataset.orders);
   const [extractedSkus, setExtractedSkus] = useState<SKUData[]>([]);
 
   // Active Navigation Module State ('calc' | 'transformer' | 'inventory' | 'settings')
   const [activeModule, setActiveModule] = useState<ModuleType>('calc');
 
   // Data Source Provenance Tracking ('DEMO' | 'EXCEL' | 'API')
-  const [dataSourceMode, setDataSourceMode] = useState<'DEMO' | 'EXCEL' | 'API'>('DEMO');
-  const [dataSourceName, setDataSourceName] = useState<string>('Dữ liệu Mẫu');
+  const [dataSourceMode, setDataSourceMode] = useState<'DEMO' | 'EXCEL' | 'API'>(() => activeDataset.source);
+  const [dataSourceName, setDataSourceName] = useState<string>(() => activeDataset.fileName || `Dữ Liệu Mẫu ${activeDataset.platform.toUpperCase()}`);
 
   // Settings
   const [settings, setSettings] = useState(getAppSettings());
@@ -144,6 +150,17 @@ export function App() {
     return Array.from(map.values());
   };
 
+  // Platform Switcher Handler (Ensures Active Dataset sync)
+  const handlePlatformSwitch = (targetPlatform: PlatformType) => {
+    const switchedDataset = switchPlatformDataset(targetPlatform);
+    setActiveDataset(switchedDataset);
+    setPlatform(switchedDataset.platform);
+    setOrders(switchedDataset.orders);
+    setDataSourceMode(switchedDataset.source);
+    setDataSourceName(switchedDataset.fileName || `Dữ Liệu Mẫu ${switchedDataset.platform.toUpperCase()}`);
+    setExtractedSkus(extractSkus(switchedDataset.orders));
+  };
+
   // 1. Handle File Upload
   const handleFileUpload = async (file: File) => {
     try {
@@ -161,6 +178,20 @@ export function App() {
         alert(`⚡ PHÁT HIỆN ĐỊNH DẠNG FILE BÁO CÁO SÀN ${detectedPlatform.toUpperCase()}!\n\nHệ thống đã tự động chuyển đổi gian hàng sang ${detectedPlatform === 'shopee' ? '🟧 Shopee Mall' : '⬛ TikTok Shop'} để bóc tách chính xác tỷ lệ phí sàn & thuế 1.5%.`);
       }
 
+      const newDataset: ActiveDataset = {
+        datasetId: `FILE_${detectedPlatform.toUpperCase()}`,
+        platform: detectedPlatform,
+        source: 'EXCEL',
+        environment: 'PRODUCTION',
+        status: 'SYNCED',
+        lastSyncedAt: new Date().toISOString(),
+        recordCount: parsed.length,
+        fileName: file.name,
+        orders: parsed,
+      };
+
+      saveDataset(newDataset);
+      setActiveDataset(newDataset);
       setOrders(parsed);
       setDataSourceMode('EXCEL');
       setDataSourceName(file.name);
@@ -168,17 +199,14 @@ export function App() {
       const skus = extractSkus(parsed);
       setExtractedSkus(skus);
       
-      // Open COGS input modal to let user confirm/adjust cost price
       setShowCogsModal(true);
 
-      // Confetti celebration
       confetti({
         particleCount: 80,
         spread: 70,
         origin: { y: 0.6 },
       });
 
-      // Track Silent Analytics & Save Period Snapshot
       const fileSummary = calculateSummary(parsed, settings.packagingCost, settings.feeThreshold);
       saveAuditHistorySnapshot(file.name, detectedPlatform, fileSummary);
       trackEventSilent({
@@ -197,9 +225,22 @@ export function App() {
   const handleLoadDemo = (targetPlatform: PlatformType) => {
     setPlatform(targetPlatform);
     const demoData = targetPlatform === 'shopee' ? SAMPLE_SHOPEE_ORDERS : SAMPLE_TIKTOK_ORDERS;
-    
-    // Deep clone demo data
     const cloned = JSON.parse(JSON.stringify(demoData)) as OrderItem[];
+
+    const newDataset: ActiveDataset = {
+      datasetId: `DEMO_${targetPlatform.toUpperCase()}`,
+      platform: targetPlatform,
+      source: 'DEMO',
+      environment: 'SANDBOX',
+      status: 'SYNCED',
+      lastSyncedAt: new Date().toISOString(),
+      recordCount: cloned.length,
+      fileName: `Dữ Liệu Mẫu ${targetPlatform.toUpperCase()}`,
+      orders: cloned,
+    };
+
+    saveDataset(newDataset);
+    setActiveDataset(newDataset);
     setOrders(cloned);
     setDataSourceMode('DEMO');
     setDataSourceName(`Dữ Liệu Mẫu ${targetPlatform.toUpperCase()}`);
@@ -213,7 +254,6 @@ export function App() {
       origin: { y: 0.6 },
     });
 
-    // Track Silent Analytics
     const demoSummary = calculateSummary(cloned, settings.packagingCost, settings.feeThreshold);
     saveAuditHistorySnapshot(`Demo_${targetPlatform.toUpperCase()}_Data.xlsx`, targetPlatform, demoSummary);
     trackEventSilent({
@@ -376,7 +416,7 @@ export function App() {
               onExportExcel={handleExportExcel}
               onOpenShippingModal={() => setShowShippingModal(true)}
               platform={platform}
-              onPlatformChange={setPlatform}
+              onPlatformChange={handlePlatformSwitch}
               onFileUpload={handleFileUpload}
               onLoadDemo={handleLoadDemo}
               onOpenApiIntegration={() => setShowApiIntegrationModal(true)}

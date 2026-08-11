@@ -160,3 +160,47 @@ export interface DisputeClaimItem {
   reason: string;
   recommendedAction: string;
 }
+
+export interface MasterSKU {
+  id: string;
+  masterSku: string;
+  productName: string;
+  cogsPrice: number;
+  totalStock: number;
+  holdingStock: number;
+  availableStock: number;
+  safetyStock: number;
+  unit: string;
+  updatedAt: string;
+}
+
+export interface SkuMapping {
+  id: string;
+  platform: PlatformType;
+  shopId: string;
+  platformSku: string;
+  masterSku: string;
+  multiplier: number; // e.g., Combo 3 Lon -> 3 units of LON-01
+}
+
+export interface InventoryBatch {
+  id: string;
+  masterSku: string;
+  initialQuantity: number;
+  remainingQuantity: number;
+  importPrice: number;
+  createdAt: string;
+}
+
+export interface StockAuditLog {
+  id: string;
+  actor: string;
+  masterSku: string;
+  actionType: 'SALE' | 'CANCEL' | 'IMPORT' | 'ADJUSTMENT' | 'RETURN' | 'RETURN_DAMAGED' | 'COGS_UPDATE' | 'SYNC';
+  qtyChange: number;
+  oldValue: number;
+  newValue: number;
+  relatedOrder?: string;
+  timestamp: string;
+}
+

@@ -17,6 +17,7 @@ import {
 import { OrderItem, AuditSummary, PlatformType } from '../types';
 import { Language } from '../utils/i18n';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
+import { DataContextBar } from './DataContextBar';
 
 interface ProfitCalculatorModuleProps {
   summary: AuditSummary;
@@ -120,30 +121,21 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   return (
     <div className="space-y-6 animate-fade-in w-full">
       
-      {/* DATA CONTEXT BAR (STANDARDIZED DATA SOURCE STATUS) */}
-      {orders.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-sm text-slate-200 shadow-xl">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-sm shrink-0">
-              ✓
-            </div>
-            <div>
-              <div className="font-bold text-white flex items-center gap-2 text-sm">
-                <span>{getFullDataSourceLabel()}</span>
-                <span className="px-2 py-0.5 rounded text-xs font-mono bg-slate-800 text-slate-300 border border-slate-700">
-                  {orders.length} đơn hàng
-                </span>
-              </div>
-              <p className="text-xs text-slate-400 mt-0.5">
-                ✓ Đã đối soát thành công (Sàn: <span className="uppercase font-semibold text-slate-200">{platform}</span>)
-              </p>
-            </div>
-          </div>
-          <div className="text-xs font-mono text-emerald-400 font-semibold self-end sm:self-auto bg-slate-950 px-3 py-1.5 rounded-xl border border-slate-800">
-            Doanh thu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(summary.grossRevenue)}
-          </div>
-        </div>
-      )}
+      {/* DATA CONTEXT BAR */}
+      <DataContextBar
+        dataset={{
+          datasetId: `${dataSourceMode}_${platform.toUpperCase()}`,
+          platform: platform,
+          source: dataSourceMode,
+          environment: 'PRODUCTION',
+          status: orders.length > 0 ? 'SYNCED' : 'EMPTY',
+          lastSyncedAt: new Date().toISOString(),
+          recordCount: orders.length,
+          fileName: dataSourceName,
+          orders: orders,
+        }}
+        onSyncClick={onOpenApiIntegration}
+      />
       
       {/* MAIN UNIFIED PANEL (bg-slate-900) */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 space-y-6 shadow-2xl w-full">
