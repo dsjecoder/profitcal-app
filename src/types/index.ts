@@ -172,7 +172,7 @@ export interface UnitConversionRule {
 
 export interface ManualCorrectionRecord {
   correctionId: string;        // Khóa định danh duy nhất (VD: 'corr_1723548900')
-  targetEntity: 'INVENTORY' | 'COGS' | 'ORDER_FEE' | 'RETURN_STATUS' | 'DATASET';
+  targetEntity: 'INVENTORY' | 'COGS' | 'ORDER_FEE' | 'RETURN_STATUS' | 'DATASET' | 'MASTER_SKU';
   targetEntityId: string;      // ID đối tượng (VD: 'LON-TANG-LUC-01', 'ORD-260809SP')
   beforeValue: any;            // Giá trị trước khi sửa
   afterValue: any;             // Giá trị sau khi sửa

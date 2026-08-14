@@ -129,6 +129,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
           source: dataSourceMode,
           environment: 'PRODUCTION',
           status: orders.length > 0 ? 'SYNCED' : 'EMPTY',
+          syncStatus: orders.length > 0 ? 'SYNCED' : 'EMPTY',
           lastSyncedAt: new Date().toISOString(),
           recordCount: orders.length,
           fileName: dataSourceName,

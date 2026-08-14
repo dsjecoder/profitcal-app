@@ -14,7 +14,7 @@ export interface ActiveDataset {
   shopName?: string; // Tên gian hàng đối với nguồn API
   environment: 'SANDBOX' | 'PRODUCTION';
   status: DatasetStatus;
-  syncStatus: DataSyncStatus;
+  syncStatus?: DataSyncStatus;
   lastSyncedAt: string; // ISO timestamp
   recordCount: number;
   fileName?: string;
