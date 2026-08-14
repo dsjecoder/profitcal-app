@@ -69,6 +69,9 @@ export interface OrderItem {
   isRefundAnomaly: boolean; // Trả hàng / Hoàn tiền bị trừ phí sai
   isNegativeProfit: boolean;// Lợi nhuận < 0
   anomalyReason?: string;
+  
+  // Idempotency flag for cancelled/returned orders stock restoration
+  isStockRestored?: boolean;
 }
 
 export interface SKUData {
@@ -161,6 +164,51 @@ export interface DisputeClaimItem {
   recommendedAction: string;
 }
 
+export interface UnitConversionRule {
+  packUnit: string;        // Tên đơn vị đóng gói (VD: 'Thùng', 'Hộp', 'Carton')
+  baseUnit: string;        // Tên đơn vị bán lẻ cơ sở (VD: 'Cái', 'Lon', 'Chiếc')
+  multiplier: number;      // Tỷ lệ quy đổi (VD: 24 lon / thùng)
+}
+
+export interface ManualCorrectionRecord {
+  correctionId: string;        // Khóa định danh duy nhất (VD: 'corr_1723548900')
+  targetEntity: 'INVENTORY' | 'COGS' | 'ORDER_FEE' | 'RETURN_STATUS' | 'DATASET';
+  targetEntityId: string;      // ID đối tượng (VD: 'LON-TANG-LUC-01', 'ORD-260809SP')
+  beforeValue: any;            // Giá trị trước khi sửa
+  afterValue: any;             // Giá trị sau khi sửa
+  deltaChange?: number;        // Biến động số học (+/-)
+  reason: string;              // Lý do bắt buộc
+  actor: string;               // Người thực hiện
+  timestamp: string;           // ISO Timestamp thời điểm điều chỉnh
+  relatedEventId?: string;     // Mã sự kiện liên quan
+}
+
+export interface AdjustmentTransaction {
+  transactionId: string;       // Khóa định danh giao dịch bù trừ
+  masterSku: string;           // SKU chịu tác động
+  type: 'MANUAL_ADJUSTMENT';
+  beforeStock: number;
+  afterStock: number;
+  deltaQty: number;            // Biến động số lượng (+/-)
+  relatedCorrectionId: string; // Khóa liên kết idempotency với ManualCorrectionRecord
+  actor: string;
+  reason: string;
+  timestamp: string;
+}
+
+export interface InventoryBatch {
+  id: string;
+  masterSku: string;
+  batchNumber?: string;        // e.g. 'Lô #001'
+  quantity?: number;           // Quantity in baseUnit
+  initialQuantity: number;     // Original baseUnit qty
+  remainingQuantity: number;   // Remaining baseUnit qty
+  importPrice: number;         // Unit cost per baseUnit (VND)
+  importDate?: string;         // ISO date
+  supplierName?: string;       // Nhà cung cấp / ghi chú
+  createdAt: string;
+}
+
 export interface MasterSKU {
   id: string;
   masterSku: string;
@@ -171,6 +219,9 @@ export interface MasterSKU {
   availableStock: number;
   safetyStock: number;
   unit: string;
+  baseUnit?: string;
+  conversionRule?: UnitConversionRule;
+  batches?: InventoryBatch[];
   updatedAt: string;
 }
 
@@ -183,24 +234,55 @@ export interface SkuMapping {
   multiplier: number; // e.g., Combo 3 Lon -> 3 units of LON-01
 }
 
-export interface InventoryBatch {
-  id: string;
-  masterSku: string;
-  initialQuantity: number;
-  remainingQuantity: number;
-  importPrice: number;
-  createdAt: string;
+export interface HistoricalRebuildRecord {
+  rebuildId: string;                 // Mã duy nhất (VD: 'reb_1723548900_abc12')
+  selectedMasterSkus: string[];      // Danh sách Master SKU được chọn tường minh
+  fromDate: string;                  // Ngày bắt đầu (Inclusive)
+  toDate: string;                    // Ngày kết thúc (Inclusive)
+  reason: string;                    // Lý do giải trình bắt buộc
+  actor: string;                     // Người thực hiện
+  timestamp: string;                 // Thời điểm thực thi ISO 8601
+  affectedOrderCount: number;        // Số đơn bị tác động
+  affectedOrderItemCount: number;    // Số dòng sản phẩm bị tác động
+  totalCogsDelta: number;            // Tổng biến động COGS (+/-)
+  totalProfitDelta: number;          // Tổng biến động lợi nhuận (+/-)
+  previewSnapshot: Array<{
+    orderId: string;
+    orderDate: string;
+    masterSku: string;
+    sku: string;
+    quantity: number;
+    beforeCogs: number;
+    afterCogs: number;
+    deltaCogs: number;
+    beforeProfit?: number;
+    afterProfit?: number;
+    deltaProfit?: number;
+  }>;
 }
 
 export interface StockAuditLog {
   id: string;
   actor: string;
   masterSku: string;
-  actionType: 'SALE' | 'CANCEL' | 'IMPORT' | 'ADJUSTMENT' | 'RETURN' | 'RETURN_DAMAGED' | 'COGS_UPDATE' | 'SYNC';
+  actionType:
+    | 'SALE'
+    | 'CANCEL'
+    | 'IMPORT'
+    | 'ADJUSTMENT'
+    | 'RETURN'
+    | 'RETURN_DAMAGED'
+    | 'COGS_UPDATE'
+    | 'SYNC'
+    | 'MANUAL_CORRECTION'
+    | 'REBUILD_HISTORICAL_COGS';
   qtyChange: number;
   oldValue: number;
   newValue: number;
   relatedOrder?: string;
+  correctionId?: string;
+  reason?: string;
   timestamp: string;
 }
+
 

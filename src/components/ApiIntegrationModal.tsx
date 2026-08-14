@@ -11,8 +11,10 @@ import {
   getIntegrationLogs,
   addOrUpdateIntegration,
   syncDirectApiOrders,
+  updateShopSyncStatus,
 } from '../modules/integrations';
 import { OrderItem } from '../types';
+import { saveShopApiDataset } from '../services/datasetManager';
 
 interface ApiIntegrationModalProps {
   onClose: () => void;
@@ -37,42 +39,80 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
     setActiveEnvironment(env);
   };
 
-  const handleSimulateOAuthConnect = (platform: PlatformType) => {
+  const handleSimulateOAuthConnect = async (platform: PlatformType) => {
     if (connectingPlatform) return; // Duplicate click protection
     setConnectingPlatform(platform);
 
-    setTimeout(() => {
-      const isShopee = platform === 'SHOPEE';
-      const newRecord = addOrUpdateIntegration({
-        platform,
-        environment,
-        status: 'CONNECTED',
-        shopId: isShopee ? '98765432' : '74589213',
-        shopName: isShopee
-          ? environment === 'SANDBOX' ? 'Shopee Mall (Sandbox Test Store)' : 'Gian Hàng Shopee Mall Chính Thức'
-          : environment === 'SANDBOX' ? 'TikTok Seller (Sandbox Test Store)' : 'Gian Hàng TikTok Shop Official',
-        lastSyncAt: new Date().toISOString(),
-      });
+    const isShopee = platform === 'SHOPEE';
+    const shopId = isShopee ? '98765432' : '74589213';
+    const shopName = isShopee
+      ? environment === 'SANDBOX' ? 'Shopee Mall (Sandbox Test Store)' : 'Shopee Mall Official Store'
+      : environment === 'SANDBOX' ? 'TikTok Seller (Sandbox Test Store)' : 'TikTok Shop Official';
 
-      // 1. REHYDRATE SINGLE SOURCE OF TRUTH FIRST
-      const freshRecords = getShopIntegrations();
-      const freshLogs = getIntegrationLogs();
+    // 1. ADD / UPDATE SHOP RECORD
+    const newRecord = addOrUpdateIntegration({
+      platform,
+      environment,
+      status: 'CONNECTED',
+      connectionStatus: 'CONNECTED',
+      syncStatus: 'SYNCING',
+      shopId,
+      shopName,
+      lastSyncAt: new Date().toISOString(),
+    });
 
-      // 2. UPDATE REACT STATES SYNCHRONOUSLY
-      setRecords(freshRecords);
-      setLogs(freshLogs);
+    try {
+      // 2. AUTO INITIAL SYNC 30 DAYS
+      const res = await syncDirectApiOrders(platform, environment);
+      
+      // 3. PERSIST DIRECTLY INTO DATASET MANAGER (LOCALSTORAGE)
+      saveShopApiDataset(
+        platform.toLowerCase() as 'shopee' | 'tiktok',
+        newRecord.shopId,
+        newRecord.shopName,
+        res.orderItems,
+        environment
+      );
+
+      // 4. UPDATE SHOP SYNC STATUS
+      updateShopSyncStatus(newRecord.shopId, 'SYNCED', res.orderItems.length);
+
+      // 5. NOTIFY CENTRAL APP STATE
+      onSyncSuccess(res.orderItems);
+
+      // 6. REHYDRATE LOCAL COMPONENT STATE
+      setRecords(getShopIntegrations());
+      setLogs(getIntegrationLogs());
+
+      showToast(`✓ Đã kết nối & tự động đồng bộ ${res.orderItems.length} đơn hàng từ ${newRecord.shopName}`, 'success');
+    } catch (e) {
+      updateShopSyncStatus(newRecord.shopId, 'SYNC_ERROR');
+      showToast(`✓ Đã kết nối gian hàng ${newRecord.shopName} (Đồng bộ đơn hàng gặp lỗi mạng, vui lòng bấm Đồng bộ lại)`, 'warning');
+    } finally {
       setConnectingPlatform(null);
-
-      // 3. NON-BLOCKING TOAST NOTIFICATION
-      showToast(`✓ Đã kết nối thành công với gian hàng ${newRecord.shopName}`, 'success');
-    }, 1200);
+    }
   };
 
   const handleSyncOrdersNow = async (platform: PlatformType) => {
     if (isSyncing) return;
     setIsSyncing(true);
+    const targetRecord = getRecordForPlatform(platform);
+    const shopId = targetRecord?.shopId || (platform === 'SHOPEE' ? '98765432' : '74589213');
+    const shopName = targetRecord?.shopName || `${platform} Store`;
+
     try {
       const res = await syncDirectApiOrders(platform, environment);
+      
+      // PERSIST INTO DATASET MANAGER
+      saveShopApiDataset(
+        platform.toLowerCase() as 'shopee' | 'tiktok',
+        shopId,
+        shopName,
+        res.orderItems,
+        environment
+      );
+
+      updateShopSyncStatus(shopId, 'SYNCED', res.orderItems.length);
       onSyncSuccess(res.orderItems);
 
       // Rehydrate state
@@ -81,6 +121,7 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
 
       showToast(`✓ Đã đồng bộ ${res.orderItems.length} đơn hàng qua API ${platform}`, 'success');
     } catch (e) {
+      updateShopSyncStatus(shopId, 'SYNC_ERROR');
       showToast('⚠ Lỗi khi đồng bộ đơn hàng API. Vui lòng thử lại.', 'error');
     } finally {
       setIsSyncing(false);

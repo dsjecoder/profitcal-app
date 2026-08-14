@@ -13,6 +13,10 @@ import {
   RotateCcw,
   Check,
   AlertCircle,
+  RefreshCw,
+  Sliders,
+  Scale,
+  Layers,
 } from 'lucide-react';
 import { SKUData, UserState, MasterSKU, SkuMapping, StockAuditLog } from '../types';
 import {
@@ -26,6 +30,9 @@ import {
 } from '../services/masterInventoryService';
 import { getTelegramConfig, playLowStockBeepSound, saveTelegramConfig, sendTelegramLowStockAlert } from '../utils/stockMonitor';
 import { Language } from '../utils/i18n';
+import { ManualCorrectionModal } from './ManualCorrectionModal';
+import { HistoricalRecalculationModal } from './HistoricalRecalculationModal';
+import { UnitConversionModal } from './UnitConversionModal';
 
 interface LowStockAlertProps {
   skus: SKUData[];
@@ -33,6 +40,7 @@ interface LowStockAlertProps {
   onUpdateThreshold: (sku: string, newThreshold: number) => void;
   onOpenUpgradeModal: () => void;
   currentLang?: Language;
+  onOrdersUpdated?: () => void;
 }
 
 export const LowStockAlert: React.FC<LowStockAlertProps> = ({
@@ -41,6 +49,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
   onUpdateThreshold,
   onOpenUpgradeModal,
   currentLang = 'vi',
+  onOrdersUpdated,
 }) => {
   const [masterList, setMasterList] = useState<MasterSKU[]>(() => getMasterSKUs());
   const [mappings, setMappings] = useState<SkuMapping[]>(() => getSkuMappings());
@@ -72,6 +81,11 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
   const [newPlatformSku, setNewPlatformSku] = useState<string>('');
   const [newMasterSku, setNewMasterSku] = useState<string>('');
   const [newMultiplier, setNewMultiplier] = useState<number>(1);
+
+  // Modal Integration States (Phase 5 UI Wiring)
+  const [selectedCorrectionSku, setSelectedCorrectionSku] = useState<MasterSKU | null>(null);
+  const [showHistoricalRebuildModal, setShowHistoricalRebuildModal] = useState<boolean>(false);
+  const [selectedConversionSku, setSelectedConversionSku] = useState<MasterSKU | null>(null);
 
   const lowStockItems = masterList.filter((m) => m.availableStock <= m.safetyStock);
 
@@ -142,16 +156,25 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           <div className="flex items-center gap-2">
             <ShieldAlert className="w-5 h-5 text-rose-400" />
             <h2 className="text-xl font-bold text-white tracking-tight">
-              Master Inventory & Cảnh báo tồn kho
+              Master Inventory & Quản Trị Giá Vốn Tồn Kho
             </h2>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Quản lý kho tập trung Master SKU, ánh xạ Combo đa sàn, giá vốn bình quân gia quyền và xử lý hàng hoàn.
+            Quản lý kho tập trung Master SKU, ánh xạ Combo đa sàn, giá vốn bình quân gia quyền và tái tính giá vốn lịch sử.
           </p>
         </div>
 
         {/* Top Actions */}
         <div className="flex flex-wrap items-center gap-2">
+          {/* Phase 5 Action: Controlled Historical COGS Rebuild */}
+          <button
+            onClick={() => setShowHistoricalRebuildModal(true)}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold text-xs transition-all shadow-sm shadow-amber-500/10"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
+            <span>Tái tính giá vốn lịch sử (Rebuild COGS)</span>
+          </button>
+
           <button
             onClick={() => setShowReturnModal(true)}
             className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors"
@@ -282,47 +305,84 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             return (
               <div
                 key={item.id}
-                className={`p-4 rounded-2xl border transition-all ${
+                className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
                   isLow ? 'bg-slate-950 border-rose-500/50' : 'bg-slate-950 border-slate-800'
                 }`}
               >
-                <div className="space-y-1">
-                  <h4 className="text-sm font-semibold text-white line-clamp-1">
-                    {item.productName}
-                  </h4>
-                  <div className="flex items-center justify-between text-xs">
-                    <span className="font-mono text-slate-400">Master SKU: {item.masterSku}</span>
-                    {isLow ? (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                        🔴 Sắp hết hàng
+                <div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-semibold text-white line-clamp-1">
+                      {item.productName}
+                    </h4>
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-mono text-slate-400">Master SKU: {item.masterSku}</span>
+                      {isLow ? (
+                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          🔴 Sắp hết hàng
+                        </span>
+                      ) : (
+                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300">
+                          🟢 An toàn
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Conversion rule and batch badges */}
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {item.conversionRule && (
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">
+                        1 {item.conversionRule.packUnit} = {item.conversionRule.multiplier} {item.conversionRule.baseUnit}
                       </span>
-                    ) : (
-                      <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300">
-                        🟢 An toàn
+                    )}
+                    {item.batches && item.batches.length > 0 && (
+                      <span className="px-2 py-0.5 rounded-lg text-[10px] bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                        {item.batches.length} Lô nhập
                       </span>
                     )}
                   </div>
+
+                  <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <span className="text-slate-400 block">Tồn khả dụng:</span>
+                      <span className={`text-lg font-bold font-mono ${isLow ? 'text-rose-400' : 'text-slate-100'}`}>
+                        {item.availableStock} {item.unit}
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-slate-400 block">Giá vốn COGS:</span>
+                      <span className="text-base font-bold font-mono text-emerald-400">
+                        {item.cogsPrice.toLocaleString('vi-VN')} đ
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-2 text-[11px] text-slate-500 flex justify-between font-mono">
+                    <span>Tổng tồn: {item.totalStock}</span>
+                    <span>Đang giữ: {item.holdingStock}</span>
+                    <span>Ngưỡng: &lt; {item.safetyStock}</span>
+                  </div>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-slate-400 block">Tồn khả dụng (Available):</span>
-                    <span className={`text-lg font-bold font-mono ${isLow ? 'text-rose-400' : 'text-slate-100'}`}>
-                      {item.availableStock} {item.unit}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 block">Giá vốn COGS:</span>
-                    <span className="text-base font-bold font-mono text-emerald-400">
-                      {item.cogsPrice.toLocaleString('vi-VN')} đ
-                    </span>
-                  </div>
-                </div>
+                {/* Card Action Buttons: Unit Conversion & Manual Correction */}
+                <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedConversionSku(item)}
+                    className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Scale className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Quy cách</span>
+                  </button>
 
-                <div className="mt-2 text-[11px] text-slate-500 flex justify-between font-mono">
-                  <span>Tổng tồn: {item.totalStock}</span>
-                  <span>Đang giữ: {item.holdingStock}</span>
-                  <span>Ngưỡng: &lt; {item.safetyStock}</span>
+                  <button
+                    type="button"
+                    onClick={() => setSelectedCorrectionSku(item)}
+                    className="py-1.5 px-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Sliders className="w-3.5 h-3.5 text-rose-400" />
+                    <span>Sửa ngoại lệ</span>
+                  </button>
                 </div>
               </div>
             );
@@ -454,7 +514,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             </div>
 
             <div>
-              <label className="text-slate-400 block mb-1">Giá nhập lô mới (đ/đơn vị):</label>
+              <label className="text-slate-400 block mb-1">Đơn giá nhập kho (VND):</label>
               <input
                 type="number"
                 value={importPrice}
@@ -464,89 +524,111 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             </div>
 
             <div>
-              <label className="text-slate-400 block mb-1">Chế độ nhập kho:</label>
-              <div className="flex gap-4 items-center">
+              <label className="text-slate-400 block mb-1">Phương thức nhập kho:</label>
+              <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer text-slate-200">
                   <input
                     type="radio"
-                    name="importMode"
-                    value="INCREMENTAL"
+                    name="mode"
                     checked={importMode === 'INCREMENTAL'}
                     onChange={() => setImportMode('INCREMENTAL')}
                     className="accent-emerald-500"
                   />
-                  <span>(•) Cộng dồn (Tính giá vốn bình quân gia quyền)</span>
+                  <span>Nhập thêm (Cộng dồn & Bình quân giá vốn)</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer text-slate-200">
                   <input
                     type="radio"
-                    name="importMode"
-                    value="OVERWRITE"
+                    name="mode"
                     checked={importMode === 'OVERWRITE'}
                     onChange={() => setImportMode('OVERWRITE')}
                     className="accent-rose-500"
                   />
-                  <span>( ) Ghi đè (Kiểm kho thực tế / Reset)</span>
+                  <span>Kiểm kê (Ghi đè số lượng tồn thực tế)</span>
                 </label>
               </div>
             </div>
 
-            {showConfirmOverwrite && (
-              <div className="p-3 bg-rose-950/40 border border-rose-500/40 rounded-xl text-rose-300 space-y-2">
-                <p className="font-semibold">⚠ Xác nhận ghi đè tồn kho?</p>
-                <p className="text-[11px] text-slate-400">Thao tác này sẽ thay thế toàn bộ số lượng tồn hiện tại của SKU {selectedMasterSku}.</p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    onClick={handleExecuteImport}
-                    className="px-3 py-1 bg-rose-500 text-white font-bold rounded-lg text-xs"
-                  >
-                    Xác nhận ghi đè
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmOverwrite(false)}
-                    className="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg text-xs"
-                  >
-                    Hủy
-                  </button>
-                </div>
+            {showConfirmOverwrite && importMode === 'OVERWRITE' && (
+              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>Cảnh báo: Bạn đang chọn chế độ Kiểm kho (Ghi đè). Số lượng tồn kho hiện tại sẽ bị thay thế bằng số lượng nhập mới. Bấm "Thực hiện nhập kho" lần nữa để xác nhận.</span>
               </div>
             )}
 
-            {!showConfirmOverwrite && (
-              <button
-                type="button"
-                onClick={handleExecuteImport}
-                className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors"
-              >
-                Thực hiện nhập kho
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleExecuteImport}
+              className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors"
+            >
+              Thực hiện nhập kho
+            </button>
           </div>
         </div>
       )}
 
-      {/* TAB 4: AUDIT LOGS STREAM */}
+      {/* TAB 4: STOCK AUDIT LOGS */}
       {activeTab === 'logs' && (
-        <div className="space-y-3 bg-slate-950 p-4 rounded-2xl border border-slate-800 animate-fade-in text-xs">
-          <h3 className="font-semibold text-white">Lịch sử biến động tồn kho (Stock Audit Logs)</h3>
-          <div className="space-y-2 max-h-80 overflow-y-auto font-mono">
-            {auditLogs.map((log) => (
-              <div key={log.id} className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
-                <div>
-                  <span className="text-emerald-400 font-bold">{log.masterSku}</span>
-                  <span className="text-slate-400 font-sans ml-2">[{log.actor}] {log.actionType}</span>
-                  {log.relatedOrder && <span className="text-slate-500 ml-2">Đơn: {log.relatedOrder}</span>}
-                </div>
-                <div className="text-right">
-                  <span className={log.qtyChange >= 0 ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold'}>
-                    {log.qtyChange > 0 ? `+${log.qtyChange}` : log.qtyChange}
-                  </span>
-                  <span className="text-slate-500 text-[10px] block">{log.timestamp}</span>
-                </div>
-              </div>
-            ))}
+        <div className="space-y-4 animate-fade-in text-xs">
+          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950">
+            <table className="w-full text-left">
+              <thead className="bg-slate-900 text-slate-400 font-mono border-b border-slate-800">
+                <tr>
+                  <th className="p-3">Thời gian</th>
+                  <th className="p-3">Hành động</th>
+                  <th className="p-3">Master SKU</th>
+                  <th className="p-3">Biến động</th>
+                  <th className="p-3">Trước $\rightarrow$ Sau</th>
+                  <th className="p-3">Người thực hiện</th>
+                  <th className="p-3">Lý do / Mã liên quan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 font-mono">
+                {auditLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-4 text-center text-slate-500">Chưa có nhật ký kiểm toán nào.</td>
+                  </tr>
+                ) : (
+                  auditLogs.map((log) => (
+                    <tr key={log.id} className="hover:bg-slate-900/50">
+                      <td className="p-3 text-slate-400 text-[11px]">{new Date(log.timestamp).toLocaleString('vi-VN')}</td>
+                      <td className="p-3 font-semibold">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] ${
+                            log.actionType === 'IMPORT'
+                              ? 'bg-emerald-500/20 text-emerald-400'
+                              : log.actionType === 'SALE'
+                              ? 'bg-blue-500/20 text-blue-400'
+                              : log.actionType === 'RETURN'
+                              ? 'bg-purple-500/20 text-purple-400'
+                              : log.actionType === 'RETURN_DAMAGED'
+                              ? 'bg-rose-500/20 text-rose-400'
+                              : log.actionType === 'MANUAL_CORRECTION'
+                              ? 'bg-amber-500/20 text-amber-300'
+                              : log.actionType === 'REBUILD_HISTORICAL_COGS'
+                              ? 'bg-orange-500/20 text-orange-300'
+                              : 'bg-slate-800 text-slate-300'
+                          }`}
+                        >
+                          {log.actionType}
+                        </span>
+                      </td>
+                      <td className="p-3 text-white font-bold">{log.masterSku}</td>
+                      <td className={`p-3 font-bold ${log.qtyChange > 0 ? 'text-emerald-400' : log.qtyChange < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                        {log.qtyChange > 0 ? `+${log.qtyChange}` : log.qtyChange}
+                      </td>
+                      <td className="p-3 text-slate-300">
+                        {log.oldValue.toLocaleString('vi-VN')} $\rightarrow$ {log.newValue.toLocaleString('vi-VN')}
+                      </td>
+                      <td className="p-3 text-slate-400">{log.actor}</td>
+                      <td className="p-3 text-slate-400 text-[11px] max-w-xs truncate" title={log.reason || log.relatedOrder}>
+                        {log.reason || log.relatedOrder || '-'}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -631,6 +713,45 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             </div>
           </div>
         </div>
+      )}
+
+      {/* PHASE 5 MODALS INTEGRATION */}
+      
+      {/* 1. Manual Correction Modal */}
+      {selectedCorrectionSku && (
+        <ManualCorrectionModal
+          masterSku={selectedCorrectionSku}
+          onClose={() => setSelectedCorrectionSku(null)}
+          onSaved={(updatedSku) => {
+            reloadData();
+            setSelectedCorrectionSku(null);
+            onOrdersUpdated?.();
+          }}
+        />
+      )}
+
+      {/* 2. Historical Recalculation Modal */}
+      {showHistoricalRebuildModal && (
+        <HistoricalRecalculationModal
+          onClose={() => setShowHistoricalRebuildModal(false)}
+          onSuccess={(rebuildId) => {
+            reloadData();
+            setShowHistoricalRebuildModal(false);
+            onOrdersUpdated?.();
+          }}
+        />
+      )}
+
+      {/* 3. Unit Conversion Modal */}
+      {selectedConversionSku && (
+        <UnitConversionModal
+          masterSku={selectedConversionSku}
+          onClose={() => setSelectedConversionSku(null)}
+          onSaved={(updatedSku) => {
+            reloadData();
+            setSelectedConversionSku(null);
+          }}
+        />
       )}
 
     </div>

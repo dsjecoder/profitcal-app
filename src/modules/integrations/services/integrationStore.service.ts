@@ -1,5 +1,5 @@
-import { ShopIntegrationRecord, PlatformType, IntegrationEnvironment, IntegrationLog } from '../types/integration.types';
-import { encryptAES256, decryptAES256 } from './crypto.service';
+import { ShopIntegrationRecord, PlatformType, IntegrationEnvironment, IntegrationLog, ConnectionStatus, DataSyncStatus, ShopPermissionError } from '../types/integration.types';
+import { encryptAES256 } from './crypto.service';
 
 const INTEGRATIONS_STORAGE_KEY = 'profitcal_shop_integrations_v1';
 const INTEGRATION_LOGS_KEY = 'profitcal_integration_logs_v1';
@@ -31,24 +31,26 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
     }
   } catch (e) {}
 
-  // Initial Demo Connected Shop Records
+  // Initial Multi-Shop Connected Shop Records (2 Shopee Shops & 2 TikTok Shops)
   const now = new Date();
   const shopeeExpiry = new Date(now.getTime() + 14400000).toISOString();
   const tiktokExpiry = new Date(now.getTime() + 86400000).toISOString();
 
   const initialRecords: ShopIntegrationRecord[] = [
     {
-      id: 'integ_shopee_demo',
+      id: 'integ_shopee_shop1',
       userId: 'user_ecoder108',
       platform: 'SHOPEE',
-      environment: 'SANDBOX',
+      environment: 'PRODUCTION',
       shopId: '98765432',
-      shopName: 'Shopee Official Store (Sandbox Test)',
-      accessTokenEncrypted: encryptAES256('shopee_access_token_demo_12345'),
-      refreshTokenEncrypted: encryptAES256('shopee_refresh_token_demo_99999'),
+      shopName: 'Shopee Mall Official Store',
+      accessTokenEncrypted: encryptAES256('shopee_access_token_prod_12345'),
+      refreshTokenEncrypted: encryptAES256('shopee_refresh_token_prod_99999'),
       accessTokenExpiresAt: shopeeExpiry,
       refreshTokenExpiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
       status: 'CONNECTED',
+      connectionStatus: 'CONNECTED',
+      syncStatus: 'SYNCED',
       isActive: true,
       lastSyncAt: now.toISOString(),
       syncedOrdersCount: 24,
@@ -56,35 +58,39 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
       updatedAt: now.toISOString(),
     },
     {
-      id: 'integ_shopee_prod',
+      id: 'integ_shopee_shop2',
       userId: 'user_ecoder108',
       platform: 'SHOPEE',
       environment: 'PRODUCTION',
-      shopId: '98765432',
-      shopName: 'Gian Hàng Shopee Mall Chính Thức',
-      accessTokenEncrypted: encryptAES256('shopee_access_token_prod_12345'),
-      refreshTokenEncrypted: encryptAES256('shopee_refresh_token_prod_99999'),
+      shopId: '11223344',
+      shopName: 'Shopee Standard Store',
+      accessTokenEncrypted: encryptAES256('shopee_access_token_prod_67890'),
+      refreshTokenEncrypted: encryptAES256('shopee_refresh_token_prod_88888'),
       accessTokenExpiresAt: shopeeExpiry,
       refreshTokenExpiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
       status: 'CONNECTED',
+      connectionStatus: 'CONNECTED',
+      syncStatus: 'SYNCED',
       isActive: true,
       lastSyncAt: now.toISOString(),
-      syncedOrdersCount: 42,
+      syncedOrdersCount: 10,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     },
     {
-      id: 'integ_tiktok_demo',
+      id: 'integ_tiktok_shop1',
       userId: 'user_ecoder108',
       platform: 'TIKTOK',
-      environment: 'SANDBOX',
+      environment: 'PRODUCTION',
       shopId: '74589213',
-      shopName: 'TikTok Shop Global (Sandbox Test)',
-      accessTokenEncrypted: encryptAES256('tiktok_access_token_demo_67890'),
-      refreshTokenEncrypted: encryptAES256('tiktok_refresh_token_demo_88888'),
+      shopName: 'TikTok Shop Official',
+      accessTokenEncrypted: encryptAES256('tiktok_access_token_prod_67890'),
+      refreshTokenEncrypted: encryptAES256('tiktok_refresh_token_prod_88888'),
       accessTokenExpiresAt: tiktokExpiry,
       refreshTokenExpiresAt: new Date(now.getTime() + 90 * 86400000).toISOString(),
       status: 'CONNECTED',
+      connectionStatus: 'CONNECTED',
+      syncStatus: 'SYNCED',
       isActive: true,
       lastSyncAt: now.toISOString(),
       syncedOrdersCount: 18,
@@ -92,20 +98,22 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
       updatedAt: now.toISOString(),
     },
     {
-      id: 'integ_tiktok_prod',
+      id: 'integ_tiktok_shop2',
       userId: 'user_ecoder108',
       platform: 'TIKTOK',
       environment: 'PRODUCTION',
-      shopId: '74589213',
-      shopName: 'Gian Hàng TikTok Shop Official',
-      accessTokenEncrypted: encryptAES256('tiktok_access_token_prod_67890'),
-      refreshTokenEncrypted: encryptAES256('tiktok_refresh_token_prod_88888'),
+      shopId: '88997766',
+      shopName: 'TikTok Shop Global',
+      accessTokenEncrypted: encryptAES256('tiktok_access_token_prod_11111'),
+      refreshTokenEncrypted: encryptAES256('tiktok_refresh_token_prod_22222'),
       accessTokenExpiresAt: tiktokExpiry,
       refreshTokenExpiresAt: new Date(now.getTime() + 90 * 86400000).toISOString(),
       status: 'CONNECTED',
+      connectionStatus: 'CONNECTED',
+      syncStatus: 'SYNCED',
       isActive: true,
       lastSyncAt: now.toISOString(),
-      syncedOrdersCount: 35,
+      syncedOrdersCount: 8,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     },
@@ -121,9 +129,25 @@ export function saveShopIntegrations(records: ShopIntegrationRecord[]): void {
   } catch (e) {}
 }
 
+export function getShopsByPlatform(platform: PlatformType, environment?: IntegrationEnvironment): ShopIntegrationRecord[] {
+  const all = getShopIntegrations();
+  const env = environment || getActiveEnvironment();
+  return all.filter((r) => r.platform === platform && (env ? r.environment === env : true));
+}
+
+export function getShopById(shopId: string, platform?: PlatformType): ShopIntegrationRecord | undefined {
+  const all = getShopIntegrations();
+  return all.find((r) => r.shopId === shopId && (platform ? r.platform === platform : true));
+}
+
 export function addOrUpdateIntegration(record: Partial<ShopIntegrationRecord>): ShopIntegrationRecord {
   const list = getShopIntegrations();
-  const existingIdx = list.findIndex((r) => r.platform === record.platform && r.environment === record.environment);
+  const targetEnv = record.environment || getActiveEnvironment();
+  
+  // MATCH BY SHOP ID + PLATFORM + ENVIRONMENT (MULTI-SHOP REGISTRY)
+  const existingIdx = list.findIndex(
+    (r) => r.shopId === record.shopId && r.platform === record.platform && r.environment === targetEnv
+  );
 
   const now = new Date().toISOString();
   let updatedRecord: ShopIntegrationRecord;
@@ -132,24 +156,29 @@ export function addOrUpdateIntegration(record: Partial<ShopIntegrationRecord>): 
     updatedRecord = {
       ...list[existingIdx],
       ...record,
+      connectionStatus: record.connectionStatus || list[existingIdx].connectionStatus || 'CONNECTED',
+      syncStatus: record.syncStatus || list[existingIdx].syncStatus || 'SYNCED',
       updatedAt: now,
     };
     list[existingIdx] = updatedRecord;
   } else {
     updatedRecord = {
-      id: `integ_${record.platform?.toLowerCase()}_${Date.now()}`,
+      id: record.id || `integ_${record.platform?.toLowerCase()}_${record.shopId || Date.now()}`,
       userId: record.userId || 'user_ecoder108',
       platform: record.platform || 'SHOPEE',
-      environment: record.environment || getActiveEnvironment(),
-      shopId: record.shopId || '12345678',
+      environment: targetEnv,
+      shopId: record.shopId || `shop_${Date.now()}`,
       shopName: record.shopName || `${record.platform} Shop`,
       accessTokenEncrypted: record.accessTokenEncrypted || encryptAES256('token'),
       refreshTokenEncrypted: record.refreshTokenEncrypted || encryptAES256('refresh'),
       accessTokenExpiresAt: record.accessTokenExpiresAt || new Date(Date.now() + 14400000).toISOString(),
       refreshTokenExpiresAt: record.refreshTokenExpiresAt || new Date(Date.now() + 30 * 86400000).toISOString(),
       status: record.status || 'CONNECTED',
+      connectionStatus: record.connectionStatus || 'CONNECTED',
+      syncStatus: record.syncStatus || 'SYNCED',
+      permissionError: record.permissionError,
       isActive: record.isActive !== undefined ? record.isActive : true,
-      lastSyncAt: now,
+      lastSyncAt: record.lastSyncAt || now,
       syncedOrdersCount: record.syncedOrdersCount || 0,
       createdAt: now,
       updatedAt: now,
@@ -158,6 +187,39 @@ export function addOrUpdateIntegration(record: Partial<ShopIntegrationRecord>): 
   }
 
   saveShopIntegrations(list);
+  return updatedRecord;
+}
+
+export function updateShopSyncStatus(shopId: string, syncStatus: DataSyncStatus, recordCount?: number): void {
+  const list = getShopIntegrations();
+  const idx = list.findIndex((r) => r.shopId === shopId);
+  if (idx >= 0) {
+    list[idx] = {
+      ...list[idx],
+      syncStatus,
+      lastSyncAt: new Date().toISOString(),
+      syncedOrdersCount: recordCount !== undefined ? recordCount : list[idx].syncedOrdersCount,
+      updatedAt: new Date().toISOString(),
+    };
+    saveShopIntegrations(list);
+  }
+}
+
+export function updateShopConnectionStatus(shopId: string, connectionStatus: ConnectionStatus, permissionError?: ShopPermissionError): void {
+  const list = getShopIntegrations();
+  const idx = list.findIndex((r) => r.shopId === shopId);
+  if (idx >= 0) {
+    list[idx] = {
+      ...list[idx],
+      connectionStatus,
+      status: connectionStatus,
+      permissionError: permissionError || list[idx].permissionError,
+      updatedAt: new Date().toISOString(),
+    };
+    saveShopIntegrations(list);
+  }
+}
+
   addIntegrationLog({
     platform: updatedRecord.platform,
     environment: updatedRecord.environment,

@@ -43,7 +43,7 @@ import { SkuSettingsModule } from './components/SkuSettingsModule';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
 import { submitUpgradeRequest, checkEmailProRecord } from './utils/upgradeTracker';
 
-import { getActiveDataset, saveDataset, switchPlatform as switchPlatformDataset, switchSource as switchSourceDataset } from './services/datasetManager';
+import { getActiveDataset, saveDataset, switchPlatform as switchPlatformDataset, switchSource as switchSourceDataset, switchActiveShop } from './services/datasetManager';
 import { ActiveDataset } from './types/dataset';
 
 export function App() {
@@ -157,7 +157,21 @@ export function App() {
     setPlatform(switchedDataset.platform);
     setOrders(switchedDataset.orders);
     setDataSourceMode(switchedDataset.source);
-    setDataSourceName(switchedDataset.fileName || `Dữ Liệu Mẫu ${switchedDataset.platform.toUpperCase()}`);
+    setDataSourceName(
+      switchedDataset.shopName
+        ? `API · ${switchedDataset.shopName}`
+        : switchedDataset.fileName || `Dữ Liệu Mẫu ${switchedDataset.platform.toUpperCase()}`
+    );
+    setExtractedSkus(extractSkus(switchedDataset.orders));
+  };
+
+  // Shop Switcher Handler for Multi-Shop Support
+  const handleShopSwitch = (shopId: string) => {
+    const switchedDataset = switchActiveShop(platform, shopId);
+    setActiveDataset(switchedDataset);
+    setOrders(switchedDataset.orders);
+    setDataSourceMode('API');
+    setDataSourceName(switchedDataset.shopName ? `API · ${switchedDataset.shopName}` : `Shop ID: ${shopId}`);
     setExtractedSkus(extractSkus(switchedDataset.orders));
   };
 
@@ -445,6 +459,10 @@ export function App() {
               onUpdateThreshold={handleUpdateThreshold}
               onOpenUpgradeModal={() => setShowPricingModal(true)}
               currentLang={currentLang}
+              onOrdersUpdated={() => {
+                const current = getActiveDataset();
+                setOrders(current.orders || []);
+              }}
             />
           )}
 
@@ -520,9 +538,13 @@ export function App() {
         <ApiIntegrationModal
           onClose={() => setShowApiIntegrationModal(false)}
           onSyncSuccess={(apiOrders) => {
+            const freshDataset = getActiveDataset();
+            setActiveDataset(freshDataset);
+            setPlatform(freshDataset.platform);
             setOrders(apiOrders);
             setDataSourceMode('API');
-            setDataSourceName('Direct API Connection');
+            setDataSourceName(freshDataset.shopName ? `API · ${freshDataset.shopName}` : 'Direct API Connection');
+            setExtractedSkus(extractSkus(apiOrders));
             setShowApiIntegrationModal(false);
           }}
         />

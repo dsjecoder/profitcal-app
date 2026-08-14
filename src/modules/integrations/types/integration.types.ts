@@ -1,8 +1,24 @@
+import { DataSyncStatus } from '../../../types/dataset';
+
+export type { DataSyncStatus };
+
 export type PlatformType = 'SHOPEE' | 'TIKTOK';
 
 export type IntegrationEnvironment = 'SANDBOX' | 'PRODUCTION';
 
-export type IntegrationStatus = 'CONNECTED' | 'DISCONNECTED' | 'TOKEN_EXPIRED' | 'SYNCING';
+/** Trạng thái phiên kết nối OAuth của Shop (Lifecycle Connection State) */
+export type ConnectionStatus = 'NOT_CONNECTED' | 'CONNECTED' | 'TOKEN_EXPIRED';
+
+/** Legacy alias for backward compatibility */
+export type IntegrationStatus = 'CONNECTED' | 'DISCONNECTED' | 'TOKEN_EXPIRED' | 'SYNCING' | ConnectionStatus | DataSyncStatus;
+
+/** Điều kiện lỗi quyền truy cập Open API (Error Condition độc lập, không phải lifecycle state) */
+export interface ShopPermissionError {
+  isBlocked: boolean;
+  errorCode?: '403_FORBIDDEN' | 'SELLER_PERMISSION_DENIED';
+  message: string;
+  actionRequired?: 'OPEN_SELLER_CENTER_SETTINGS' | 'CONTACT_SUPPORT';
+}
 
 export interface UnifiedOrderItem {
   sku: string;
@@ -50,6 +66,9 @@ export interface ShopIntegrationRecord {
   accessTokenExpiresAt: string; // ISO string
   refreshTokenExpiresAt: string; // ISO string
   status: IntegrationStatus;
+  connectionStatus?: ConnectionStatus;
+  syncStatus?: DataSyncStatus;
+  permissionError?: ShopPermissionError;
   isActive: boolean;
   lastSyncAt?: string; // ISO string
   syncedOrdersCount?: number;
