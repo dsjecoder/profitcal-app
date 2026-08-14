@@ -217,8 +217,8 @@ export function updateShopConnectionStatus(shopId: string, connectionStatus: Con
       updatedAt: new Date().toISOString(),
     };
     saveShopIntegrations(list);
+  }
 }
-
 
 export function addIntegrationLog(log: Omit<IntegrationLog, 'id' | 'timestamp'>): void {
   try {
