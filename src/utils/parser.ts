@@ -2,11 +2,15 @@ import * as XLSX from 'xlsx';
 import { OrderItem, PlatformType } from '../types';
 import { getSavedCOGS } from './storage';
 
+export type DetectionConfidence = 'HIGH_CONFIDENCE' | 'UNCERTAIN' | 'UNSUPPORTED';
+
 export interface ParseFileResult {
   orders: OrderItem[];
   detectedPlatform: PlatformType;
+  confidence: DetectionConfidence;
   isPlatformMismatch: boolean;
   message?: string;
+  totalRawRows?: number;
 }
 
 export async function parseUploadedFile(
@@ -25,37 +29,97 @@ export async function parseUploadedFile(
 
         // Get first worksheet
         const sheetName = workbook.SheetNames[0];
+        if (!sheetName || !workbook.Sheets[sheetName]) {
+          return resolve({
+            orders: [],
+            detectedPlatform: currentPlatform,
+            confidence: 'UNSUPPORTED',
+            isPlatformMismatch: false,
+            message: 'File không có dữ liệu bảng tính hợp lệ!',
+          });
+        }
+
         const worksheet = workbook.Sheets[sheetName];
         
         // Convert worksheet to JSON array of objects
         let rawJson: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
 
         if (!rawJson || rawJson.length === 0) {
-          throw new Error('File Excel rỗng hoặc không đúng định dạng!');
+          return resolve({
+            orders: [],
+            detectedPlatform: currentPlatform,
+            confidence: 'UNSUPPORTED',
+            isPlatformMismatch: false,
+            message: 'File rỗng hoặc không có dữ liệu hàng nào!',
+          });
         }
 
-        // Limit to max 2,000 records for browser safety & speed
+        const totalRawRows = rawJson.length;
+
+        // Limit to max 2,000 records for browser performance
         if (rawJson.length > 2000) {
-          alert(`File của bạn có ${rawJson.length.toLocaleString('vi-VN')} dòng. Để bảo đảm tốc độ và hiệu năng tính toán tại Trình duyệt, hệ thống đã tự động giới hạn phân tích 2.000 dòng đầu tiên.`);
           rawJson = rawJson.slice(0, 2000);
         }
 
-        // Auto-detect platform from Excel headers
-        const allHeaders = Object.keys(rawJson[0] || {}).join(' ').toLowerCase();
+        // Semantic confidence detection from headers
+        const firstRowKeys = Object.keys(rawJson[0] || {});
+        const allHeaders = firstRowKeys.join(' ').toLowerCase();
+
+        // Check platform-specific keywords
+        const hasTikTokSpecific = 
+          allHeaders.includes('seller sku') ||
+          allHeaders.includes('sku id') ||
+          allHeaders.includes('tiktok') ||
+          allHeaders.includes('retail delivery fee') ||
+          allHeaders.includes('subtotal after discount') ||
+          allHeaders.includes('platform_commission');
+
+        const hasShopeeSpecific = 
+          allHeaders.includes('mã đơn hàng') ||
+          allHeaders.includes('shopee') ||
+          allHeaders.includes('phí cố định') ||
+          allHeaders.includes('phí dịch vụ') ||
+          allHeaders.includes('freeship xtra') ||
+          allHeaders.includes('voucher xtra') ||
+          allHeaders.includes('tiền trợ giá');
+
+        const hasGenericOrderHeaders =
+          allHeaders.includes('sku') ||
+          allHeaders.includes('order') ||
+          allHeaders.includes('đơn') ||
+          allHeaders.includes('doanh thu') ||
+          allHeaders.includes('revenue') ||
+          allHeaders.includes('giá') ||
+          allHeaders.includes('thực nhận') ||
+          allHeaders.includes('payout');
+
+        let confidence: DetectionConfidence = 'UNSUPPORTED';
         let detectedPlatform: PlatformType = currentPlatform;
 
-        const hasTikTokKeywords = allHeaders.includes('tiktok') || allHeaders.includes('seller sku') || allHeaders.includes('sku id') || allHeaders.includes('subtotal') || allHeaders.includes('platform_commission');
-        const hasShopeeKeywords = allHeaders.includes('shopee') || allHeaders.includes('mã đơn hàng') || allHeaders.includes('phí cố định') || allHeaders.includes('phí dịch vụ') || allHeaders.includes('freeship xtra');
-
-        if (hasTikTokKeywords && !hasShopeeKeywords) {
-          detectedPlatform = 'tiktok';
-        } else if (hasShopeeKeywords) {
+        if (hasShopeeSpecific && !hasTikTokSpecific) {
+          confidence = 'HIGH_CONFIDENCE';
           detectedPlatform = 'shopee';
+        } else if (hasTikTokSpecific && !hasShopeeSpecific) {
+          confidence = 'HIGH_CONFIDENCE';
+          detectedPlatform = 'tiktok';
+        } else if (hasGenericOrderHeaders) {
+          // File has general order headers but cannot distinguish between Shopee/TikTok with high certainty
+          confidence = 'UNCERTAIN';
+          detectedPlatform = currentPlatform;
+        } else {
+          // File does not look like an e-commerce order report at all
+          confidence = 'UNSUPPORTED';
+          return resolve({
+            orders: [],
+            detectedPlatform: currentPlatform,
+            confidence: 'UNSUPPORTED',
+            isPlatformMismatch: false,
+            message: 'Cấu trúc file không khớp với định dạng báo cáo đơn hàng Shopee hoặc TikTok Shop.',
+            totalRawRows,
+          });
         }
 
         const isPlatformMismatch = detectedPlatform !== currentPlatform;
-        const targetPlatform = detectedPlatform;
-
         const savedCOGS = getSavedCOGS();
         const parsedOrders: OrderItem[] = [];
 
@@ -83,7 +147,7 @@ export async function parseUploadedFile(
 
           // Extract basic fields
           const orderId = String(
-            getValue(['Mã đơn hàng', 'Order ID', 'Order No', 'Mã Đơn']) || `ORD-${index + 1000}`
+            getValue(['Mã đơn hàng', 'Order ID', 'Order No', 'Mã Đơn', 'Mã đơn']) || `ORD-${index + 1000}`
           );
 
           const orderDate = String(
@@ -98,7 +162,7 @@ export async function parseUploadedFile(
             getValue(['Tên sản phẩm', 'Product Name', 'Sản phẩm', 'Title']) || 'Sản phẩm ' + sku
           );
 
-          const quantity = parseNum(getValue(['Số lượng', 'Quantity', 'Qty'])) || 1;
+          const quantity = Math.max(1, parseNum(getValue(['Số lượng', 'Quantity', 'Qty'])) || 1);
 
           // Revenue & Payout
           let grossRevenue = Math.abs(
@@ -106,7 +170,7 @@ export async function parseUploadedFile(
           );
 
           let netSettlement = parseNum(
-            getValue(['Thực nhận', 'Net Settlement', 'Số tiền chuyển vào Ví', 'Net Payout', 'Doanh thu ròng'])
+            getValue(['Thực nhận', 'Net Settlement', 'Số tiền chuyển vào Ví', 'Net Payout', 'Doanh thu ròng', 'Tiền vào ví'])
           );
 
           // Fees breakdown
@@ -138,8 +202,8 @@ export async function parseUploadedFile(
             orderStatus = 'cancelled';
           }
 
-          // Lookup COGS from local storage or default to 50% of gross price
-          const cogsPerUnit = savedCOGS[sku] !== undefined ? savedCOGS[sku] : Math.round((grossRevenue / Math.max(1, quantity)) * 0.5);
+          // Lookup COGS from local storage or default to 45% of gross price
+          const cogsPerUnit = savedCOGS[sku] !== undefined ? savedCOGS[sku] : Math.round((grossRevenue / quantity) * 0.45);
           const cogs = cogsPerUnit * quantity;
 
           const taxAmount = Math.round(grossRevenue * 0.015);
@@ -148,18 +212,15 @@ export async function parseUploadedFile(
 
           const isHighFee = feeRatio > feeThreshold;
           const isRefundAnomaly = (orderStatus === 'returned' || orderStatus === 'cancelled') && netSettlement < 0;
-          const isNegativeProfit = netProfit < 0;
 
-          let anomalyReason = '';
-          if (isHighFee) anomalyReason += `Tỷ lệ phí sàn ${feeRatio.toFixed(1)}% vượt mốc ${feeThreshold}%. `;
-          if (isRefundAnomaly) anomalyReason += `Đơn hoàn/hủy bị trừ tiền sai ví (${netSettlement}đ). `;
-          if (isNegativeProfit) anomalyReason += `Đơn bị lỗ (-${Math.abs(netProfit)}đ). `;
+          // Optional shipping fields for Excel Transformer
+          const trackingNumber = String(getValue(['Mã vận đơn', 'Tracking Number', 'Tracking No', 'Mã tracking']) || '');
+          const carrierName = String(getValue(['Đơn vị vận chuyển', 'Carrier', 'Shipping Provider', 'Đơn vị VC']) || 'SPX');
 
           parsedOrders.push({
-            id: `${targetPlatform.toUpperCase()}-${index + 1}`,
+            id: `ord_${index + 1}_${Date.now()}`,
             orderId,
             orderDate,
-            platform: targetPlatform,
             sku,
             productName,
             quantity,
@@ -171,33 +232,45 @@ export async function parseUploadedFile(
             marketingFee,
             otherFee,
             totalFees,
-            cogs,
-            packagingCost,
-            taxAmount,
-            orderStatus,
             feeRatio,
+            taxAmount,
+            cogs,
             netProfit,
+            orderStatus,
+            isNegativeProfit: netProfit < 0,
             isHighFee,
             isRefundAnomaly,
-            isNegativeProfit,
-            anomalyReason: anomalyReason.trim() || undefined,
-            carrierName: String(getValue(['Đơn vị vận chuyển', 'Carrier', 'Shipping Provider']) || 'SPX Express'),
-            trackingNumber: String(getValue(['Mã vận đơn', 'Tracking Number', 'Waybill']) || `SPX${Date.now()}`),
+            trackingNumber,
+            carrierName,
           });
         });
 
         resolve({
           orders: parsedOrders,
           detectedPlatform,
+          confidence,
           isPlatformMismatch,
+          totalRawRows,
         });
       } catch (err: any) {
-        reject(err);
+        resolve({
+          orders: [],
+          detectedPlatform: currentPlatform,
+          confidence: 'UNSUPPORTED',
+          isPlatformMismatch: false,
+          message: err.message || 'Lỗi xử lý file Excel!',
+        });
       }
     };
 
     reader.onerror = () => {
-      reject(new Error('Lỗi đọc file Excel từ hệ thống!'));
+      resolve({
+        orders: [],
+        detectedPlatform: currentPlatform,
+        confidence: 'UNSUPPORTED',
+        isPlatformMismatch: false,
+        message: 'Không thể đọc nội dung file!',
+      });
     };
 
     reader.readAsArrayBuffer(file);
