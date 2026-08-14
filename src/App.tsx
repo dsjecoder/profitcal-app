@@ -439,6 +439,8 @@ export function App() {
               dataSourceMode={dataSourceMode}
               dataSourceName={dataSourceName}
               currentLang={currentLang}
+              activeDataset={activeDataset}
+              onShopChange={handleShopSwitch}
             />
           )}
 

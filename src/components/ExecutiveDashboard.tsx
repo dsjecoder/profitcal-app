@@ -80,7 +80,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         {/* 1. HEADER PANEL: TITLE + DATA SOURCE BADGE + ACTION BUTTON GROUP */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 bg-slate-950/80 rounded-2xl border border-slate-800">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xl font-bold text-white">Báo cáo kiểm toán tài chính</span>
+            <span className="text-xl font-bold text-white">Báo cáo kiểm toán đơn hàng thực tế</span>
             
             {/* Data Source Badge */}
             <span className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700">
@@ -161,7 +161,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
             {/* Cell 4: Giá vốn COGS */}
             <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
               <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                Giá Vốn (COGS)
+                Giá Vốn Hàng Bán
               </span>
               <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.totalCOGS)}
@@ -185,7 +185,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         <div className="bg-slate-950/80 p-5 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="text-sm font-medium text-slate-400">
-              Lợi nhuận ròng đối soát
+              Lợi nhuận ròng / toàn bộ đơn hàng
             </div>
             <div className="text-4xl lg:text-5xl font-bold font-mono text-[#10b981] tracking-tight">
               {formatVND(summary.netProfit)}

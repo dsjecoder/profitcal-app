@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   ShieldAlert,
   Volume2,
@@ -17,6 +17,12 @@ import {
   Sliders,
   Scale,
   Layers,
+  ChevronDown,
+  Search,
+  Filter,
+  ArrowUpRight,
+  Boxes,
+  BoxesIcon,
 } from 'lucide-react';
 import { SKUData, UserState, MasterSKU, SkuMapping, StockAuditLog } from '../types';
 import {
@@ -55,15 +61,19 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
   const [mappings, setMappings] = useState<SkuMapping[]>(() => getSkuMappings());
   const [auditLogs, setAuditLogs] = useState<StockAuditLog[]>(() => getStockAuditLogs());
 
-  // Telegram Alert
-  const [telegramConfig, setTelegramConfig] = useState(getTelegramConfig());
-  const [showConfigDrawer, setShowConfigDrawer] = useState(false);
-  const [testSent, setTestSent] = useState(false);
+  // Search and Filter states for Master SKU Catalog
+  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'instock' | 'lowstock' | 'outofstock'>('all');
 
-  // Tab State inside Inventory ('catalog' | 'mapping' | 'import' | 'logs')
+  // Advanced Tools Dropdown / Drawer
+  const [showAdvancedMenu, setShowAdvancedMenu] = useState<boolean>(false);
+  const [showConfigDrawer, setShowConfigDrawer] = useState<boolean>(false);
+  const [telegramConfig, setTelegramConfig] = useState(getTelegramConfig());
+
+  // Tab State: 'catalog' (Danh mục) | 'mapping' (Ánh xạ) | 'import' (Nhập hàng) | 'logs' (Nhật ký kho)
   const [activeTab, setActiveTab] = useState<'catalog' | 'mapping' | 'import' | 'logs'>('catalog');
 
-  // Import Modal State
+  // Import Form State
   const [selectedMasterSku, setSelectedMasterSku] = useState<string>('');
   const [importQty, setImportQty] = useState<number>(50);
   const [importPrice, setImportPrice] = useState<number>(100000);
@@ -82,12 +92,16 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
   const [newMasterSku, setNewMasterSku] = useState<string>('');
   const [newMultiplier, setNewMultiplier] = useState<number>(1);
 
-  // Modal Integration States (Phase 5 UI Wiring)
+  // Modals
   const [selectedCorrectionSku, setSelectedCorrectionSku] = useState<MasterSKU | null>(null);
   const [showHistoricalRebuildModal, setShowHistoricalRebuildModal] = useState<boolean>(false);
   const [selectedConversionSku, setSelectedConversionSku] = useState<MasterSKU | null>(null);
 
-  const lowStockItems = masterList.filter((m) => m.availableStock <= m.safetyStock);
+  // Primary KPI Summaries
+  const totalSkus = masterList.length;
+  const inStockCount = masterList.filter((m) => m.availableStock > m.safetyStock).length;
+  const lowStockCount = masterList.filter((m) => m.availableStock <= m.safetyStock && m.availableStock > 0).length;
+  const outOfStockCount = masterList.filter((m) => m.availableStock <= 0).length;
 
   const reloadData = () => {
     setMasterList(getMasterSKUs());
@@ -115,7 +129,8 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
     importMasterStock(selectedMasterSku, importQty, importPrice, importMode);
     reloadData();
     setShowConfirmOverwrite(false);
-    alert(`⚡ Đã nhập kho SKU ${selectedMasterSku} (${importMode === 'INCREMENTAL' ? 'Cộng Dồn' : 'Ghi Đè Kê Kho'}) thành công!`);
+    setActiveTab('catalog');
+    alert(`⚡ Đã nhập hàng cho mã ${selectedMasterSku} (${importMode === 'INCREMENTAL' ? 'Cộng Dồn' : 'Ghi Đè Kê Kho'}) thành công!`);
   };
 
   const handleProcessReturn = () => {
@@ -123,7 +138,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
     processReturnedStock(returnSku, returnQty, isDamaged);
     reloadData();
     setShowReturnModal(false);
-    alert(`✓ Đã xử lý hàng hoàn SKU ${returnSku} (${isDamaged ? 'Báo Phế / Hàng Hỏng' : 'Tái Nhập Kho'})!`);
+    alert(`✓ Đã xử lý hàng hoàn mã ${returnSku} (${isDamaged ? 'Báo Phế / Hàng Hỏng' : 'Tái Nhập Kho'})!`);
   };
 
   const handleAddMapping = (e: React.FormEvent) => {
@@ -144,71 +159,256 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
     setMappings(currentMappings);
     setNewPlatformSku('');
     setNewMultiplier(1);
-    alert('✓ Đã lưu ánh xạ SKU thành công!');
+    alert('✓ Đã lưu ánh xạ mã hàng thành công!');
+  };
+
+  // Filtered Master SKU list
+  const filteredMasterList = useMemo(() => {
+    return masterList.filter((item) => {
+      const matchSearch =
+        item.masterSku.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.productName.toLowerCase().includes(searchTerm.toLowerCase());
+
+      if (!matchSearch) return false;
+
+      if (statusFilter === 'instock') return item.availableStock > item.safetyStock;
+      if (statusFilter === 'lowstock') return item.availableStock <= item.safetyStock && item.availableStock > 0;
+      if (statusFilter === 'outofstock') return item.availableStock <= 0;
+      return true;
+    });
+  }, [masterList, searchTerm, statusFilter]);
+
+  // Friendly Action Type mapping for Audit Logs
+  const formatAuditAction = (actionType: string) => {
+    switch (actionType) {
+      case 'IMPORT':
+        return { label: 'Nhập hàng', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' };
+      case 'SALE':
+        return { label: 'Xuất bán', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30' };
+      case 'RETURN':
+        return { label: 'Hàng hoàn', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30' };
+      case 'RETURN_DAMAGED':
+        return { label: 'Hàng hoàn phế', color: 'bg-rose-500/20 text-rose-300 border-rose-500/30' };
+      case 'MANUAL_CORRECTION':
+        return { label: 'Điều chỉnh tồn/giá', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30' };
+      case 'REBUILD_HISTORICAL_COGS':
+        return { label: 'Tái tính giá vốn', color: 'bg-orange-500/20 text-orange-300 border-orange-500/30' };
+      case 'ADJUSTMENT':
+        return { label: 'Bù trừ kho', color: 'bg-slate-800 text-slate-300 border-slate-700' };
+      case 'COGS_UPDATE':
+        return { label: 'Đổi giá vốn', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' };
+      default:
+        return { label: actionType, color: 'bg-slate-800 text-slate-300 border-slate-700' };
+    }
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-6 my-8">
+    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6 my-8 w-full animate-fade-in">
       
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+      {/* 1. TOP-LEVEL HEADER & ACTION BAR */}
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <ShieldAlert className="w-5 h-5 text-rose-400" />
-            <h2 className="text-xl font-bold text-white tracking-tight">
-              Master Inventory & Quản Trị Giá Vốn Tồn Kho
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <Package className="w-4 h-4" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">
+              KHO HÀNG
             </h2>
           </div>
           <p className="text-xs text-slate-400 mt-1">
-            Quản lý kho tập trung Master SKU, ánh xạ Combo đa sàn, giá vốn bình quân gia quyền và tái tính giá vốn lịch sử.
+            Quản lý tồn kho, giá vốn và quy cách mã hàng tập trung cho gian hàng Shopee & TikTok Shop.
           </p>
         </div>
 
-        {/* Top Actions */}
-        <div className="flex flex-wrap items-center gap-2">
-          {/* Phase 5 Action: Controlled Historical COGS Rebuild */}
+        {/* Primary Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 self-stretch sm:self-auto">
+          
+          {/* Primary CTA: + Nhập hàng */}
           <button
-            onClick={() => setShowHistoricalRebuildModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/30 font-bold text-xs transition-all shadow-sm shadow-amber-500/10"
+            type="button"
+            onClick={() => setActiveTab('import')}
+            className="px-4 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors flex items-center gap-1.5 shadow-md"
           >
-            <RefreshCw className="w-3.5 h-3.5 text-amber-400" />
-            <span>Tái tính giá vốn lịch sử (Rebuild COGS)</span>
+            <Plus className="w-4 h-4" />
+            <span>+ Nhập hàng</span>
           </button>
 
+          {/* Secondary CTA: Xử lý hàng hoàn */}
           <button
+            type="button"
             onClick={() => setShowReturnModal(true)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors"
+            className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors flex items-center gap-1.5"
           >
             <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
             <span>Xử lý hàng hoàn</span>
           </button>
 
-          <button
-            onClick={handlePlaySound}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors"
-          >
-            <Volume2 className="w-3.5 h-3.5 text-slate-400" />
-            <span>Kiểm tra âm thanh</span>
-          </button>
+          {/* Advanced Tools Dropdown */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setShowAdvancedMenu(!showAdvancedMenu)}
+              className="px-3.5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 font-medium text-xs transition-all flex items-center gap-1.5"
+            >
+              <Settings className="w-3.5 h-3.5 text-slate-400" />
+              <span>Công cụ nâng cao</span>
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showAdvancedMenu ? 'rotate-180' : ''}`} />
+            </button>
 
-          <button
-            onClick={() => setShowConfigDrawer(!showConfigDrawer)}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors"
-          >
-            <Settings className="w-3.5 h-3.5 text-slate-400" />
-            <span>Cấu hình Telegram</span>
-          </button>
+            {/* Dropdown Menu */}
+            {showAdvancedMenu && (
+              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-slate-950 border border-slate-800 p-2 shadow-2xl z-50 animate-fade-in space-y-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowHistoricalRebuildModal(true);
+                    setShowAdvancedMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-amber-300 hover:bg-amber-500/10 flex items-center gap-2 transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div>
+                    <div>Tái tính giá vốn đơn cũ</div>
+                    <div className="text-[10px] text-slate-500 font-normal">Chạy lại COGS lịch sử theo SKU</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('logs');
+                    setShowAdvancedMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-900 flex items-center gap-2 transition-colors"
+                >
+                  <History className="w-4 h-4 text-slate-400 shrink-0" />
+                  <div>
+                    <div>Nhật ký kho</div>
+                    <div className="text-[10px] text-slate-500 font-normal">Xem lịch sử biến động kho & giá vốn</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowConfigDrawer(!showConfigDrawer);
+                    setShowAdvancedMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-900 flex items-center gap-2 transition-colors"
+                >
+                  <Send className="w-4 h-4 text-slate-400 shrink-0" />
+                  <div>
+                    <div>Cấu hình Telegram Bot</div>
+                    <div className="text-[10px] text-slate-500 font-normal">Nhận thông báo khi sắp hết hàng</div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    handlePlaySound();
+                    setShowAdvancedMenu(false);
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-900 flex items-center gap-2 transition-colors"
+                >
+                  <Volume2 className="w-4 h-4 text-slate-400 shrink-0" />
+                  <div>
+                    <div>Kiểm tra chuông cảnh báo</div>
+                    <div className="text-[10px] text-slate-500 font-normal">Phát thử âm thanh còi báo tồn</div>
+                  </div>
+                </button>
+              </div>
+            )}
+          </div>
+
         </div>
       </div>
 
-      {/* Telegram Configuration Drawer */}
+      {/* 2. PRIMARY SUMMARY KPI CARDS */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        
+        {/* Card 1: Tổng mã hàng */}
+        <div
+          onClick={() => {
+            setStatusFilter('all');
+            setActiveTab('catalog');
+          }}
+          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all space-y-1"
+        >
+          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block font-sans">
+            Tổng mã hàng
+          </span>
+          <div className="text-2xl font-bold font-mono text-white">
+            {totalSkus} <span className="text-xs font-normal text-slate-500">mã</span>
+          </div>
+        </div>
+
+        {/* Card 2: Đang có hàng */}
+        <div
+          onClick={() => {
+            setStatusFilter('instock');
+            setActiveTab('catalog');
+          }}
+          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/40 cursor-pointer transition-all space-y-1"
+        >
+          <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block font-sans">
+            🟢 Đang có hàng
+          </span>
+          <div className="text-2xl font-bold font-mono text-emerald-400">
+            {inStockCount} <span className="text-xs font-normal text-slate-500">mã</span>
+          </div>
+        </div>
+
+        {/* Card 3: Sắp hết hàng */}
+        <div
+          onClick={() => {
+            setStatusFilter('lowstock');
+            setActiveTab('catalog');
+          }}
+          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all space-y-1"
+        >
+          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block font-sans">
+            ⚠ Sắp hết
+          </span>
+          <div className="text-2xl font-bold font-mono text-amber-400">
+            {lowStockCount} <span className="text-xs font-normal text-slate-500">mã</span>
+          </div>
+        </div>
+
+        {/* Card 4: Hết hàng */}
+        <div
+          onClick={() => {
+            setStatusFilter('outofstock');
+            setActiveTab('catalog');
+          }}
+          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-rose-500/40 cursor-pointer transition-all space-y-1"
+        >
+          <span className="text-xs font-bold text-rose-400 uppercase tracking-wider block font-sans">
+            🔴 Hết hàng
+          </span>
+          <div className="text-2xl font-bold font-mono text-rose-400">
+            {outOfStockCount} <span className="text-xs font-normal text-slate-500">mã</span>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Telegram Configuration Drawer (Collapsible) */}
       {showConfigDrawer && (
-        <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 animate-fade-in">
+        <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-white flex items-center gap-2">
-              <Send className="w-4 h-4 text-slate-400" />
-              <span>Cấu hình thông báo Telegram Bot</span>
+            <h3 className="text-xs font-bold text-white flex items-center gap-2 uppercase tracking-wider">
+              <Send className="w-4 h-4 text-cyan-400" />
+              <span>Cấu hình thông báo Telegram Bot khi sắp hết hàng</span>
             </h3>
+            <button
+              type="button"
+              onClick={() => setShowConfigDrawer(false)}
+              className="text-xs text-slate-400 hover:text-white"
+            >
+              Đóng
+            </button>
           </div>
 
           <form onSubmit={handleSaveTelegram} className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
@@ -246,158 +446,249 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
         </div>
       )}
 
-      {/* INVENTORY TAB SWITCHER */}
+      {/* 3. SUB-VIEWS TAB SWITCHER */}
       <div className="flex items-center gap-2 border-b border-slate-800 pb-3 text-xs font-semibold">
+        
+        {/* Tab 1: Danh mục hàng hóa */}
         <button
           onClick={() => setActiveTab('catalog')}
-          className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'catalog'
               ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <Package className="w-4 h-4" />
-          <span>Danh mục Master SKU ({masterList.length})</span>
+          <span>Danh mục hàng hóa ({masterList.length})</span>
         </button>
 
+        {/* Tab 2: Ánh xạ mã hàng */}
         <button
           onClick={() => setActiveTab('mapping')}
-          className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'mapping'
               ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <ArrowRightLeft className="w-4 h-4" />
-          <span>Ánh xạ SKU Combo ({mappings.length})</span>
+          <span>Ánh xạ mã hàng ({mappings.length})</span>
         </button>
 
+        {/* Tab 3: Nhập hàng */}
         <button
           onClick={() => setActiveTab('import')}
-          className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'import'
               ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <Plus className="w-4 h-4" />
-          <span>Nhập kho & Giá vốn</span>
+          <span>Nhập hàng & Giá vốn</span>
         </button>
 
+        {/* Tab 4: Nhật ký kho */}
         <button
           onClick={() => setActiveTab('logs')}
-          className={`px-3 py-1.5 rounded-xl transition-all flex items-center gap-1.5 ${
+          className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'logs'
               ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
               : 'text-slate-400 hover:text-white'
           }`}
         >
           <History className="w-4 h-4" />
-          <span>Nhật ký Stock Audit ({auditLogs.length})</span>
+          <span>Nhật ký kho ({auditLogs.length})</span>
         </button>
       </div>
 
-      {/* TAB 1: MASTER SKU CATALOG GRID */}
+      {/* ========================================================================= */}
+      {/* TAB 1: DANH MỤC HÀNG HÓA (MASTER SKU CATALOG)                              */}
+      {/* ========================================================================= */}
       {activeTab === 'catalog' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 animate-fade-in">
-          {masterList.map((item) => {
-            const isLow = item.availableStock <= item.safetyStock;
-            return (
-              <div
-                key={item.id}
-                className={`p-4 rounded-2xl border transition-all flex flex-col justify-between ${
-                  isLow ? 'bg-slate-950 border-rose-500/50' : 'bg-slate-950 border-slate-800'
-                }`}
+        <div className="space-y-4 animate-fade-in">
+          
+          {/* Search & Filter Toolbar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+            <div className="relative flex-1">
+              <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
+              <input
+                type="text"
+                placeholder="Tìm theo mã hàng hoặc tên sản phẩm..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-500"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div className="flex items-center gap-2">
+              <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value as any)}
+                className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-medium"
               >
-                <div>
-                  <div className="space-y-1">
-                    <h4 className="text-sm font-semibold text-white line-clamp-1">
-                      {item.productName}
-                    </h4>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="font-mono text-slate-400">Master SKU: {item.masterSku}</span>
-                      {isLow ? (
-                        <span className="px-2 py-0.5 rounded text-[11px] font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                          🔴 Sắp hết hàng
+                <option value="all">Tất cả trạng thái ({totalSkus})</option>
+                <option value="instock">🟢 Đang có hàng ({inStockCount})</option>
+                <option value="lowstock">⚠ Sắp hết hàng ({lowStockCount})</option>
+                <option value="outofstock">🔴 Hết hàng ({outOfStockCount})</option>
+              </select>
+            </div>
+          </div>
+
+          {/* Empty State */}
+          {filteredMasterList.length === 0 && (
+            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-10 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+                <Package className="w-6 h-6" />
+              </div>
+              <h3 className="text-sm font-bold text-white">Không tìm thấy hàng hóa phù hợp</h3>
+              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+                {masterList.length === 0
+                  ? 'Chưa có hàng hóa nào trong kho. Hãy thêm mã hàng đầu tiên bằng cách nhập kho.'
+                  : 'Không có sản phẩm nào khớp với bộ lọc tìm kiếm hiện tại.'}
+              </p>
+              {masterList.length === 0 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('import')}
+                  className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors"
+                >
+                  + Nhập hàng ngay
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Master SKU Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredMasterList.map((item) => {
+              const isOut = item.availableStock <= 0;
+              const isLow = item.availableStock <= item.safetyStock && !isOut;
+
+              return (
+                <div
+                  key={item.id}
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between bg-slate-950 ${
+                    isOut
+                      ? 'border-rose-500/40 bg-rose-950/10'
+                      : isLow
+                      ? 'border-amber-500/40 bg-amber-950/10'
+                      : 'border-slate-800'
+                  }`}
+                >
+                  <div>
+                    {/* Header: Title & Status Badge */}
+                    <div className="space-y-1">
+                      <h4 className="text-sm font-semibold text-white line-clamp-1" title={item.productName}>
+                        {item.productName}
+                      </h4>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-mono text-slate-400">Mã hàng: <strong>{item.masterSku}</strong></span>
+                        {isOut ? (
+                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                            🔴 Hết hàng
+                          </span>
+                        ) : isLow ? (
+                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            ⚠ Sắp hết
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            🟢 Còn hàng
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Unit Conversion & Batch Badges */}
+                    <div className="mt-2.5 flex flex-wrap gap-1.5">
+                      {item.conversionRule && (
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">
+                          1 {item.conversionRule.packUnit} = {item.conversionRule.multiplier} {item.conversionRule.baseUnit}
                         </span>
-                      ) : (
-                        <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-slate-800 text-slate-300">
-                          🟢 An toàn
+                      )}
+                      {item.batches && item.batches.length > 0 && (
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                          {item.batches.length} Lô nhập
                         </span>
                       )}
                     </div>
-                  </div>
 
-                  {/* Conversion rule and batch badges */}
-                  <div className="mt-2.5 flex flex-wrap gap-1.5">
-                    {item.conversionRule && (
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">
-                        1 {item.conversionRule.packUnit} = {item.conversionRule.multiplier} {item.conversionRule.baseUnit}
-                      </span>
-                    )}
-                    {item.batches && item.batches.length > 0 && (
-                      <span className="px-2 py-0.5 rounded-lg text-[10px] bg-slate-800 text-slate-400 border border-slate-700 font-mono">
-                        {item.batches.length} Lô nhập
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
-                    <div>
-                      <span className="text-slate-400 block">Tồn khả dụng:</span>
-                      <span className={`text-lg font-bold font-mono ${isLow ? 'text-rose-400' : 'text-slate-100'}`}>
-                        {item.availableStock} {item.unit}
-                      </span>
+                    {/* Primary Metrics Grid */}
+                    <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-slate-400 block">Tồn khả dụng:</span>
+                        <span className={`text-xl font-bold font-mono ${
+                          isOut ? 'text-rose-400' : isLow ? 'text-amber-400' : 'text-slate-100'
+                        }`}>
+                          {item.availableStock.toLocaleString('vi-VN')} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 block">Giá vốn hiện tại:</span>
+                        <span className="text-base font-bold font-mono text-emerald-400">
+                          {item.cogsPrice.toLocaleString('vi-VN')} đ
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-slate-400 block">Giá vốn COGS:</span>
-                      <span className="text-base font-bold font-mono text-emerald-400">
-                        {item.cogsPrice.toLocaleString('vi-VN')} đ
-                      </span>
+
+                    {/* Secondary Stock Details */}
+                    <div className="mt-2 text-[11px] text-slate-500 flex justify-between font-mono">
+                      <span>Tổng tồn: {item.totalStock}</span>
+                      <span>Đang giữ: {item.holdingStock}</span>
+                      <span>Ngưỡng báo: &lt; {item.safetyStock}</span>
                     </div>
                   </div>
 
-                  <div className="mt-2 text-[11px] text-slate-500 flex justify-between font-mono">
-                    <span>Tổng tồn: {item.totalStock}</span>
-                    <span>Đang giữ: {item.holdingStock}</span>
-                    <span>Ngưỡng: &lt; {item.safetyStock}</span>
+                  {/* Card Action Buttons: Quy cách & Điều chỉnh */}
+                  <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedConversionSku(item)}
+                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Scale className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Quy cách</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCorrectionSku(item)}
+                      className="py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
+                    >
+                      <Sliders className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Điều chỉnh</span>
+                    </button>
                   </div>
                 </div>
-
-                {/* Card Action Buttons: Unit Conversion & Manual Correction */}
-                <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedConversionSku(item)}
-                    className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <Scale className="w-3.5 h-3.5 text-cyan-400" />
-                    <span>Quy cách</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setSelectedCorrectionSku(item)}
-                    className="py-1.5 px-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
-                  >
-                    <Sliders className="w-3.5 h-3.5 text-rose-400" />
-                    <span>Sửa ngoại lệ</span>
-                  </button>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
-      {/* TAB 2: SKU MAPPING & COMBO FORM */}
+      {/* ========================================================================= */}
+      {/* TAB 2: ÁNH XẠ MÃ HÀNG (COMBO MAPPING)                                    */}
+      {/* ========================================================================= */}
       {activeTab === 'mapping' && (
         <div className="space-y-6 animate-fade-in">
-          <form onSubmit={handleAddMapping} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
-            <h3 className="text-sm font-semibold text-white">Tạo ánh xạ SKU sàn với Master SKU (Hỗ trợ Combo)</h3>
+          
+          {/* Explanatory Header */}
+          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <h3 className="text-sm font-bold text-white">Ánh xạ mã bán trên sàn với mã hàng trong kho</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              Cho ProfitCal biết khi khách mua 1 mã Combo trên sàn (Shopee / TikTok), hệ thống sẽ trừ bao nhiêu đơn vị của mã hàng nào trong kho.
+            </p>
+          </div>
+
+          <form onSubmit={handleAddMapping} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
+            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">+ Thêm ánh xạ mã hàng mới</h4>
+            
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Sàn Thương Mại:</label>
+                <label className="text-slate-400 block mb-1">Sàn thương mại:</label>
                 <select
                   value={newPlatform}
                   onChange={(e) => setNewPlatform(e.target.value as 'shopee' | 'tiktok')}
@@ -409,7 +700,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Platform SKU (SKU trên sàn):</label>
+                <label className="text-slate-400 block mb-1">Mã bán trên sàn (Platform SKU):</label>
                 <input
                   type="text"
                   placeholder="VD: COMBO-3-LON"
@@ -420,13 +711,13 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Master SKU Tập Trung:</label>
+                <label className="text-slate-400 block mb-1">Mã hàng trong kho (Master SKU):</label>
                 <select
                   value={newMasterSku}
                   onChange={(e) => setNewMasterSku(e.target.value)}
                   className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
                 >
-                  <option value="">-- Chọn Master SKU --</option>
+                  <option value="">-- Chọn mã hàng trong kho --</option>
                   {masterList.map((m) => (
                     <option key={m.id} value={m.masterSku}>
                       {m.masterSku} ({m.productName})
@@ -436,7 +727,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Hệ số quy đổi (Multiplier):</label>
+                <label className="text-slate-400 block mb-1">Số lượng quy đổi (1 đơn = N kho):</label>
                 <input
                   type="number"
                   min="1"
@@ -451,7 +742,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               type="submit"
               className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors"
             >
-              Thêm Ánh Xạ SKU Combo
+              Lưu ánh xạ mã hàng
             </button>
           </form>
 
@@ -461,169 +752,25 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               <thead className="bg-slate-900 text-slate-400 font-mono border-b border-slate-800">
                 <tr>
                   <th className="p-3">Sàn</th>
-                  <th className="p-3">Platform SKU (Trên sàn)</th>
-                  <th className="p-3">Master SKU (Kho tổng)</th>
-                  <th className="p-3">Hệ số quy đổi</th>
+                  <th className="p-3">Mã bán trên sàn</th>
+                  <th className="p-3">Mã hàng trong kho</th>
+                  <th className="p-3">Số lượng quy đổi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60 font-mono">
-                {mappings.map((map) => (
-                  <tr key={map.id}>
-                    <td className="p-3 uppercase font-semibold text-emerald-400">{map.platform}</td>
-                    <td className="p-3 text-white font-bold">{map.platformSku}</td>
-                    <td className="p-3 text-slate-300">{map.masterSku}</td>
-                    <td className="p-3 text-amber-400 font-bold">1 đơn = {map.multiplier} unit kho</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 3: IMPORT STOCK & WEIGHTED AVERAGE FORM */}
-      {activeTab === 'import' && (
-        <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 animate-fade-in max-w-xl">
-          <h3 className="text-sm font-semibold text-white">Nhập tồn kho & Tính giá vốn bình quân gia quyền</h3>
-
-          <div className="space-y-3 text-xs">
-            <div>
-              <label className="text-slate-400 block mb-1">Chọn Master SKU:</label>
-              <select
-                value={selectedMasterSku}
-                onChange={(e) => setSelectedMasterSku(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
-              >
-                <option value="">-- Chọn Master SKU --</option>
-                {masterList.map((m) => (
-                  <option key={m.id} value={m.masterSku}>
-                    {m.masterSku} - Tồn hiện tại: {m.totalStock} | COGS: {m.cogsPrice.toLocaleString('vi-VN')} đ
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="text-slate-400 block mb-1">Số lượng nhập:</label>
-              <input
-                type="number"
-                value={importQty}
-                onChange={(e) => setImportQty(Number(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="text-slate-400 block mb-1">Đơn giá nhập kho (VND):</label>
-              <input
-                type="number"
-                value={importPrice}
-                onChange={(e) => setImportPrice(Number(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
-              />
-            </div>
-
-            <div>
-              <label className="text-slate-400 block mb-1">Phương thức nhập kho:</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer text-slate-200">
-                  <input
-                    type="radio"
-                    name="mode"
-                    checked={importMode === 'INCREMENTAL'}
-                    onChange={() => setImportMode('INCREMENTAL')}
-                    className="accent-emerald-500"
-                  />
-                  <span>Nhập thêm (Cộng dồn & Bình quân giá vốn)</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer text-slate-200">
-                  <input
-                    type="radio"
-                    name="mode"
-                    checked={importMode === 'OVERWRITE'}
-                    onChange={() => setImportMode('OVERWRITE')}
-                    className="accent-rose-500"
-                  />
-                  <span>Kiểm kê (Ghi đè số lượng tồn thực tế)</span>
-                </label>
-              </div>
-            </div>
-
-            {showConfirmOverwrite && importMode === 'OVERWRITE' && (
-              <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>Cảnh báo: Bạn đang chọn chế độ Kiểm kho (Ghi đè). Số lượng tồn kho hiện tại sẽ bị thay thế bằng số lượng nhập mới. Bấm "Thực hiện nhập kho" lần nữa để xác nhận.</span>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleExecuteImport}
-              className="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors"
-            >
-              Thực hiện nhập kho
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* TAB 4: STOCK AUDIT LOGS */}
-      {activeTab === 'logs' && (
-        <div className="space-y-4 animate-fade-in text-xs">
-          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950">
-            <table className="w-full text-left">
-              <thead className="bg-slate-900 text-slate-400 font-mono border-b border-slate-800">
-                <tr>
-                  <th className="p-3">Thời gian</th>
-                  <th className="p-3">Hành động</th>
-                  <th className="p-3">Master SKU</th>
-                  <th className="p-3">Biến động</th>
-                  <th className="p-3">Trước $\rightarrow$ Sau</th>
-                  <th className="p-3">Người thực hiện</th>
-                  <th className="p-3">Lý do / Mã liên quan</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60 font-mono">
-                {auditLogs.length === 0 ? (
+                {mappings.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="p-4 text-center text-slate-500">Chưa có nhật ký kiểm toán nào.</td>
+                    <td colSpan={4} className="p-4 text-center text-slate-500 font-sans">
+                      Chưa có cấu hình ánh xạ mã hàng nào.
+                    </td>
                   </tr>
                 ) : (
-                  auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-900/50">
-                      <td className="p-3 text-slate-400 text-[11px]">{new Date(log.timestamp).toLocaleString('vi-VN')}</td>
-                      <td className="p-3 font-semibold">
-                        <span
-                          className={`px-2 py-0.5 rounded text-[10px] ${
-                            log.actionType === 'IMPORT'
-                              ? 'bg-emerald-500/20 text-emerald-400'
-                              : log.actionType === 'SALE'
-                              ? 'bg-blue-500/20 text-blue-400'
-                              : log.actionType === 'RETURN'
-                              ? 'bg-purple-500/20 text-purple-400'
-                              : log.actionType === 'RETURN_DAMAGED'
-                              ? 'bg-rose-500/20 text-rose-400'
-                              : log.actionType === 'MANUAL_CORRECTION'
-                              ? 'bg-amber-500/20 text-amber-300'
-                              : log.actionType === 'REBUILD_HISTORICAL_COGS'
-                              ? 'bg-orange-500/20 text-orange-300'
-                              : 'bg-slate-800 text-slate-300'
-                          }`}
-                        >
-                          {log.actionType}
-                        </span>
-                      </td>
-                      <td className="p-3 text-white font-bold">{log.masterSku}</td>
-                      <td className={`p-3 font-bold ${log.qtyChange > 0 ? 'text-emerald-400' : log.qtyChange < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
-                        {log.qtyChange > 0 ? `+${log.qtyChange}` : log.qtyChange}
-                      </td>
-                      <td className="p-3 text-slate-300">
-                        {log.oldValue.toLocaleString('vi-VN')} $\rightarrow$ {log.newValue.toLocaleString('vi-VN')}
-                      </td>
-                      <td className="p-3 text-slate-400">{log.actor}</td>
-                      <td className="p-3 text-slate-400 text-[11px] max-w-xs truncate" title={log.reason || log.relatedOrder}>
-                        {log.reason || log.relatedOrder || '-'}
-                      </td>
+                  mappings.map((map) => (
+                    <tr key={map.id} className="hover:bg-slate-900/50">
+                      <td className="p-3 uppercase font-semibold text-emerald-400">{map.platform}</td>
+                      <td className="p-3 text-white font-bold">{map.platformSku}</td>
+                      <td className="p-3 text-slate-300">{map.masterSku}</td>
+                      <td className="p-3 text-amber-400 font-bold">1 đơn = {map.multiplier} đơn vị kho</td>
                     </tr>
                   ))
                 )}
@@ -633,7 +780,185 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
         </div>
       )}
 
-      {/* RETURNED GOODS MODAL */}
+      {/* ========================================================================= */}
+      {/* TAB 3: NHẬP HÀNG & GIÁ VỐN (BATCH IMPORT & WEIGHTED AVERAGE COGS)        */}
+      {/* ========================================================================= */}
+      {activeTab === 'import' && (
+        <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-5 animate-fade-in max-w-2xl">
+          <div>
+            <h3 className="text-base font-bold text-white flex items-center gap-2">
+              <Plus className="w-5 h-5 text-emerald-400" />
+              <span>Nhập hàng & Tính giá vốn bình quân gia quyền</span>
+            </h3>
+            <p className="text-xs text-slate-400 mt-1">
+              Hệ thống tự động tính toán lại giá vốn trung bình dựa trên số lượng và giá nhập của lô hàng mới.
+            </p>
+          </div>
+
+          <div className="space-y-4 text-xs">
+            
+            {/* Step 1: Chọn mã hàng */}
+            <div>
+              <label className="text-slate-300 font-semibold block mb-1">1. Chọn mã hàng trong kho:</label>
+              <select
+                value={selectedMasterSku}
+                onChange={(e) => setSelectedMasterSku(e.target.value)}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-mono"
+              >
+                <option value="">-- Chọn mã hàng cần nhập --</option>
+                {masterList.map((m) => (
+                  <option key={m.id} value={m.masterSku}>
+                    {m.masterSku} ({m.productName}) — Tồn hiện tại: {m.totalStock} {m.unit} | Giá vốn: {m.cogsPrice.toLocaleString('vi-VN')} đ
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Step 2: Số lượng nhập */}
+            <div>
+              <label className="text-slate-300 font-semibold block mb-1">2. Số lượng nhập thêm:</label>
+              <input
+                type="number"
+                min="1"
+                value={importQty}
+                onChange={(e) => setImportQty(Number(e.target.value))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+              />
+            </div>
+
+            {/* Step 3: Đơn giá nhập kho */}
+            <div>
+              <label className="text-slate-300 font-semibold block mb-1">3. Đơn giá nhập kho (VND / đơn vị):</label>
+              <input
+                type="number"
+                min="0"
+                value={importPrice}
+                onChange={(e) => setImportPrice(Number(e.target.value))}
+                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+              />
+            </div>
+
+            {/* Step 4: Phương thức cập nhật */}
+            <div>
+              <label className="text-slate-300 font-semibold block mb-1">4. Phương thức nhập kho:</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer text-slate-200 hover:border-slate-700">
+                  <input
+                    type="radio"
+                    name="mode"
+                    checked={importMode === 'INCREMENTAL'}
+                    onChange={() => setImportMode('INCREMENTAL')}
+                    className="accent-emerald-500 mt-0.5"
+                  />
+                  <div>
+                    <div className="font-bold text-xs text-white">Nhập thêm (Khuyên dùng)</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Cộng dồn số lượng và tự động tính lại giá vốn bình quân gia quyền.</div>
+                  </div>
+                </label>
+
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer text-slate-200 hover:border-slate-700">
+                  <input
+                    type="radio"
+                    name="mode"
+                    checked={importMode === 'OVERWRITE'}
+                    onChange={() => setImportMode('OVERWRITE')}
+                    className="accent-rose-500 mt-0.5"
+                  />
+                  <div>
+                    <div className="font-bold text-xs text-rose-300">Kiểm kê ghi đè</div>
+                    <div className="text-[11px] text-slate-400 mt-0.5">Thay thế toàn bộ số tồn kho bằng số lượng nhập mới.</div>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            {showConfirmOverwrite && importMode === 'OVERWRITE' && (
+              <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                <span>Cảnh báo: Bạn đang chọn chế độ Kiểm kho ghi đè. Toàn bộ số lượng tồn kho cũ sẽ bị thay thế bằng số mới. Bấm nút bên dưới lần nữa để xác nhận.</span>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleExecuteImport}
+              className="w-full py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors shadow-md mt-2"
+            >
+              Xác nhận nhập kho
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* TAB 4: NHẬT KÝ KHO (STOCK AUDIT LOGS)                                     */}
+      {/* ========================================================================= */}
+      {activeTab === 'logs' && (
+        <div className="space-y-4 animate-fade-in text-xs">
+          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+            <h3 className="text-sm font-bold text-white">Nhật ký kho & kiểm toán biến động</h3>
+            <p className="text-xs text-slate-400 mt-1">
+              Truy nguyên toàn bộ lịch sử xuất bán, nhập kho, hàng hoàn, điều chỉnh ngoại lệ và tái tính giá vốn.
+            </p>
+          </div>
+
+          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950">
+            <table className="w-full text-left">
+              <thead className="bg-slate-900 text-slate-400 font-mono border-b border-slate-800">
+                <tr>
+                  <th className="p-3">Thời gian</th>
+                  <th className="p-3">Hành động</th>
+                  <th className="p-3">Mã hàng</th>
+                  <th className="p-3">Biến động</th>
+                  <th className="p-3">Trước $\rightarrow$ Sau</th>
+                  <th className="p-3">Người thực hiện</th>
+                  <th className="p-3">Lý do / Mã liên quan</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-800/60 font-mono">
+                {auditLogs.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="p-5 text-center text-slate-500 font-sans">
+                      Chưa có nhật ký kiểm toán nào được ghi nhận.
+                    </td>
+                  </tr>
+                ) : (
+                  auditLogs.map((log) => {
+                    const act = formatAuditAction(log.actionType);
+                    return (
+                      <tr key={log.id} className="hover:bg-slate-900/50">
+                        <td className="p-3 text-slate-400 text-[11px]">{new Date(log.timestamp).toLocaleString('vi-VN')}</td>
+                        <td className="p-3 font-semibold">
+                          <span className={`px-2 py-0.5 rounded text-[10px] border font-sans font-bold ${act.color}`}>
+                            {act.label}
+                          </span>
+                        </td>
+                        <td className="p-3 text-white font-bold">{log.masterSku}</td>
+                        <td className={`p-3 font-bold ${log.qtyChange > 0 ? 'text-emerald-400' : log.qtyChange < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                          {log.qtyChange > 0 ? `+${log.qtyChange}` : log.qtyChange}
+                        </td>
+                        <td className="p-3 text-slate-300">
+                          {log.oldValue.toLocaleString('vi-VN')} $\rightarrow$ {log.newValue.toLocaleString('vi-VN')}
+                        </td>
+                        <td className="p-3 text-slate-400 font-sans">{log.actor}</td>
+                        <td className="p-3 text-slate-400 text-[11px] max-w-xs truncate font-sans" title={log.reason || log.relatedOrder}>
+                          {log.reason || log.relatedOrder || '-'}
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODALS INTEGRATION                                                        */}
+      {/* ========================================================================= */}
+
+      {/* 1. Returned Goods Modal */}
       {showReturnModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
@@ -644,13 +969,13 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Master SKU trả về:</label>
+                <label className="text-slate-400 block mb-1">Mã hàng trong kho nhận lại:</label>
                 <select
                   value={returnSku}
                   onChange={(e) => setReturnSku(e.target.value)}
                   className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
                 >
-                  <option value="">-- Chọn SKU --</option>
+                  <option value="">-- Chọn mã hàng --</option>
                   {masterList.map((m) => (
                     <option key={m.id} value={m.masterSku}>{m.masterSku} ({m.productName})</option>
                   ))}
@@ -669,9 +994,9 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Tình trạng hàng hoàn:</label>
-                <div className="flex gap-4">
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+                <label className="text-slate-400 block mb-1">Tình trạng phân loại:</label>
+                <div className="flex flex-col gap-2 pt-1">
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-slate-200">
                     <input
                       type="radio"
                       name="damaged"
@@ -679,9 +1004,13 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                       onChange={() => setIsDamaged(false)}
                       className="accent-emerald-500"
                     />
-                    <span>[ Tái nhập kho ] (Hàng nguyên vẹn)</span>
+                    <div>
+                      <span className="font-bold text-emerald-400">[ Tái nhập kho ]</span>
+                      <span className="text-slate-400 text-[11px] ml-1.5">(Hàng nguyên vẹn, tăng lại tồn bán)</span>
+                    </div>
                   </label>
-                  <label className="flex items-center gap-2 cursor-pointer text-slate-200">
+
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-slate-200">
                     <input
                       type="radio"
                       name="damaged"
@@ -689,24 +1018,27 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                       onChange={() => setIsDamaged(true)}
                       className="accent-rose-500"
                     />
-                    <span>[ Báo phế / Hàng hỏng ]</span>
+                    <div>
+                      <span className="font-bold text-rose-400">[ Báo phế / Hàng hỏng ]</span>
+                      <span className="text-slate-400 text-[11px] ml-1.5">(Ghi nhận tổn thất, không tăng tồn bán)</span>
+                    </div>
                   </label>
                 </div>
               </div>
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2 pt-3">
               <button
                 type="button"
                 onClick={handleProcessReturn}
-                className="flex-1 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors"
+                className="flex-1 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-colors shadow-md"
               >
                 Xác nhận hàng hoàn
               </button>
               <button
                 type="button"
                 onClick={() => setShowReturnModal(false)}
-                className="py-2 px-4 rounded-xl bg-slate-800 text-slate-300 font-medium text-xs hover:bg-slate-700"
+                className="py-2.5 px-4 rounded-xl bg-slate-800 text-slate-300 font-medium text-xs hover:bg-slate-700 transition-colors"
               >
                 Hủy
               </button>
@@ -715,9 +1047,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
         </div>
       )}
 
-      {/* PHASE 5 MODALS INTEGRATION */}
-      
-      {/* 1. Manual Correction Modal */}
+      {/* 2. Manual Correction Modal */}
       {selectedCorrectionSku && (
         <ManualCorrectionModal
           masterSku={selectedCorrectionSku}
@@ -730,7 +1060,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
         />
       )}
 
-      {/* 2. Historical Recalculation Modal */}
+      {/* 3. Historical Recalculation Modal */}
       {showHistoricalRebuildModal && (
         <HistoricalRecalculationModal
           onClose={() => setShowHistoricalRebuildModal(false)}
@@ -742,7 +1072,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
         />
       )}
 
-      {/* 3. Unit Conversion Modal */}
+      {/* 4. Unit Conversion Modal */}
       {selectedConversionSku && (
         <UnitConversionModal
           masterSku={selectedConversionSku}
