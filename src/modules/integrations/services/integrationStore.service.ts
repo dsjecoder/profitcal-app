@@ -217,18 +217,8 @@ export function updateShopConnectionStatus(shopId: string, connectionStatus: Con
       updatedAt: new Date().toISOString(),
     };
     saveShopIntegrations(list);
-  }
 }
 
-  addIntegrationLog({
-    platform: updatedRecord.platform,
-    environment: updatedRecord.environment,
-    type: 'OAUTH',
-    message: `Đã kết nối thành công Gian hàng ${updatedRecord.shopName} (Shop ID: ${updatedRecord.shopId})`,
-  });
-
-  return updatedRecord;
-}
 
 export function addIntegrationLog(log: Omit<IntegrationLog, 'id' | 'timestamp'>): void {
   try {
