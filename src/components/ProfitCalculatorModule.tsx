@@ -21,6 +21,7 @@ import {
   AlertTriangle,
   FileText,
   Layers,
+  HelpCircle,
 } from 'lucide-react';
 import { OrderItem, AuditSummary, PlatformType } from '../types';
 import { ActiveDataset } from '../types/dataset';
