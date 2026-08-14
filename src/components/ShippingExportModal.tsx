@@ -158,7 +158,7 @@ export const ShippingExportModal: React.FC<ShippingExportModalProps> = ({
                   <Clock className="w-3.5 h-3.5" />
                   <span>Mở lại sau:</span>
                 </span>
-                <span>{cooldownState.remainingHours}h {cooldownState.remainingMinutes}m</span>
+                <span>{cooldownState.remainingHours}h {cooldownState.remainingMins}m</span>
               </div>
             )}
           </div>
