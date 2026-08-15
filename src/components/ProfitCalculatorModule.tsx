@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Calculator,
   RotateCcw,
@@ -10,25 +10,37 @@ import {
   Scale,
   FileSpreadsheet,
   Plug,
-  Database,
   Upload,
-  ArrowRight,
   RefreshCw,
   Store,
-  Sparkles,
-  ArrowLeftRight,
+  ArrowRight,
   ShieldCheck,
-  AlertTriangle,
-  FileText,
+  Info,
+  ChevronDown,
   Layers,
-  HelpCircle,
+  ArrowLeftRight,
 } from 'lucide-react';
 import { OrderItem, AuditSummary, PlatformType } from '../types';
 import { ActiveDataset } from '../types/dataset';
 import { Language } from '../utils/i18n';
-import { parseUploadedFile, DetectionConfidence } from '../utils/parser';
+import { parseUploadedFile } from '../utils/parser';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
-import { DataContextBar } from './DataContextBar';
+import {
+  ShopIntegrationRecord,
+  getShopIntegrations,
+  syncDirectApiOrders,
+  addOrUpdateIntegration,
+  updateShopSyncStatus,
+} from '../modules/integrations';
+import { saveShopApiDataset } from '../services/datasetManager';
+
+export type DataSourceOption =
+  | 'file_shopee'      // (1) File Shopee (Mặc định)
+  | 'file_tiktok'      // (2) File TikTok
+  | 'api_shopee_test'  // (3) API Shopee — Test
+  | 'api_tiktok_test'  // (4) API TikTok — Test
+  | 'api_shopee_prod'  // (5) API Shopee — Production
+  | 'api_tiktok_prod'; // (6) API TikTok — Production
 
 interface ProfitCalculatorModuleProps {
   summary?: AuditSummary;
@@ -57,8 +69,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   orders = [],
   packagingCost = 0,
   feeThreshold = 18,
-  onPackagingCostChange,
-  onFeeThresholdChange,
+  onPackagingCostChange = () => {},
+  onFeeThresholdChange = () => {},
   onOpenCogsModal = () => {},
   onExportExcel = () => {},
   onOpenShippingModal,
@@ -67,36 +79,138 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   onFileUpload,
   onLoadDemo,
   onOpenApiIntegration,
-  dataSourceMode = 'DEMO',
-  dataSourceName = 'Dữ liệu Mẫu',
+  dataSourceMode = 'EXCEL',
+  dataSourceName = 'Shopee_Orders.xlsx',
   currentLang = 'vi',
   activeDataset,
   onShopChange,
 }) => {
-  // Top-Level Segmented Switcher: 'single' (⚡ Tính nhanh 1 sản phẩm) vs 'batch' (📊 Phân tích toàn bộ đơn hàng)
-  const [topMode, setTopMode] = useState<'single' | 'batch'>(() => {
-    return orders && orders.length > 0 ? 'batch' : 'single';
-  });
+  // Mode switcher: 'single' (⚡ Tính nhanh 1 sản phẩm) vs 'batch' (📊 Kiểm toán đơn hàng)
+  const [calcMode, setCalcMode] = useState<'single' | 'batch'>('batch');
 
-  // State: Force show Entry Screen even if orders exist (when user clicked "Đổi nguồn dữ liệu")
-  const [showEntryPicker, setShowEntryPicker] = useState<boolean>(false);
-  const [showSafeSwitchModal, setShowSafeSwitchModal] = useState<boolean>(false);
+  // 1. STEP 1: 6 SINGLE-SELECT RADIO DATA SOURCES (Mặc định: 'file_shopee')
+  const [selectedSource, setSelectedSource] = useState<DataSourceOption>('file_shopee');
 
-  // File upload state for Entry Card 1
+  // 2. PRODUCTION CONFIRMATION STATE
+  const [prodConfirmed, setProdConfirmed] = useState<boolean>(false);
+
+  // 3. MULTI-SHOP SELECTOR STATE FOR PRODUCTION
+  const [selectedShopId, setSelectedShopId] = useState<string>('');
+
+  // 4. FILE UPLOAD & PARSING STATE
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [fileParsing, setFileParsing] = useState<boolean>(false);
-  const [fileDetectResult, setFileDetectResult] = useState<{
-    file: File;
-    orders: OrderItem[];
-    detectedPlatform: PlatformType;
-    confidence: DetectionConfidence;
-    message?: string;
-  } | null>(null);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
+  // 5. TECHNICAL CONTEXT COLLAPSIBLE (COLLAPSED BY DEFAULT)
+  const [showTechnicalContext, setShowTechnicalContext] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Load available shops for API
+  const allShops = useMemo(() => getShopIntegrations(), []);
+  const relevantShops = useMemo(() => {
+    const isShopee = selectedSource.includes('shopee');
+    const isProd = selectedSource.includes('prod');
+    return allShops.filter(
+      (s) =>
+        s.platform.toLowerCase() === (isShopee ? 'shopee' : 'tiktok') &&
+        s.environment === (isProd ? 'PRODUCTION' : 'SANDBOX')
+    );
+  }, [allShops, selectedSource]);
+
+  useEffect(() => {
+    if (relevantShops.length > 0 && !selectedShopId) {
+      setSelectedShopId(relevantShops[0].shopId);
+    }
+  }, [relevantShops, selectedShopId]);
+
+  // When radio selection changes: switch single source exclusively
+  const handleSourceSelect = (option: DataSourceOption) => {
+    setSelectedSource(option);
+    setProdConfirmed(false);
+    setUploadedFile(null);
+
+    const targetPlatform: PlatformType = option.includes('shopee') ? 'shopee' : 'tiktok';
+    if (onPlatformChange && platform !== targetPlatform) {
+      onPlatformChange(targetPlatform);
+    }
+  };
+
+  // --- FILE HANDLING FLOW (FILE SHOPEE & FILE TIKTOK) ---
+  const handleProcessFile = async (file: File, expectedPlatform: PlatformType) => {
+    setFileParsing(true);
+    try {
+      const res = await parseUploadedFile(file, expectedPlatform, packagingCost, feeThreshold);
+      setUploadedFile(file);
+
+      if (onFileUpload) {
+        onFileUpload(file);
+      }
+    } catch (err: any) {
+      alert('Lỗi xử lý file: ' + (err.message || 'Vui lòng kiểm tra lại định dạng file.'));
+    } finally {
+      setFileParsing(false);
+    }
+  };
+
+  const handleDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.type === 'dragenter' || e.type === 'dragover') {
+      setDragActive(true);
+    } else if (e.type === 'dragleave') {
+      setDragActive(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent, expectedPlatform: PlatformType) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setDragActive(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleProcessFile(e.dataTransfer.files[0], expectedPlatform);
+    }
+  };
+
+  // --- API SYNC FLOW (API TEST & API PRODUCTION) ---
+  const handleExecuteApiSync = async (isProd: boolean) => {
+    setFileParsing(true);
+    const targetPlatform: PlatformType = selectedSource.includes('shopee') ? 'shopee' : 'tiktok';
+    const env = isProd ? 'PRODUCTION' : 'SANDBOX';
+
+    try {
+      const res = await syncDirectApiOrders(targetPlatform.toUpperCase() as any, env, packagingCost);
+      const targetShop = relevantShops.find((s) => s.shopId === selectedShopId) || relevantShops[0];
+      const shopId = targetShop ? targetShop.shopId : targetPlatform === 'shopee' ? '98765432' : '74589213';
+      const shopName = targetShop ? targetShop.shopName : `${targetPlatform.toUpperCase()} Store`;
+
+      saveShopApiDataset(targetPlatform, shopId, shopName, res.orderItems, env);
+      updateShopSyncStatus(shopId, 'SYNCED', res.orderItems.length);
+
+      if (onLoadDemo && !isProd) {
+        onLoadDemo(targetPlatform);
+      } else if (onShopChange) {
+        onShopChange(shopId);
+      }
+    } catch (e: any) {
+      alert('Lỗi khi đồng bộ API: ' + (e.message || 'Vui lòng thử lại.'));
+    } finally {
+      setFileParsing(false);
+    }
+  };
+
+  // Date Range (From 1st of current month to today)
+  const apiDateRangeDisplay = useMemo(() => {
+    const now = new Date();
+    const monthStr = String(now.getMonth() + 1).padStart(2, '0');
+    const yearStr = now.getFullYear();
+    const dayStr = String(now.getDate()).padStart(2, '0');
+    return `01/${monthStr}/${yearStr} → ${dayStr}/${monthStr}/${yearStr}`;
+  }, []);
+
   // =========================================================================
-  // 1. STATE FOR "TÍNH NHANH 1 SẢN PHẨM" (STANDALONE SIMULATOR)
+  // STATE & CALCULATIONS FOR "TÍNH NHANH 1 SẢN PHẨM" (MODE A)
   // =========================================================================
   const [productName, setProductName] = useState<string>('');
   const [sellPriceInput, setSellPriceInput] = useState<string>('250000');
@@ -164,115 +278,75 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(val);
   };
 
-  // =========================================================================
-  // 2. HANDLERS FOR DATA INGESTION (FILE, API, DEMO)
-  // =========================================================================
-  const handleFileDrop = async (file: File) => {
-    setFileParsing(true);
-    try {
-      const res = await parseUploadedFile(file, platform, packagingCost, feeThreshold);
-      setFileDetectResult({
-        file,
-        orders: res.orders,
-        detectedPlatform: res.detectedPlatform,
-        confidence: res.confidence,
-        message: res.message,
-      });
-
-      // If High Confidence: automatically notify parent and proceed
-      if (res.confidence === 'HIGH_CONFIDENCE' && onFileUpload) {
-        onFileUpload(file);
-        setShowEntryPicker(false);
-        setFileDetectResult(null);
-      }
-    } catch (e: any) {
-      alert('Lỗi khi đọc file Excel: ' + (e.message || ''));
-    } finally {
-      setFileParsing(false);
-    }
-  };
-
-  const handleConfirmUncertainPlatform = (confirmedPlatform: PlatformType) => {
-    if (fileDetectResult && onFileUpload) {
-      if (onPlatformChange) onPlatformChange(confirmedPlatform);
-      onFileUpload(fileDetectResult.file);
-      setShowEntryPicker(false);
-      setFileDetectResult(null);
-    }
-  };
-
   return (
-    <div className="space-y-6 w-full max-w-7xl mx-auto animate-fade-in">
+    <div className="space-y-6 w-full max-w-7xl mx-auto animate-fade-in text-slate-200">
       
-      {/* 1. TOP-LEVEL SEGMENTED MODE SWITCHER */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-slate-900 border border-slate-800 p-2 rounded-2xl shadow-xl">
-        <div className="flex items-center gap-1 w-full sm:w-auto bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-bold">
-          <button
-            type="button"
-            onClick={() => setTopMode('single')}
-            className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 ${
-              topMode === 'single'
-                ? 'bg-slate-800 text-emerald-400 shadow-sm border border-slate-700 font-bold'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Calculator className="w-4 h-4" />
-            <span>⚡ Tính nhanh 1 sản phẩm</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setTopMode('batch')}
-            className={`flex-1 sm:flex-initial px-5 py-2.5 rounded-lg transition-all flex items-center justify-center gap-2 ${
-              topMode === 'batch'
-                ? 'bg-slate-800 text-emerald-400 shadow-sm border border-slate-700 font-bold'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            <Layers className="w-4 h-4" />
-            <span>📊 Phân tích toàn bộ đơn hàng (File / Sàn)</span>
-          </button>
+      {/* 1. MÀN HÌNH CHÍNH HEADER */}
+      <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl shadow-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2.5">
+            <span>TÍNH TOÁN LỢI NHUẬN</span>
+          </h1>
+          <p className="text-xs text-slate-400 mt-1">
+            Chọn nguồn dữ liệu để bắt đầu kiểm toán và tính toán lợi nhuận đơn hàng.
+          </p>
         </div>
 
-        {topMode === 'single' ? (
+        {/* Top-Level Mode Selector */}
+        <div className="bg-slate-950 p-1 rounded-2xl border border-slate-800 flex items-center gap-1 text-xs font-bold shadow-inner">
           <button
             type="button"
-            onClick={handleResetSingle}
-            className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 font-semibold text-xs transition-colors flex items-center gap-1.5 self-end sm:self-auto"
+            onClick={() => setCalcMode('single')}
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+              calcMode === 'single'
+                ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
           >
-            <RotateCcw className="w-3.5 h-3.5 text-slate-400" />
-            <span>Đặt lại mặc định</span>
+            <Calculator className="w-3.5 h-3.5" />
+            <span>Tính nhanh 1 sản phẩm</span>
           </button>
-        ) : (
-          orders.length > 0 && !showEntryPicker && (
-            <button
-              type="button"
-              onClick={() => setShowSafeSwitchModal(true)}
-              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white border border-slate-700 font-semibold text-xs transition-colors flex items-center gap-1.5 self-end sm:self-auto"
-            >
-              <ArrowLeftRight className="w-3.5 h-3.5 text-slate-400" />
-              <span>Đổi nguồn dữ liệu khác</span>
-            </button>
-          )
-        )}
+          <button
+            type="button"
+            onClick={() => setCalcMode('batch')}
+            className={`px-4 py-2 rounded-xl transition-all flex items-center gap-1.5 ${
+              calcMode === 'batch'
+                ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Layers className="w-3.5 h-3.5" />
+            <span>Kiểm toán đơn hàng</span>
+          </button>
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* 2. MODE A: TÍNH NHANH 1 SẢN PHẨM (STANDALONE PRODUCT PROFIT SIMULATOR)    */}
+      {/* MODE A: TÍNH NHANH 1 SẢN PHẨM (SIMULATOR ĐỘC LẬP)                        */}
       {/* ========================================================================= */}
-      {topMode === 'single' && (
+      {calcMode === 'single' && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start animate-fade-in">
           
-          {/* CỘT TRÁI (6 COLS): THÔNG TIN BÁN HÀNG & CHI PHÍ */}
+          {/* CỘT TRÁI (6 COLS): FORM NHẬP BÁN HÀNG & CHI PHÍ */}
           <div className="lg:col-span-6 space-y-6">
             
             {/* THÔNG TIN BÁN HÀNG */}
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-              <div className="flex items-center gap-2 border-b border-slate-800/80 pb-3">
-                <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold">1</span>
-                <h2 className="text-sm font-bold text-white uppercase tracking-wider">
-                  Thông tin bán hàng
-                </h2>
+              <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-xs font-mono font-bold">1</span>
+                  <h2 className="text-sm font-bold text-white uppercase tracking-wider">
+                    Thông tin bán hàng
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleResetSingle}
+                  className="text-xs text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
+                >
+                  <RotateCcw className="w-3 h-3" />
+                  <span>Đặt lại</span>
+                </button>
               </div>
 
               <div className="space-y-4 text-xs">
@@ -332,7 +406,6 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     <span className="text-[10px] text-slate-500 mt-1 block text-center">cái</span>
                   </div>
                 </div>
-
               </div>
             </div>
 
@@ -431,7 +504,6 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     </div>
                   </div>
                 </div>
-
               </div>
             </div>
 
@@ -440,7 +512,6 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
           {/* CỘT PHẢI (6 COLS): KẾT QUẢ HERO & BÓC TÁCH */}
           <div className="lg:col-span-6 space-y-6">
             
-            {/* LỢI NHUẬN RÒNG ƯỚC TÍNH */}
             <div className={`p-6 sm:p-7 rounded-3xl border shadow-2xl space-y-5 transition-all ${
               singleCalculations.isProfitable
                 ? 'bg-slate-900 border-emerald-500/40 shadow-emerald-950/20'
@@ -528,32 +599,26 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   <span className="text-slate-300 font-sans">(+) Tổng giá bán hóa đơn:</span>
                   <span className="font-bold text-slate-100">{formatVND(singleCalculations.grossRevenue)}</span>
                 </div>
-
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-slate-400 font-sans">(−) Phí sàn TMĐT ({platformFeePct}%):</span>
                   <span className="font-bold text-amber-400">− {formatVND(singleCalculations.platformFeeAmount)}</span>
                 </div>
-
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-slate-400 font-sans">(−) Thuế TMĐT ({taxPct}%):</span>
                   <span className="font-bold text-slate-400">− {formatVND(singleCalculations.taxAmount)}</span>
                 </div>
-
                 <div className="flex items-center justify-between pt-2 text-slate-200">
                   <span className="font-sans font-semibold">(=) Tiền thực nhận về ví:</span>
                   <span className="font-bold">{formatVND(singleCalculations.netSettlement)}</span>
                 </div>
-
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-slate-400 font-sans">(−) Giá vốn hàng bán (COGS):</span>
                   <span className="font-bold text-slate-400">− {formatVND(singleCalculations.totalCogs)}</span>
                 </div>
-
                 <div className="flex items-center justify-between pt-2">
                   <span className="text-slate-400 font-sans">(−) Chi phí đóng gói bao bì:</span>
                   <span className="font-bold text-slate-400">− {formatVND(singleCalculations.totalPackaging)}</span>
                 </div>
-
                 <div className="flex items-center justify-between pt-3 border-t-2 border-slate-700 text-sm">
                   <span className="font-sans font-bold text-white">(=) LỢI NHUẬN RÒNG:</span>
                   <span className={`font-black ${
@@ -586,209 +651,479 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* 3. MODE B: PHÂN TÍCH TOÀN BỘ ĐƠN HÀNG (INGESTION & CONVERGENCE UI)       */}
+      {/* MODE B: KIỂM TOÁN ĐƠN HÀNG (6 RADIO SOURCES & DEDICATED CONTROLS)         */}
       {/* ========================================================================= */}
-      {topMode === 'batch' && (
+      {calcMode === 'batch' && (
         <div className="space-y-6">
           
-          {/* A. ENTRY POINT: 3 USER-FACING DATA SOURCE CARDS (When empty or switching) */}
-          {(orders.length === 0 || showEntryPicker) && (
-            <div className="space-y-6 animate-fade-in">
+          {/* BƯỚC 1: CHỌN NGUỒN DỮ LIỆU (6 RADIO BUTTONS — 1 ACTIVE DUY NHẤT) */}
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+              <h2 className="text-xs font-bold text-white uppercase tracking-wider block">
+                Nguồn dữ liệu (Chọn 1 trong 6 nguồn):
+              </h2>
+              <span className="text-[11px] text-slate-400 font-mono">
+                Đang chọn: <strong className="text-emerald-400 font-bold uppercase">{selectedSource.replace(/_/g, ' ')}</strong>
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               
-              <div className="text-center max-w-2xl mx-auto space-y-2 py-4">
-                <h2 className="text-2xl font-bold text-white tracking-tight">
-                  Bạn muốn tính lợi nhuận từ nguồn dữ liệu nào?
-                </h2>
-                <p className="text-xs text-slate-400">
-                  Chọn cách nạp dữ liệu đơn hàng phù hợp để ProfitCal bóc tách doanh thu, biểu phí sàn và thuế cho bạn.
-                </p>
+              {/* NHÓM 1: FILE ĐƠN HÀNG */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80">
+                <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">
+                  📁 File đơn hàng (Tạm thời)
+                </span>
+
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedSource === 'file_shopee'
+                      ? 'bg-emerald-500/10 border-emerald-500 text-white font-bold shadow-md'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mainDataSourceRadio"
+                    checked={selectedSource === 'file_shopee'}
+                    onChange={() => handleSourceSelect('file_shopee')}
+                    className="w-4 h-4 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="block text-xs">File Shopee</span>
+                    <span className="text-[10px] text-slate-500 font-normal block font-sans">
+                      Nhập file dữ liệu Shopee để tính lợi nhuận.
+                    </span>
+                  </div>
+                </label>
+
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedSource === 'file_tiktok'
+                      ? 'bg-emerald-500/10 border-emerald-500 text-white font-bold shadow-md'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mainDataSourceRadio"
+                    checked={selectedSource === 'file_tiktok'}
+                    onChange={() => handleSourceSelect('file_tiktok')}
+                    className="w-4 h-4 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="block text-xs">File TikTok</span>
+                    <span className="text-[10px] text-slate-500 font-normal block font-sans">
+                      Nhập file dữ liệu TikTok để tính lợi nhuận.
+                    </span>
+                  </div>
+                </label>
               </div>
 
-              {/* 3 Entry Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                
-                {/* THẺ 1: FILE CỦA BẠN (EXCEL / CSV) */}
-                <div className="bg-slate-900 border border-slate-800 hover:border-emerald-500/40 rounded-3xl p-6 flex flex-col justify-between space-y-4 shadow-xl transition-all group">
-                  <div className="space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <FileSpreadsheet className="w-6 h-6" />
+              {/* NHÓM 2: API TEST */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80">
+                <span className="text-[10px] font-bold uppercase text-amber-400 tracking-wider block mb-1">
+                  🧪 Kết nối API — Test
+                </span>
+
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedSource === 'api_shopee_test'
+                      ? 'bg-amber-500/10 border-amber-500 text-white font-bold shadow-md'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mainDataSourceRadio"
+                    checked={selectedSource === 'api_shopee_test'}
+                    onChange={() => handleSourceSelect('api_shopee_test')}
+                    className="w-4 h-4 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="block text-xs">API Shopee — Test</span>
+                    <span className="text-[10px] text-amber-400/80 font-mono block">Môi trường: Test (Sandbox)</span>
+                  </div>
+                </label>
+
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedSource === 'api_tiktok_test'
+                      ? 'bg-amber-500/10 border-amber-500 text-white font-bold shadow-md'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mainDataSourceRadio"
+                    checked={selectedSource === 'api_tiktok_test'}
+                    onChange={() => handleSourceSelect('api_tiktok_test')}
+                    className="w-4 h-4 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="block text-xs">API TikTok — Test</span>
+                    <span className="text-[10px] text-amber-400/80 font-mono block">Môi trường: Test (Sandbox)</span>
+                  </div>
+                </label>
+              </div>
+
+              {/* NHÓM 3: API PRODUCTION */}
+              <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80">
+                <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider block mb-1">
+                  ⚡ Kết nối API — Production
+                </span>
+
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedSource === 'api_shopee_prod'
+                      ? 'bg-cyan-500/10 border-cyan-500 text-white font-bold shadow-md'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mainDataSourceRadio"
+                    checked={selectedSource === 'api_shopee_prod'}
+                    onChange={() => handleSourceSelect('api_shopee_prod')}
+                    className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="block text-xs">API Shopee — Production</span>
+                    <span className="text-[10px] text-cyan-400/80 font-mono block">Dữ liệu thực tế của shop</span>
+                  </div>
+                </label>
+
+                <label
+                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                    selectedSource === 'api_tiktok_prod'
+                      ? 'bg-cyan-500/10 border-cyan-500 text-white font-bold shadow-md'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="mainDataSourceRadio"
+                    checked={selectedSource === 'api_tiktok_prod'}
+                    onChange={() => handleSourceSelect('api_tiktok_prod')}
+                    className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                  />
+                  <div className="space-y-0.5">
+                    <span className="block text-xs">API TikTok — Production</span>
+                    <span className="text-[10px] text-cyan-400/80 font-mono block">Dữ liệu thực tế của shop</span>
+                  </div>
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+          {/* BƯỚC 2: FORM TƯƠNG ỨNG DUY NHẤT VỚI RADIO ĐANG CHỌN */}
+
+          {/* 1. FILE SHOPEE FORM */}
+          {selectedSource === 'file_shopee' && (
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">File Shopee</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Nhập file dữ liệu Shopee để tính lợi nhuận.</p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-mono bg-slate-950 text-slate-400 border border-slate-800">
+                  .xlsx / .xls / .csv
+                </span>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx, .xls, .csv"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleProcessFile(e.target.files[0], 'shopee');
+                  }
+                }}
+                className="hidden"
+              />
+
+              {!uploadedFile && orders.length === 0 ? (
+                <div
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={(e) => handleDrop(e, 'shopee')}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
+                    dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
+                  }`}
+                >
+                  <div className="max-w-md mx-auto space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+                      <Upload className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-white group-hover:text-emerald-400 transition-colors">
-                        📁 Tải file đơn hàng của bạn
-                      </h3>
-                      <span className="text-[11px] font-mono text-emerald-400 font-semibold block mt-0.5">
-                        Hỗ trợ .xlsx, .xls, .csv
-                      </span>
+                      <h4 className="text-sm font-bold text-white">[ Kéo thả file vào đây ]</h4>
+                      <p className="text-xs text-slate-400 mt-1">hoặc</p>
                     </div>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Kéo thả file báo cáo doanh thu từ Shopee hoặc TikTok Shop. Hệ thống tự động nhận diện sàn và bóc tách toàn bộ biểu phí, thuế.
-                    </p>
-                    <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300">
-                      🎯 <strong>Kết quả:</strong> Báo cáo kiểm toán chi tiết cho toàn bộ đơn hàng trong file.
+                    <button
+                      type="button"
+                      className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
+                    >
+                      [ Chọn file Shopee ]
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-emerald-400 flex items-center gap-1.5 text-sm">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>✓ File Shopee đã được tải</span>
+                      </div>
+                      <div className="text-slate-400 mt-0.5 font-mono">
+                        Tên file: <strong className="text-white">{uploadedFile?.name || dataSourceName}</strong> · Số đơn:{' '}
+                        <strong className="text-white">{orders.length.toLocaleString('vi-VN')} đơn</strong>
+                      </div>
                     </div>
                   </div>
 
-                  <div>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept=".xlsx, .xls, .csv"
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          handleFileDrop(e.target.files[0]);
-                        }
-                      }}
-                      className="hidden"
-                    />
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
                     <button
                       type="button"
-                      disabled={fileParsing}
                       onClick={() => fileInputRef.current?.click()}
-                      className="w-full py-3 rounded-2xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/10 transition-colors flex items-center justify-center gap-2"
+                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition-colors"
                     >
-                      {fileParsing ? (
-                        <>
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>Đang bóc tách file...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4" />
-                          <span>Tải file lên ngay</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* THẺ 2: KẾT NỐI SÀN (API TRỰC TIẾP) */}
-                <div className="bg-slate-900 border border-slate-800 hover:border-cyan-500/40 rounded-3xl p-6 flex flex-col justify-between space-y-4 shadow-xl transition-all group">
-                  <div className="space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Plug className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-white group-hover:text-cyan-400 transition-colors">
-                        ⚡ Kết nối trực tiếp gian hàng
-                      </h3>
-                      <span className="text-[11px] font-mono text-cyan-400 font-semibold block mt-0.5">
-                        Shopee Mall & TikTok Shop API
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Đồng bộ đơn hàng tự động từ máy chủ Shopee / TikTok qua cổng Open API chính thức, không cần tải và xuất file thủ công.
-                    </p>
-                    <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300">
-                      🎯 <strong>Kết quả:</strong> Theo dõi lợi nhuận real-time, cảnh báo phí sàn và tự động nạp đơn mới mỗi ngày.
-                    </div>
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={onOpenApiIntegration}
-                    className="w-full py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/10 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <Plug className="w-4 h-4" />
-                    <span>Bắt đầu kết nối sàn</span>
-                  </button>
-                </div>
-
-                {/* THẺ 3: DỮ LIỆU MẪU (SHOP DEMO) */}
-                <div className="bg-slate-900 border border-slate-800 hover:border-amber-500/40 rounded-3xl p-6 flex flex-col justify-between space-y-4 shadow-xl transition-all group">
-                  <div className="space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                      <Database className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-white group-hover:text-amber-400 transition-colors">
-                        🧪 Trải nghiệm bằng dữ liệu mẫu
-                      </h3>
-                      <span className="text-[11px] font-mono text-amber-400 font-semibold block mt-0.5">
-                        Shop Mẫu Thời Trang & Mỹ Phẩm
-                      </span>
-                    </div>
-                    <p className="text-xs text-slate-400 leading-relaxed">
-                      Xem thử báo cáo mẫu của một gian hàng đang hoạt động để làm quen với biểu đồ và các chỉ số tài chính của ProfitCal.
-                    </p>
-                    <div className="p-2.5 rounded-xl bg-slate-950 border border-slate-800 text-[11px] text-slate-300">
-                      🎯 <strong>Kết quả:</strong> Trải nghiệm ngay tức thì với 24 đơn hàng thực tế mà không cần chuẩn bị file.
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onLoadDemo?.('shopee');
-                        setShowEntryPicker(false);
-                      }}
-                      className="py-3 px-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-colors text-center"
-                    >
-                      🛍️ Shop Shopee
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onLoadDemo?.('tiktok');
-                        setShowEntryPicker(false);
-                      }}
-                      className="py-3 px-2 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs border border-slate-700 transition-colors text-center"
-                    >
-                      💄 Shop TikTok
-                    </button>
-                  </div>
-                </div>
-
-              </div>
-
-              {/* UNCERTAIN DETECTION CONFIRMATION MODAL */}
-              {fileDetectResult && fileDetectResult.confidence === 'UNCERTAIN' && (
-                <div className="p-6 bg-amber-500/10 border border-amber-500/30 rounded-3xl space-y-3 animate-fade-in max-w-xl mx-auto text-xs">
-                  <div className="flex items-center gap-2 text-amber-400 font-bold text-sm">
-                    <HelpCircle className="w-5 h-5" />
-                    <span>Xác nhận sàn thương mại điện tử cho file của bạn</span>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed">
-                    Hệ thống đã nhận diện được file <strong>{fileDetectResult.file.name}</strong> ({fileDetectResult.orders.length} đơn hàng) nhưng cấu trúc cột có thể thuộc Shopee hoặc TikTok Shop. Vui lòng xác nhận:
-                  </p>
-                  <div className="flex items-center justify-end gap-3 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => handleConfirmUncertainPlatform('shopee')}
-                      className="px-4 py-2 rounded-xl bg-orange-500 text-slate-950 font-bold text-xs hover:bg-orange-400 transition-colors"
-                    >
-                      🟧 Xác nhận là Shopee
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleConfirmUncertainPlatform('tiktok')}
-                      className="px-4 py-2 rounded-xl bg-cyan-500 text-slate-950 font-bold text-xs hover:bg-cyan-400 transition-colors"
-                    >
-                      ⬛ Xác nhận là TikTok Shop
+                      [ Chọn file khác ]
                     </button>
                   </div>
                 </div>
               )}
+            </div>
+          )}
 
-              {/* UNSUPPORTED DETECTION ERROR MODAL */}
-              {fileDetectResult && fileDetectResult.confidence === 'UNSUPPORTED' && (
-                <div className="p-6 bg-rose-500/10 border border-rose-500/30 rounded-3xl space-y-3 animate-fade-in max-w-xl mx-auto text-xs">
-                  <div className="flex items-center gap-2 text-rose-400 font-bold text-sm">
-                    <AlertTriangle className="w-5 h-5" />
-                    <span>File không đúng định dạng báo cáo đơn hàng sàn</span>
-                  </div>
-                  <p className="text-slate-300 leading-relaxed">
-                    {fileDetectResult.message || 'Cấu trúc các cột trong file không khớp với định dạng báo cáo doanh thu chuẩn từ Shopee hoặc TikTok Shop.'}
-                  </p>
-                  <div className="flex justify-end pt-2">
+          {/* 2. FILE TIKTOK FORM */}
+          {selectedSource === 'file_tiktok' && (
+            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">File TikTok</h3>
+                  <p className="text-xs text-slate-400 mt-0.5">Nhập file dữ liệu TikTok để tính lợi nhuận.</p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-mono bg-slate-950 text-slate-400 border border-slate-800">
+                  .xlsx / .xls / .csv
+                </span>
+              </div>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".xlsx, .xls, .csv"
+                onChange={(e) => {
+                  if (e.target.files && e.target.files[0]) {
+                    handleProcessFile(e.target.files[0], 'tiktok');
+                  }
+                }}
+                className="hidden"
+              />
+
+              {!uploadedFile && orders.length === 0 ? (
+                <div
+                  onDragEnter={handleDrag}
+                  onDragLeave={handleDrag}
+                  onDragOver={handleDrag}
+                  onDrop={(e) => handleDrop(e, 'tiktok')}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
+                    dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
+                  }`}
+                >
+                  <div className="max-w-md mx-auto space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+                      <Upload className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-bold text-white">[ Kéo thả file vào đây ]</h4>
+                      <p className="text-xs text-slate-400 mt-1">hoặc</p>
+                    </div>
                     <button
                       type="button"
-                      onClick={() => setFileDetectResult(null)}
-                      className="px-4 py-2 rounded-xl bg-slate-800 text-slate-300 font-semibold text-xs hover:bg-slate-700"
+                      className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
                     >
-                      Đóng & Thử tải file khác
+                      [ Chọn file TikTok ]
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                      <FileSpreadsheet className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-emerald-400 flex items-center gap-1.5 text-sm">
+                        <CheckCircle2 className="w-4 h-4" />
+                        <span>✓ File TikTok đã được tải</span>
+                      </div>
+                      <div className="text-slate-400 mt-0.5 font-mono">
+                        Tên file: <strong className="text-white">{uploadedFile?.name || dataSourceName}</strong> · Số đơn:{' '}
+                        <strong className="text-white">{orders.length.toLocaleString('vi-VN')} đơn</strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition-colors"
+                    >
+                      [ Chọn file khác ]
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* 3. API TEST FORM (SHOPEE & TIKTOK) */}
+          {(selectedSource === 'api_shopee_test' || selectedSource === 'api_tiktok_test') && (
+            <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div>
+                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
+                    {selectedSource === 'api_shopee_test' ? 'API Shopee — Test' : 'API TikTok — Test'}
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Nền tảng: <strong className="text-white">{selectedSource === 'api_shopee_test' ? 'Shopee' : 'TikTok Shop'}</strong> · Môi trường: <strong className="text-amber-400">TEST (Sandbox)</strong>
+                  </p>
+                </div>
+                <span className="px-3 py-1 rounded-full text-xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold">
+                  MÔI TRƯỜNG TEST
+                </span>
+              </div>
+
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Đang kết nối môi trường Test để lấy dữ liệu giả lập và tính toán lợi nhuận mà không làm ảnh hưởng đến dữ liệu gian hàng thật.
+              </p>
+
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  disabled={fileParsing}
+                  onClick={() => handleExecuteApiSync(false)}
+                  className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
+                >
+                  <RefreshCw className={`w-4 h-4 ${fileParsing ? 'animate-spin' : ''}`} />
+                  <span>{fileParsing ? 'Đang kết nối Test...' : '⚡ Kết nối & Lấy dữ liệu Test'}</span>
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* 4. API PRODUCTION FORM (SHOPEE & TIKTOK) */}
+          {(selectedSource === 'api_shopee_prod' || selectedSource === 'api_tiktok_prod') && (
+            <div className="space-y-4 animate-fade-in">
+              
+              {!prodConfirmed ? (
+                /* BƯỚC XÁC NHẬN TRƯỚC KHI KẾT NỐI */
+                <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                      <ShieldCheck className="w-6 h-6" />
+                    </div>
+                    <div className="space-y-1">
+                      <h3 className="text-base font-bold text-white tracking-tight">
+                        Kết nối dữ liệu thực tế ({selectedSource === 'api_shopee_prod' ? 'API Shopee' : 'API TikTok'} — Production)
+                      </h3>
+                      <p className="text-xs text-slate-300 leading-relaxed">
+                        Bạn đang kết nối dữ liệu Production của{' '}
+                        <strong className="text-cyan-400 uppercase">
+                          {selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok Shop'}
+                        </strong>
+                        . Đây là dữ liệu thực tế của shop từ đầu tháng đến hiện tại ({apiDateRangeDisplay}).
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+                    <button
+                      type="button"
+                      onClick={() => handleSourceSelect('file_shopee')}
+                      className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
+                    >
+                      [ Hủy ]
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setProdConfirmed(true)}
+                      className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
+                    >
+                      <ArrowRight className="w-4 h-4" />
+                      <span>[ Xác nhận kết nối ]</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* CHỌN SHOP NẾU CÓ NHIỀU SHOP & ĐỒNG BỘ */
+                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                    <div>
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Xác thực Shop Production</h3>
+                      <p className="text-xs text-slate-400 mt-0.5">
+                        {relevantShops.length > 1
+                          ? 'Tài khoản có nhiều Shop. Vui lòng chọn Shop bạn muốn tính toán:'
+                          : 'Dữ liệu được xác thực tự động theo Shop của bạn:'}
+                      </p>
+                    </div>
+                    <span className="px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold">
+                      PRODUCTION
+                    </span>
+                  </div>
+
+                  {/* Multi-Shop Radio List */}
+                  <div className="space-y-2">
+                    {relevantShops.map((shop) => (
+                      <label
+                        key={shop.shopId}
+                        className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
+                          selectedShopId === shop.shopId
+                            ? 'bg-cyan-500/10 border-cyan-500 text-white font-bold'
+                            : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <input
+                            type="radio"
+                            name="prodShopRadio"
+                            checked={selectedShopId === shop.shopId}
+                            onChange={() => setSelectedShopId(shop.shopId)}
+                            className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-900 border-slate-700"
+                          />
+                          <div>
+                            <span className="text-sm font-bold block">{shop.shopName}</span>
+                            <span className="text-[11px] text-slate-500 font-mono">Shop ID: {shop.shopId}</span>
+                          </div>
+                        </div>
+                        <span className="text-xs text-emerald-400 font-mono">✓ Đã xác thực</span>
+                      </label>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-800">
+                    <div className="text-xs text-slate-400 font-mono">
+                      Dữ liệu: <strong className="text-slate-200">{apiDateRangeDisplay}</strong>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={fileParsing}
+                      onClick={() => handleExecuteApiSync(true)}
+                      className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2"
+                    >
+                      <RefreshCw className={`w-4 h-4 ${fileParsing ? 'animate-spin' : ''}`} />
+                      <span>{fileParsing ? 'Đang đồng bộ đơn hàng...' : 'Lấy dữ liệu & Tính lợi nhuận'}</span>
                     </button>
                   </div>
                 </div>
@@ -797,46 +1132,103 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             </div>
           )}
 
-          {/* B. CONVERGENCE PROFIT ANALYSIS UI (When orders are active & not in entry picker) */}
-          {orders.length > 0 && !showEntryPicker && (
+          {/* BƯỚC 3 & 4: KẾT QUẢ KIỂM TOÁN ĐƠN HÀNG (CONVERGENCE UI) */}
+          {orders.length > 0 && (
             <div className="space-y-6 animate-fade-in">
               
-              {/* 1. DATA CONTEXT BAR (3 LỚP + PROGRESSIVE DISCLOSURE) */}
-              <DataContextBar
-                dataset={
-                  activeDataset || {
-                    datasetId: `${dataSourceMode}_${platform.toUpperCase()}`,
-                    platform: platform,
-                    source: dataSourceMode,
-                    environment: 'PRODUCTION',
-                    status: 'SYNCED',
-                    syncStatus: 'SYNCED',
-                    lastSyncedAt: new Date().toISOString(),
-                    recordCount: orders.length,
-                    fileName: dataSourceName,
-                    orders: orders,
-                  }
-                }
-                onSyncClick={onOpenApiIntegration}
-                onShopChange={onShopChange}
-                onSwitchSourceClick={() => setShowSafeSwitchModal(true)}
-              />
+              {/* CONTEXT STRIP: NGUỒN, SHOP, FILE, PHẠM VI DỮ LIỆU */}
+              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-slate-400 font-sans">Nguồn dữ liệu:</span>
+                  <span className="font-bold text-white px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
+                    {selectedSource === 'file_shopee' && 'File Shopee'}
+                    {selectedSource === 'file_tiktok' && 'File TikTok'}
+                    {selectedSource === 'api_shopee_test' && 'API Shopee — Test'}
+                    {selectedSource === 'api_tiktok_test' && 'API TikTok — Test'}
+                    {selectedSource === 'api_shopee_prod' && 'API Shopee — Production'}
+                    {selectedSource === 'api_tiktok_prod' && 'API TikTok — Production'}
+                  </span>
 
-              {/* 2. EXECUTIVE DASHBOARD AUDIT */}
+                  {selectedSource.startsWith('api_') && (
+                    <>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-slate-400 font-sans">Shop:</span>
+                      <span className="font-bold text-cyan-300">
+                        {relevantShops.find((s) => s.shopId === selectedShopId)?.shopName ||
+                          activeDataset?.shopName ||
+                          'Official Store'}
+                      </span>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-slate-400 font-sans">Dữ liệu:</span>
+                      <span className="text-slate-200">{apiDateRangeDisplay}</span>
+                    </>
+                  )}
+
+                  {selectedSource.startsWith('file_') && (
+                    <>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-slate-400 font-sans">File:</span>
+                      <span className="text-emerald-400">{uploadedFile?.name || dataSourceName}</span>
+                    </>
+                  )}
+
+                  <span className="text-slate-600">•</span>
+                  <span className="text-slate-400 font-sans">Số đơn:</span>
+                  <span className="font-bold text-white">{orders.length.toLocaleString('vi-VN')} đơn</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowTechnicalContext(!showTechnicalContext)}
+                  className="text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors font-sans self-end sm:self-auto"
+                >
+                  <Info className="w-3.5 h-3.5" />
+                  <span>Thông tin kết nối</span>
+                  <ChevronDown className={`w-3 h-3 transition-transform ${showTechnicalContext ? 'rotate-180' : ''}`} />
+                </button>
+              </div>
+
+              {/* TECHNICAL INFORMATION COLLAPSED BY DEFAULT */}
+              {showTechnicalContext && (
+                <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px] font-mono text-slate-400 animate-fade-in">
+                  <div>
+                    <span className="text-slate-500 block">Dataset ID:</span>
+                    <span className="text-slate-200 truncate block font-bold">
+                      {activeDataset?.datasetId || `${selectedSource.toUpperCase()}_SESSION`}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Môi trường:</span>
+                    <span className="text-cyan-400 font-bold">
+                      {selectedSource.includes('prod') ? 'PRODUCTION' : selectedSource.includes('test') ? 'SANDBOX' : 'SESSION_LOCAL'}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">Deduplication:</span>
+                    <span className="text-emerald-400 font-bold">ORDER_ID_LOCKED</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-500 block">COGS Lock:</span>
+                    <span className="text-amber-400 font-bold">IMMUTABLE_HISTORICAL</span>
+                  </div>
+                </div>
+              )}
+
+              {/* EXECUTIVE DASHBOARD COMPONENT (KIỂM TOÁN ĐƠN HÀNG) */}
               {summary && (
                 <ExecutiveDashboard
                   summary={summary}
                   orders={orders}
                   packagingCost={packagingCost}
                   feeThreshold={feeThreshold}
-                  onPackagingCostChange={onPackagingCostChange || (() => {})}
-                  onFeeThresholdChange={onFeeThresholdChange || (() => {})}
+                  onPackagingCostChange={onPackagingCostChange}
+                  onFeeThresholdChange={onFeeThresholdChange}
                   onOpenCogsModal={onOpenCogsModal}
                   onExportExcel={onExportExcel}
                   onOpenShippingModal={onOpenShippingModal}
                   platform={platform}
-                  dataSourceMode={dataSourceMode}
-                  dataSourceName={dataSourceName}
+                  dataSourceMode={selectedSource.startsWith('api_') ? 'API' : 'EXCEL'}
+                  dataSourceName={uploadedFile?.name || dataSourceName}
                   currentLang={currentLang}
                 />
               )}
@@ -844,50 +1236,6 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             </div>
           )}
 
-        </div>
-      )}
-
-      {/* ========================================================================= */}
-      {/* 4. SAFE CONTEXT-SWITCH CONFIRMATION MODAL                                */}
-      {/* ========================================================================= */}
-      {showSafeSwitchModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-md p-6 space-y-4 shadow-2xl text-xs text-slate-200">
-            <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
-                <ArrowLeftRight className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-sm font-bold text-white">Đổi nguồn dữ liệu phân tích</h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">Xác nhận chuyển đổi nguồn dữ liệu đang làm việc</p>
-              </div>
-            </div>
-
-            <p className="text-slate-300 leading-relaxed">
-              Bạn đang phân tích: <strong className="text-emerald-400">{dataSourceName}</strong> ({orders.length.toLocaleString('vi-VN')} đơn hàng).
-            </p>
-
-            <div className="space-y-2 pt-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowSafeSwitchModal(false);
-                  setShowEntryPicker(true);
-                }}
-                className="w-full py-2.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors text-center"
-              >
-                + Nạp file mới hoặc kết nối gian hàng khác
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setShowSafeSwitchModal(false)}
-                className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors text-center"
-              >
-                Hủy bỏ & Tiếp tục xem báo cáo hiện tại
-              </button>
-            </div>
-          </div>
         </div>
       )}
 

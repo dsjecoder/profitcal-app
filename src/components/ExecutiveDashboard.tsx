@@ -80,13 +80,13 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         {/* 1. HEADER PANEL: TITLE + DATA SOURCE BADGE + ACTION BUTTON GROUP */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 bg-slate-950/80 rounded-2xl border border-slate-800">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xl font-bold text-white">Báo cáo kiểm toán đơn hàng thực tế</span>
+            <span className="text-xl font-bold text-white tracking-tight">KIỂM TOÁN ĐƠN HÀNG</span>
             
             {/* Data Source Badge */}
             <span className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-              {dataSourceMode === 'API' && `API Direct (${platform.toUpperCase()})`}
-              {dataSourceMode === 'EXCEL' && `Excel (${dataSourceName})`}
-              {dataSourceMode === 'DEMO' && `Dữ liệu mẫu (${platform.toUpperCase()})`}
+              {dataSourceMode === 'API' && `Nguồn: ${platform === 'shopee' ? 'Shopee' : 'TikTok'} Production`}
+              {dataSourceMode === 'EXCEL' && `Nguồn: File ${platform === 'shopee' ? 'Shopee' : 'TikTok'} (${dataSourceName})`}
+              {dataSourceMode === 'DEMO' && `Nguồn: ${platform === 'shopee' ? 'Shopee' : 'TikTok'} Test (Sandbox)`}
             </span>
           </div>
 
