@@ -716,14 +716,16 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
       {calcMode === 'batch' && (
         <div className="space-y-6">
           
-          {/* NGUỒN DỮ LIỆU (3 NHÓM CHUẨN) */}
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+          {/* NGUỒN DỮ LIỆU + CONTEXTUAL ACTION TRONG 1 PANEL DUY NHẤT */}
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-5">
+            
             <div className="border-b border-slate-800/80 pb-3">
               <h2 className="text-xs font-bold text-white uppercase tracking-wider block">
                 NGUỒN DỮ LIỆU
               </h2>
             </div>
 
+            {/* 6 LỰA CHỌN RADIO — MỘT RADIO GROUP DUY NHẤT */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               
               {/* NHÓM A: FILE ĐƠN HÀNG */}
@@ -850,271 +852,303 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               </div>
 
             </div>
-          </div>
 
-          {/* VÙNG THAO TÁC NGUỒN DỮ LIỆU TƯƠNG ỨNG DUY NHẤT */}
-
-          {/* 1. FILE SHOPEE UPLOAD DROPZONE */}
-          {selectedSource === 'file_shopee' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx, .xls, .csv"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    handleProcessFile(e.target.files[0], 'shopee');
-                  }
-                }}
-                className="hidden"
-              />
-
-              <div
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={(e) => handleDrop(e, 'shopee')}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
-                  dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
-                }`}
-              >
-                <div className="max-w-md mx-auto space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
-                    <FileSpreadsheet className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Kéo thả file Shopee vào đây</h4>
-                    <p className="text-xs text-slate-400 mt-1">hoặc</p>
-                  </div>
-                  <button
-                    type="button"
-                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
-                  >
-                    [ Chọn file Shopee ]
-                  </button>
-                  <p className="text-[11px] text-slate-500 font-mono">.xlsx / .xls / .csv</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 2. FILE TIKTOK UPLOAD DROPZONE */}
-          {selectedSource === 'file_tiktok' && (
-            <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".xlsx, .xls, .csv"
-                onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    handleProcessFile(e.target.files[0], 'tiktok');
-                  }
-                }}
-                className="hidden"
-              />
-
-              <div
-                onDragEnter={handleDrag}
-                onDragLeave={handleDrag}
-                onDragOver={handleDrag}
-                onDrop={(e) => handleDrop(e, 'tiktok')}
-                onClick={() => fileInputRef.current?.click()}
-                className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
-                  dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
-                }`}
-              >
-                <div className="max-w-md mx-auto space-y-3">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
-                    <FileSpreadsheet className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-white">Kéo thả file TikTok vào đây</h4>
-                    <p className="text-xs text-slate-400 mt-1">hoặc</p>
-                  </div>
-                  <button
-                    type="button"
-                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
-                  >
-                    [ Chọn file TikTok ]
-                  </button>
-                  <p className="text-[11px] text-slate-500 font-mono">.xlsx / .xls / .csv</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 3. API TEST FORM (SHOPEE & TIKTOK) */}
-          {(selectedSource === 'api_shopee_test' || selectedSource === 'api_tiktok_test') && (
-            <div className="bg-slate-900 border border-amber-500/30 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                    {selectedSource === 'api_shopee_test' ? 'Shopee — Test' : 'TikTok — Test'}
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5 font-mono">
-                    Nền tảng: <strong className="text-white">{selectedSource === 'api_shopee_test' ? 'Shopee' : 'TikTok Shop'}</strong> · Môi trường: <strong className="text-amber-400">TEST (Sandbox)</strong>
-                  </p>
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-mono bg-amber-500/10 text-amber-400 border border-amber-500/30 font-bold">
-                  MÔI TRƯỜNG TEST
-                </span>
-              </div>
-
-              <p className="text-xs text-slate-300 leading-relaxed">
-                Đang kết nối môi trường Test để lấy dữ liệu giả lập và tính toán lợi nhuận mà không làm ảnh hưởng đến dữ liệu gian hàng thật.
-              </p>
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  disabled={fileParsing}
-                  onClick={() => handleExecuteApiSync(false)}
-                  className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
-                >
-                  <RefreshCw className={`w-4 h-4 ${fileParsing ? 'animate-spin' : ''}`} />
-                  <span>{fileParsing ? 'Đang kết nối Test...' : '⚡ Đồng bộ dữ liệu Test (Sandbox)'}</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* 4. API PRODUCTION FORM (SHOPEE & TIKTOK) */}
-          {(selectedSource === 'api_shopee_prod' || selectedSource === 'api_tiktok_prod') && (
-            <div className="space-y-4 animate-fade-in">
+            {/* ĐƯỜNG PHÂN CÁCH VÀ NỘI DUNG/ACTION THEO SELECTEDSOURCE TRONG CÙNG 1 PANEL */}
+            <div className="border-t border-slate-800/80 pt-5">
               
-              {/* TRƯỜNG HỢP 1: CHƯA CÓ GIAN HÀNG NÀO XÁC THỰC OAUTH */}
-              {relevantShops.length === 0 ? (
-                <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
-                      <ShieldCheck className="w-6 h-6" />
-                    </div>
-                    <div className="space-y-1">
-                      <h3 className="text-base font-bold text-white tracking-tight">
-                        Kết nối gian hàng {selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok Shop'} (Production)
-                      </h3>
-                      <p className="text-xs text-slate-300 leading-relaxed">
-                        Bạn sắp kết nối ProfitCal với gian hàng{' '}
-                        <strong className="text-cyan-400 uppercase">
-                          {selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok Shop'}
-                        </strong>{' '}
-                        thật. Hệ thống sẽ mở trang đăng nhập và ủy quyền chính thức từ sàn để cấp quyền đọc báo cáo đơn hàng (Read-only).
-                      </p>
-                    </div>
-                  </div>
-
-                  {authError && (
-                    <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs text-rose-400 flex items-center gap-2">
-                      <AlertCircle className="w-4 h-4 shrink-0" />
-                      <span>{authError}</span>
-                    </div>
-                  )}
-
-                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
-                    <div className="flex items-center gap-2 text-slate-300 font-semibold">
-                      <Info className="w-4 h-4 text-cyan-400" />
-                      <span>Cam kết an toàn & bảo mật dữ liệu:</span>
-                    </div>
-                    <ul className="text-slate-400 list-disc list-inside space-y-1 text-[11px]">
-                      <li>Chỉ yêu cầu quyền đọc đơn hàng (Read-only Order API), không có quyền thay đổi sản phẩm hay rút ví.</li>
-                      <li>Toàn bộ token truy cập được mã hóa chuẩn AES-256 an toàn.</li>
-                      <li>Không lưu trữ mật khẩu đăng nhập sàn của bạn trên ProfitCal.</li>
-                    </ul>
-                  </div>
-
-                  <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
-                    <button
-                      type="button"
-                      onClick={() => handleSourceSelect('file_shopee')}
-                      className="px-5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
-                    >
-                      [ Hủy ]
-                    </button>
-                    <button
-                      type="button"
-                      disabled={isAuthenticating}
-                      onClick={handleStartOAuthLogin}
-                      className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
-                    >
-                      <ExternalLink className="w-4 h-4" />
-                      <span>{isAuthenticating ? 'Đang mở cửa sổ ủy quyền...' : `[ Đăng nhập & Ủy quyền ${selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok'} ]`}</span>
-                    </button>
-                  </div>
-                </div>
-              ) : (
-                /* TRƯỜNG HỢP 2: ĐÃ CÓ GIAN HÀNG XÁC THỰC OAUTH */
-                <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                    <div>
-                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Gian hàng Production đã xác thực</h3>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {relevantShops.length > 1
-                          ? 'Tài khoản có nhiều Shop. Vui lòng chọn Shop bạn muốn tính toán:'
-                          : 'Đang kết nối với gian hàng thực tế:'}
-                      </p>
-                    </div>
-                    <span className="px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold">
-                      PRODUCTION
+              {/* A. FILE SHOPEE */}
+              {selectedSource === 'file_shopee' && (
+                <div className="space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      KÉO THẢ FILE SHOPEE
                     </span>
+                    <span className="text-[11px] text-slate-500 font-mono">.xlsx / .xls / .csv</span>
                   </div>
-
-                  {/* Multi-Shop Radio List */}
-                  <div className="space-y-2">
-                    {relevantShops.map((shop) => (
-                      <label
-                        key={shop.shopId}
-                        className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
-                          selectedShopId === shop.shopId
-                            ? 'bg-cyan-500/10 border-cyan-500 text-white font-bold'
-                            : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="radio"
-                            name="prodShopRadio"
-                            checked={selectedShopId === shop.shopId}
-                            onChange={() => setSelectedShopId(shop.shopId)}
-                            className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-900 border-slate-700"
-                          />
-                          <div>
-                            <span className="text-sm font-bold block">{shop.shopName}</span>
-                            <span className="text-[11px] text-slate-500 font-mono">Shop ID: {shop.shopId}</span>
-                          </div>
-                        </div>
-                        <span className="text-xs text-emerald-400 font-mono">✓ Đã xác thực OAuth</span>
-                      </label>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-800">
-                    <div className="flex items-center gap-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx, .xls, .csv"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleProcessFile(e.target.files[0], 'shopee');
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <div
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={(e) => handleDrop(e, 'shopee')}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
+                      dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <span className="text-xs text-slate-400">Kéo thả file Shopee vào đây hoặc</span>
                       <button
                         type="button"
-                        onClick={handleStartOAuthLogin}
-                        className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-sans"
+                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
                       >
-                        <ExternalLink className="w-3.5 h-3.5" />
-                        <span>+ Kết nối thêm gian hàng khác</span>
+                        [ Chọn file Shopee ]
                       </button>
                     </div>
-
-                    <button
-                      type="button"
-                      disabled={fileParsing}
-                      onClick={() => handleExecuteApiSync(true)}
-                      className="px-6 py-3 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2"
-                    >
-                      <RefreshCw className={`w-4 h-4 ${fileParsing ? 'animate-spin' : ''}`} />
-                      <span>{fileParsing ? 'Đang đồng bộ đơn hàng...' : 'Lấy dữ liệu & Tính lợi nhuận'}</span>
-                    </button>
                   </div>
                 </div>
               )}
 
+              {/* B. FILE TIKTOK */}
+              {selectedSource === 'file_tiktok' && (
+                <div className="space-y-3 animate-fade-in">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                      KÉO THẢ FILE TIKTOK
+                    </span>
+                    <span className="text-[11px] text-slate-500 font-mono">.xlsx / .xls / .csv</span>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".xlsx, .xls, .csv"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files[0]) {
+                        handleProcessFile(e.target.files[0], 'tiktok');
+                      }
+                    }}
+                    className="hidden"
+                  />
+                  <div
+                    onDragEnter={handleDrag}
+                    onDragLeave={handleDrag}
+                    onDragOver={handleDrag}
+                    onDrop={(e) => handleDrop(e, 'tiktok')}
+                    onClick={() => fileInputRef.current?.click()}
+                    className={`border-2 border-dashed rounded-2xl p-6 text-center cursor-pointer transition-all ${
+                      dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
+                    }`}
+                  >
+                    <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                      <span className="text-xs text-slate-400">Kéo thả file TikTok vào đây hoặc</span>
+                      <button
+                        type="button"
+                        className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
+                      >
+                        [ Chọn file TikTok ]
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* C. SHOPEE — TEST */}
+              {selectedSource === 'api_shopee_test' && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-950/70 border border-amber-500/20 animate-fade-in">
+                  <div>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                      KẾT NỐI SHOPEE TEST
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Đang kết nối môi trường Sandbox để lấy dữ liệu giả lập và tính toán lợi nhuận.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={fileParsing}
+                    onClick={() => handleExecuteApiSync(false)}
+                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2 shrink-0"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${fileParsing ? 'animate-spin' : ''}`} />
+                    <span>{fileParsing ? 'Đang kết nối...' : '⚡ Đồng bộ dữ liệu Test (Sandbox)'}</span>
+                  </button>
+                </div>
+              )}
+
+              {/* D. TIKTOK — TEST */}
+              {selectedSource === 'api_tiktok_test' && (
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-2xl bg-slate-950/70 border border-amber-500/20 animate-fade-in">
+                  <div>
+                    <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                      KẾT NỐI TIKTOK TEST
+                    </h3>
+                    <p className="text-xs text-slate-400 mt-1">
+                      Đang kết nối môi trường Sandbox để lấy dữ liệu giả lập và tính toán lợi nhuận.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    disabled={fileParsing}
+                    onClick={() => handleExecuteApiSync(false)}
+                    className="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2 shrink-0"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${fileParsing ? 'animate-spin' : ''}`} />
+                    <span>{fileParsing ? 'Đang kết nối...' : '⚡ Đồng bộ dữ liệu Test (Sandbox)'}</span>
+                  </button>
+                </div>
+              )}
+
+              {/* E. SHOPEE — PRODUCTION */}
+              {selectedSource === 'api_shopee_prod' && (
+                <div className="space-y-4 animate-fade-in">
+                  {relevantShops.length === 0 ? (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-cyan-500/30 space-y-3">
+                      <div>
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                          KẾT NỐI SHOP SHOPEE
+                        </h3>
+                        <p className="text-xs text-slate-300 mt-1">
+                          Đăng nhập và ủy quyền trực tiếp trên Shopee để cấp quyền đọc dữ liệu đơn hàng cho ProfitCal.
+                        </p>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          🔒 Chỉ cấp quyền đọc đơn hàng. ProfitCal không nhận hoặc lưu mật khẩu Shopee.
+                        </p>
+                      </div>
+
+                      {authError && (
+                        <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span>{authError}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-end gap-3 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleSourceSelect('file_shopee')}
+                          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
+                        >
+                          [ Hủy ]
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isAuthenticating}
+                          onClick={handleStartOAuthLogin}
+                          className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-1.5"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>{isAuthenticating ? 'Đang mở cửa sổ...' : '[ Đăng nhập & Ủy quyền Shopee ]'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                            KẾT NỐI SHOP SHOPEE — ĐÃ XÁC THỰC
+                          </h3>
+                          <p className="text-xs text-emerald-400 mt-0.5 font-mono">
+                            ✓ Gian hàng: {relevantShops[0]?.shopName} (Shop ID: {relevantShops[0]?.shopId})
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleStartOAuthLogin}
+                          className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-sans"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>+ Thêm shop</span>
+                        </button>
+                      </div>
+                      <div className="flex justify-end pt-1">
+                        <button
+                          type="button"
+                          disabled={fileParsing}
+                          onClick={() => handleExecuteApiSync(true)}
+                          className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${fileParsing ? 'animate-spin' : ''}`} />
+                          <span>{fileParsing ? 'Đang đồng bộ...' : 'Lấy dữ liệu & Tính lợi nhuận'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* F. TIKTOK — PRODUCTION */}
+              {selectedSource === 'api_tiktok_prod' && (
+                <div className="space-y-4 animate-fade-in">
+                  {relevantShops.length === 0 ? (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-cyan-500/30 space-y-3">
+                      <div>
+                        <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                          KẾT NỐI SHOP TIKTOK
+                        </h3>
+                        <p className="text-xs text-slate-300 mt-1">
+                          Đăng nhập và ủy quyền trực tiếp trên TikTok để cấp quyền đọc dữ liệu đơn hàng cho ProfitCal.
+                        </p>
+                        <p className="text-[11px] text-slate-400 mt-1">
+                          🔒 Chỉ cấp quyền đọc đơn hàng. ProfitCal không nhận hoặc lưu mật khẩu TikTok.
+                        </p>
+                      </div>
+
+                      {authError && (
+                        <div className="p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-400 flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 shrink-0" />
+                          <span>{authError}</span>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-end gap-3 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleSourceSelect('file_shopee')}
+                          className="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-colors"
+                        >
+                          [ Hủy ]
+                        </button>
+                        <button
+                          type="button"
+                          disabled={isAuthenticating}
+                          onClick={handleStartOAuthLogin}
+                          className="px-5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-1.5"
+                        >
+                          <ExternalLink className="w-3.5 h-3.5" />
+                          <span>{isAuthenticating ? 'Đang mở cửa sổ...' : '[ Đăng nhập & Ủy quyền TikTok ]'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-4 sm:p-5 rounded-2xl bg-slate-950/80 border border-slate-800 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+                            KẾT NỐI SHOP TIKTOK — ĐÃ XÁC THỰC
+                          </h3>
+                          <p className="text-xs text-emerald-400 mt-0.5 font-mono">
+                            ✓ Gian hàng: {relevantShops[0]?.shopName} (Shop ID: {relevantShops[0]?.shopId})
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleStartOAuthLogin}
+                          className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-sans"
+                        >
+                          <ExternalLink className="w-3 h-3" />
+                          <span>+ Thêm shop</span>
+                        </button>
+                      </div>
+                      <div className="flex justify-end pt-1">
+                        <button
+                          type="button"
+                          disabled={fileParsing}
+                          onClick={() => handleExecuteApiSync(true)}
+                          className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
+                        >
+                          <RefreshCw className={`w-3.5 h-3.5 ${fileParsing ? 'animate-spin' : ''}`} />
+                          <span>{fileParsing ? 'Đang đồng bộ...' : 'Lấy dữ liệu & Tính lợi nhuận'}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
             </div>
-          )}
+
+          </div>
 
           {/* KẾT QUẢ KIỂM TOÁN ĐƠN HÀNG THỰC TẾ (RENDER TRỰC TIẾP KHI CÓ DỮ LIỆU) */}
           {orders.length > 0 && summary && (
