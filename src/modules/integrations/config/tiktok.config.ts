@@ -9,12 +9,21 @@ export interface TikTokConfig {
 }
 
 export const TIKTOK_CONFIG: TikTokConfig = {
-  appKey: (import.meta as any).env?.VITE_TIKTOK_APP_KEY || '6c891a23b45e7f8',
-  appSecret: (import.meta as any).env?.VITE_TIKTOK_APP_SECRET || 'tiktok_app_secret_key_prod_2026',
+  appKey: (import.meta as any).env?.VITE_TIKTOK_APP_KEY || '',
+  appSecret: (import.meta as any).env?.VITE_TIKTOK_APP_SECRET || '',
   baseUrl: 'https://open-api.tiktokglobalshop.com',
   authUrl: 'https://services.tiktokshop.com/open/authorize',
-  redirectUri: 'https://profitcal.tagki.com/api/v1/integrations/callback/tiktok',
+  redirectUri: (import.meta as any).env?.VITE_TIKTOK_REDIRECT_URI || '/api/auth/tiktok/callback',
 };
+
+export function getTikTokRedirectUri(): string {
+  const custom = (import.meta as any).env?.VITE_TIKTOK_REDIRECT_URI;
+  if (custom && custom.startsWith('http')) return custom;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/api/auth/tiktok/callback`;
+  }
+  return 'https://profitcal-app-git-main-tagki1.vercel.app/api/auth/tiktok/callback';
+}
 
 export function getTikTokBaseUrl(env: IntegrationEnvironment): string {
   return TIKTOK_CONFIG.baseUrl;

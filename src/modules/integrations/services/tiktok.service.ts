@@ -1,5 +1,5 @@
 import { IntegrationEnvironment, OAuthTokenResponse, UnifiedOrderDTO } from '../types/integration.types';
-import { TIKTOK_CONFIG, getTikTokAuthUrl, getTikTokBaseUrl } from '../config/tiktok.config';
+import { TIKTOK_CONFIG, getTikTokAuthUrl, getTikTokBaseUrl, getTikTokRedirectUri } from '../config/tiktok.config';
 import { normalizeTikTokOrderPayload } from '../adapters/tiktok.adapter';
 
 /**
@@ -30,7 +30,8 @@ export async function generateTikTokSignature(apiPath: string, params: Record<st
 export function buildTikTokOAuthUrl(env: IntegrationEnvironment): string {
   const authUrl = getTikTokAuthUrl(env);
   const state = 'tiktok_state_' + Date.now();
-  return `${authUrl}?app_key=${TIKTOK_CONFIG.appKey}&state=${state}&redirect_uri=${encodeURIComponent(TIKTOK_CONFIG.redirectUri)}`;
+  const redirectUri = getTikTokRedirectUri();
+  return `${authUrl}?app_key=${TIKTOK_CONFIG.appKey}&state=${state}&redirect_uri=${encodeURIComponent(redirectUri)}`;
 }
 
 /**

@@ -1,5 +1,5 @@
 import { IntegrationEnvironment, OAuthTokenResponse, UnifiedOrderDTO } from '../types/integration.types';
-import { SHOPEE_CONFIG, getShopeeAuthUrl, getShopeeBaseUrl } from '../config/shopee.config';
+import { SHOPEE_CONFIG, getShopeeAuthUrl, getShopeeBaseUrl, getShopeeRedirectUri } from '../config/shopee.config';
 import { normalizeShopeeOrderPayload } from '../adapters/shopee.adapter';
 
 /**
@@ -36,8 +36,9 @@ export async function buildShopeeOAuthUrl(env: IntegrationEnvironment): Promise<
   const apiPath = '/api/v2/shop/auth_partner';
   const sign = await generateShopeeHMACSignature(SHOPEE_CONFIG.partnerId, apiPath, timestamp, SHOPEE_CONFIG.partnerKey);
   const authUrl = getShopeeAuthUrl(env);
+  const redirectUri = getShopeeRedirectUri();
 
-  return `${authUrl}?partner_id=${SHOPEE_CONFIG.partnerId}&timestamp=${timestamp}&sign=${sign}&redirect=${encodeURIComponent(SHOPEE_CONFIG.redirectUri)}`;
+  return `${authUrl}?partner_id=${SHOPEE_CONFIG.partnerId}&timestamp=${timestamp}&sign=${sign}&redirect=${encodeURIComponent(redirectUri)}`;
 }
 
 /**

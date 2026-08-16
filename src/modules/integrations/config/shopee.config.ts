@@ -12,13 +12,22 @@ export interface ShopeeConfig {
 
 export const SHOPEE_CONFIG: ShopeeConfig = {
   partnerId: Number((import.meta as any).env?.VITE_SHOPEE_PARTNER_ID || '2001889'),
-  partnerKey: (import.meta as any).env?.VITE_SHOPEE_PARTNER_KEY || 'shopee_partner_secret_key_prod_2026',
+  partnerKey: (import.meta as any).env?.VITE_SHOPEE_PARTNER_KEY || '',
   sandboxBaseUrl: 'https://partner.test-stable.shopeemobile.com',
   productionBaseUrl: 'https://partner.shopeemobile.com',
   sandboxAuthUrl: 'https://partner.test-stable.shopeemobile.com/api/v2/shop/auth_partner',
   productionAuthUrl: 'https://partner.shopeemobile.com/api/v2/shop/auth_partner',
-  redirectUri: 'https://profitcal.tagki.com/api/v1/integrations/callback/shopee',
+  redirectUri: (import.meta as any).env?.VITE_SHOPEE_REDIRECT_URI || '/api/auth/shopee/callback',
 };
+
+export function getShopeeRedirectUri(): string {
+  const custom = (import.meta as any).env?.VITE_SHOPEE_REDIRECT_URI;
+  if (custom && custom.startsWith('http')) return custom;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    return `${window.location.origin}/api/auth/shopee/callback`;
+  }
+  return 'https://profitcal-app-git-main-tagki1.vercel.app/api/auth/shopee/callback';
+}
 
 export function getShopeeBaseUrl(env: IntegrationEnvironment): string {
   return env === 'SANDBOX' ? SHOPEE_CONFIG.sandboxBaseUrl : SHOPEE_CONFIG.productionBaseUrl;
