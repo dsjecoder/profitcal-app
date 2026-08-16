@@ -9,6 +9,8 @@ import { OrderItem } from '../../types';
 export * from './types/integration.types';
 export * from './services/crypto.service';
 export * from './services/integrationStore.service';
+export * from './services/shopee.service';
+export * from './services/tiktok.service';
 export * from './config/shopee.config';
 export * from './config/tiktok.config';
 
