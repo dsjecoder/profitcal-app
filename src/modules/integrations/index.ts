@@ -18,19 +18,33 @@ export * from './config/tiktok.config';
 export async function syncDirectApiOrders(
   platform: PlatformType,
   environment: IntegrationEnvironment,
-  packagingCost: number = 3000
-): Promise<{ unifiedOrders: UnifiedOrderDTO[]; orderItems: OrderItem[] }> {
+  packagingCost: number = 3000,
+  targetShopId?: string
+): Promise<{ unifiedOrders: UnifiedOrderDTO[]; orderItems: OrderItem[]; shopId: string; shopName: string }> {
   const records = getShopIntegrations();
-  let targetRecord = records.find((r) => r.platform === platform && r.environment === environment);
+  let targetRecord = records.find(
+    (r) =>
+      r.platform === platform &&
+      r.environment === environment &&
+      (targetShopId ? r.shopId === targetShopId : true)
+  );
 
   if (!targetRecord) {
-    // Auto initialize connection if missing
+    if (environment === 'PRODUCTION') {
+      throw new Error(
+        `Chưa có gian hàng ${platform} Production nào được xác thực qua OAuth. Vui lòng kết nối gian hàng thật trước khi đồng bộ dữ liệu.`
+      );
+    }
+
+    // Auto initialize Sandbox test store record for Test environment
     targetRecord = addOrUpdateIntegration({
       platform,
-      environment,
+      environment: 'SANDBOX',
       status: 'CONNECTED',
-      shopId: platform === 'SHOPEE' ? '98765432' : '74589213',
-      shopName: platform === 'SHOPEE' ? 'Shopee Mall Official (Direct API)' : 'TikTok Shop Global (Direct API)',
+      connectionStatus: 'CONNECTED',
+      syncStatus: 'SYNCED',
+      shopId: `sandbox_${platform.toLowerCase()}_test`,
+      shopName: platform === 'SHOPEE' ? 'Shopee Sandbox Test Store' : 'TikTok Sandbox Test Store',
     });
   }
 
@@ -51,14 +65,15 @@ export async function syncDirectApiOrders(
     lastSyncAt: new Date().toISOString(),
     syncedOrdersCount: (targetRecord.syncedOrdersCount || 0) + unifiedOrders.length,
     status: 'CONNECTED',
+    syncStatus: 'SYNCED',
   });
 
   addIntegrationLog({
     platform,
     environment,
     type: 'SYNC_ORDERS',
-    message: `Đã đồng bộ trực tiếp ${unifiedOrders.length} đơn hàng qua API ${platform} (${environment})`,
+    message: `Đã đồng bộ ${unifiedOrders.length} đơn hàng qua API ${platform} (${environment}) - Shop: ${targetRecord.shopName}`,
   });
 
-  return { unifiedOrders, orderItems };
+  return { unifiedOrders, orderItems, shopId: targetRecord.shopId, shopName: targetRecord.shopName };
 }

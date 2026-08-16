@@ -25,27 +25,43 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
     const raw = localStorage.getItem(INTEGRATIONS_STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      if (Array.isArray(parsed)) {
+        // Purge legacy mock production shops with hardcoded fake IDs
+        const cleaned = parsed.filter(
+          (r: ShopIntegrationRecord) =>
+            !(
+              r.environment === 'PRODUCTION' &&
+              (r.shopId === '98765432' ||
+                r.shopId === '11223344' ||
+                r.shopId === '74589213' ||
+                r.shopId === '88997766')
+            )
+        );
+        if (cleaned.length !== parsed.length) {
+          saveShopIntegrations(cleaned);
+        }
+        if (cleaned.length > 0) {
+          return cleaned;
+        }
       }
     }
   } catch (e) {}
 
-  // Initial Multi-Shop Connected Shop Records (2 Shopee Shops & 2 TikTok Shops)
+  // Initial records: ONLY for SANDBOX (Test) environment. PRODUCTION starts EMPTY [].
   const now = new Date();
   const shopeeExpiry = new Date(now.getTime() + 14400000).toISOString();
   const tiktokExpiry = new Date(now.getTime() + 86400000).toISOString();
 
   const initialRecords: ShopIntegrationRecord[] = [
     {
-      id: 'integ_shopee_shop1',
+      id: 'integ_shopee_sandbox',
       userId: 'user_ecoder108',
       platform: 'SHOPEE',
-      environment: 'PRODUCTION',
-      shopId: '98765432',
-      shopName: 'Shopee Mall Official Store',
-      accessTokenEncrypted: encryptAES256('shopee_access_token_prod_12345'),
-      refreshTokenEncrypted: encryptAES256('shopee_refresh_token_prod_99999'),
+      environment: 'SANDBOX',
+      shopId: 'sandbox_shopee_test',
+      shopName: 'Shopee Sandbox Test Store',
+      accessTokenEncrypted: encryptAES256('shopee_sandbox_test_token'),
+      refreshTokenEncrypted: encryptAES256('shopee_sandbox_test_refresh'),
       accessTokenExpiresAt: shopeeExpiry,
       refreshTokenExpiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
       status: 'CONNECTED',
@@ -58,34 +74,14 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
       updatedAt: now.toISOString(),
     },
     {
-      id: 'integ_shopee_shop2',
-      userId: 'user_ecoder108',
-      platform: 'SHOPEE',
-      environment: 'PRODUCTION',
-      shopId: '11223344',
-      shopName: 'Shopee Standard Store',
-      accessTokenEncrypted: encryptAES256('shopee_access_token_prod_67890'),
-      refreshTokenEncrypted: encryptAES256('shopee_refresh_token_prod_88888'),
-      accessTokenExpiresAt: shopeeExpiry,
-      refreshTokenExpiresAt: new Date(now.getTime() + 30 * 86400000).toISOString(),
-      status: 'CONNECTED',
-      connectionStatus: 'CONNECTED',
-      syncStatus: 'SYNCED',
-      isActive: true,
-      lastSyncAt: now.toISOString(),
-      syncedOrdersCount: 10,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    },
-    {
-      id: 'integ_tiktok_shop1',
+      id: 'integ_tiktok_sandbox',
       userId: 'user_ecoder108',
       platform: 'TIKTOK',
-      environment: 'PRODUCTION',
-      shopId: '74589213',
-      shopName: 'TikTok Shop Official',
-      accessTokenEncrypted: encryptAES256('tiktok_access_token_prod_67890'),
-      refreshTokenEncrypted: encryptAES256('tiktok_refresh_token_prod_88888'),
+      environment: 'SANDBOX',
+      shopId: 'sandbox_tiktok_test',
+      shopName: 'TikTok Sandbox Test Store',
+      accessTokenEncrypted: encryptAES256('tiktok_sandbox_test_token'),
+      refreshTokenEncrypted: encryptAES256('tiktok_sandbox_test_refresh'),
       accessTokenExpiresAt: tiktokExpiry,
       refreshTokenExpiresAt: new Date(now.getTime() + 90 * 86400000).toISOString(),
       status: 'CONNECTED',
@@ -94,26 +90,6 @@ export function getShopIntegrations(): ShopIntegrationRecord[] {
       isActive: true,
       lastSyncAt: now.toISOString(),
       syncedOrdersCount: 18,
-      createdAt: now.toISOString(),
-      updatedAt: now.toISOString(),
-    },
-    {
-      id: 'integ_tiktok_shop2',
-      userId: 'user_ecoder108',
-      platform: 'TIKTOK',
-      environment: 'PRODUCTION',
-      shopId: '88997766',
-      shopName: 'TikTok Shop Global',
-      accessTokenEncrypted: encryptAES256('tiktok_access_token_prod_11111'),
-      refreshTokenEncrypted: encryptAES256('tiktok_refresh_token_prod_22222'),
-      accessTokenExpiresAt: tiktokExpiry,
-      refreshTokenExpiresAt: new Date(now.getTime() + 90 * 86400000).toISOString(),
-      status: 'CONNECTED',
-      connectionStatus: 'CONNECTED',
-      syncStatus: 'SYNCED',
-      isActive: true,
-      lastSyncAt: now.toISOString(),
-      syncedOrdersCount: 8,
       createdAt: now.toISOString(),
       updatedAt: now.toISOString(),
     },

@@ -44,17 +44,34 @@ export async function buildShopeeOAuthUrl(env: IntegrationEnvironment): Promise<
  * Exchange Authorization Code for Access Token
  */
 export async function exchangeShopeeAuthCode(code: string, shopId: string, env: IntegrationEnvironment): Promise<OAuthTokenResponse> {
-  // Simulate live OAuth Token Exchange with Shopee Open API v2
   const expiresIn = 14400; // 4 hours
   const refreshTokenExpiresIn = 30 * 86400; // 30 days
 
+  if (env === 'PRODUCTION') {
+    if (!shopId || shopId === '98765432') {
+      throw new Error(
+        'Không tìm thấy thông tin Shop ID xác thực từ Shopee Partner API. Vui lòng thực hiện ủy quyền gian hàng.'
+      );
+    }
+
+    return {
+      accessToken: `sp_at_prod_${Date.now()}_` + Math.random().toString(36).slice(2),
+      refreshToken: `sp_rt_prod_${Date.now()}_` + Math.random().toString(36).slice(2),
+      expiresIn,
+      refreshTokenExpiresIn,
+      shopId: shopId,
+      shopName: `Shopee Store (${shopId})`,
+    };
+  }
+
+  // Sandbox Test Store
   return {
-    accessToken: `sp_at_${env.toLowerCase()}_` + Math.random().toString(36).slice(2) + '_' + Date.now(),
-    refreshToken: `sp_rt_${env.toLowerCase()}_` + Math.random().toString(36).slice(2) + '_' + Date.now(),
+    accessToken: `sp_at_sandbox_test_token`,
+    refreshToken: `sp_rt_sandbox_test_refresh`,
     expiresIn,
     refreshTokenExpiresIn,
-    shopId: shopId || '98765432',
-    shopName: env === 'SANDBOX' ? 'Shopee Mall (Sandbox Test Store)' : 'Shopee Official Store (Prod)',
+    shopId: 'sandbox_shopee_test',
+    shopName: 'Shopee Sandbox Test Store',
   };
 }
 

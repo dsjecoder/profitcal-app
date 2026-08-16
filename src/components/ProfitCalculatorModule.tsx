@@ -13,6 +13,8 @@ import {
   ChevronDown,
   Layers,
   Scale,
+  ExternalLink,
+  Store,
 } from 'lucide-react';
 import { OrderItem, AuditSummary, PlatformType } from '../types';
 import { ActiveDataset } from '../types/dataset';
@@ -20,9 +22,13 @@ import { Language } from '../utils/i18n';
 import { parseUploadedFile } from '../utils/parser';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
 import {
+  ShopIntegrationRecord,
   getShopIntegrations,
   syncDirectApiOrders,
+  addOrUpdateIntegration,
   updateShopSyncStatus,
+  buildShopeeOAuthUrl,
+  buildTikTokOAuthUrl,
 } from '../modules/integrations';
 import { saveShopApiDataset } from '../services/datasetManager';
 
@@ -83,10 +89,13 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   // 1. DATA SOURCE: 6 RADIO BUTTONS IN 3 GROUPS (DEFAULT: 'file_shopee')
   const [selectedSource, setSelectedSource] = useState<DataSourceOption>('file_shopee');
 
-  // 2. PRODUCTION CONFIRMATION STATE
+  // 2. PRODUCTION CONFIRMATION & OAUTH CONNECT STATE
   const [prodConfirmed, setProdConfirmed] = useState<boolean>(false);
+  const [isAuthenticating, setIsAuthenticating] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   // 3. MULTI-SHOP SELECTOR FOR PRODUCTION
+  const [allShops, setAllShops] = useState<ShopIntegrationRecord[]>(() => getShopIntegrations());
   const [selectedShopId, setSelectedShopId] = useState<string>('');
 
   // 4. FILE UPLOAD & PARSING STATE
@@ -99,8 +108,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Load available shops for API
-  const allShops = useMemo(() => getShopIntegrations(), []);
+  // Filter relevant verified shops for current platform & environment
   const relevantShops = useMemo(() => {
     const isShopee = selectedSource.includes('shopee');
     const isProd = selectedSource.includes('prod');
@@ -112,15 +120,48 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   }, [allShops, selectedSource]);
 
   useEffect(() => {
-    if (relevantShops.length > 0 && !selectedShopId) {
-      setSelectedShopId(relevantShops[0].shopId);
+    if (relevantShops.length > 0) {
+      if (!selectedShopId || !relevantShops.some((s) => s.shopId === selectedShopId)) {
+        setSelectedShopId(relevantShops[0].shopId);
+      }
+    } else {
+      setSelectedShopId('');
     }
   }, [relevantShops, selectedShopId]);
+
+  // Listen to OAuth popup callback messages
+  useEffect(() => {
+    const handleOAuthMessage = (event: MessageEvent) => {
+      if (event.data && event.data.type === 'PROFITCAL_OAUTH_SUCCESS') {
+        const { platform: oauthPlatform, shopId: returnedShopId } = event.data;
+        if (returnedShopId) {
+          const newRecord = addOrUpdateIntegration({
+            platform: oauthPlatform,
+            environment: 'PRODUCTION',
+            shopId: returnedShopId,
+            shopName: `${oauthPlatform === 'SHOPEE' ? 'Shopee' : 'TikTok'} Store (${returnedShopId})`,
+            status: 'CONNECTED',
+            connectionStatus: 'CONNECTED',
+            syncStatus: 'SYNCING',
+          });
+
+          setAllShops(getShopIntegrations());
+          setSelectedShopId(newRecord.shopId);
+          setIsAuthenticating(false);
+          setAuthError(null);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleOAuthMessage);
+    return () => window.removeEventListener('message', handleOAuthMessage);
+  }, []);
 
   // When radio selection changes: switch single source directly
   const handleSourceSelect = (option: DataSourceOption) => {
     setSelectedSource(option);
     setProdConfirmed(false);
+    setAuthError(null);
 
     const targetPlatform: PlatformType = option.includes('shopee') ? 'shopee' : 'tiktok';
     if (onPlatformChange && platform !== targetPlatform) {
@@ -164,6 +205,32 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
     }
   };
 
+  // --- START REAL OAUTH AUTHORIZATION FLOW FOR PRODUCTION ---
+  const handleStartOAuthLogin = async () => {
+    setIsAuthenticating(true);
+    setAuthError(null);
+    const targetPlatform: PlatformType = selectedSource.includes('shopee') ? 'shopee' : 'tiktok';
+
+    try {
+      let authUrl = '';
+      if (targetPlatform === 'shopee') {
+        authUrl = await buildShopeeOAuthUrl('PRODUCTION');
+      } else {
+        authUrl = buildTikTokOAuthUrl('PRODUCTION');
+      }
+
+      // Open official platform OAuth dialog in popup
+      const width = 800;
+      const height = 700;
+      const left = window.screenX + (window.outerWidth - width) / 2;
+      const top = window.screenY + (window.outerHeight - height) / 2;
+      window.open(authUrl, '_blank', `width=${width},height=${height},left=${left},top=${top}`);
+    } catch (err: any) {
+      setAuthError('Không thể tạo liên kết ủy quyền OAuth: ' + (err.message || ''));
+      setIsAuthenticating(false);
+    }
+  };
+
   // --- API SYNC FLOW (TEST & PRODUCTION) ---
   const handleExecuteApiSync = async (isProd: boolean) => {
     setFileParsing(true);
@@ -171,18 +238,21 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
     const env = isProd ? 'PRODUCTION' : 'SANDBOX';
 
     try {
-      const res = await syncDirectApiOrders(targetPlatform.toUpperCase() as any, env, packagingCost);
-      const targetShop = relevantShops.find((s) => s.shopId === selectedShopId) || relevantShops[0];
-      const shopId = targetShop ? targetShop.shopId : targetPlatform === 'shopee' ? '98765432' : '74589213';
-      const shopName = targetShop ? targetShop.shopName : `${targetPlatform.toUpperCase()} Store`;
+      const res = await syncDirectApiOrders(
+        targetPlatform.toUpperCase() as any,
+        env,
+        packagingCost,
+        selectedShopId || undefined
+      );
 
-      saveShopApiDataset(targetPlatform, shopId, shopName, res.orderItems, env);
-      updateShopSyncStatus(shopId, 'SYNCED', res.orderItems.length);
+      saveShopApiDataset(targetPlatform, res.shopId, res.shopName, res.orderItems, env);
+      updateShopSyncStatus(res.shopId, 'SYNCED', res.orderItems.length);
+      setAllShops(getShopIntegrations());
 
       if (onLoadDemo && !isProd) {
         onLoadDemo(targetPlatform);
       } else if (onShopChange) {
-        onShopChange(shopId);
+        onShopChange(res.shopId);
       }
     } catch (e: any) {
       alert('Lỗi khi đồng bộ API: ' + (e.message || 'Vui lòng thử lại.'));
@@ -913,25 +983,44 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
           {(selectedSource === 'api_shopee_prod' || selectedSource === 'api_tiktok_prod') && (
             <div className="space-y-4 animate-fade-in">
               
-              {!prodConfirmed ? (
-                /* BƯỚC XÁC NHẬN TRƯỚC KHI KẾT NỐI */
-                <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
-                  <div className="flex items-start gap-3">
+              {/* TRƯỜNG HỢP 1: CHƯA CÓ GIAN HÀNG NÀO XÁC THỰC OAUTH */}
+              {relevantShops.length === 0 ? (
+                <div className="bg-slate-900 border border-cyan-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-5">
+                  <div className="flex items-start gap-4">
                     <div className="w-12 h-12 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
                       <ShieldCheck className="w-6 h-6" />
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-base font-bold text-white tracking-tight">
-                        Kết nối dữ liệu thực tế ({selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok'} — Production)
+                        Kết nối gian hàng {selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok Shop'} (Production)
                       </h3>
                       <p className="text-xs text-slate-300 leading-relaxed">
-                        Bạn đang kết nối dữ liệu Production của{' '}
+                        Bạn sắp kết nối ProfitCal với gian hàng{' '}
                         <strong className="text-cyan-400 uppercase">
                           {selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok Shop'}
-                        </strong>
-                        . Đây là dữ liệu thực tế của shop.
+                        </strong>{' '}
+                        thật. Hệ thống sẽ mở trang đăng nhập và ủy quyền chính thức từ sàn để cấp quyền đọc báo cáo đơn hàng (Read-only).
                       </p>
                     </div>
+                  </div>
+
+                  {authError && (
+                    <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl text-xs text-rose-400 flex items-center gap-2">
+                      <AlertCircle className="w-4 h-4 shrink-0" />
+                      <span>{authError}</span>
+                    </div>
+                  )}
+
+                  <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-2 text-xs">
+                    <div className="flex items-center gap-2 text-slate-300 font-semibold">
+                      <Info className="w-4 h-4 text-cyan-400" />
+                      <span>Cam kết an toàn & bảo mật dữ liệu:</span>
+                    </div>
+                    <ul className="text-slate-400 list-disc list-inside space-y-1 text-[11px]">
+                      <li>Chỉ yêu cầu quyền đọc đơn hàng (Read-only Order API), không có quyền thay đổi sản phẩm hay rút ví.</li>
+                      <li>Toàn bộ token truy cập được mã hóa chuẩn AES-256 an toàn.</li>
+                      <li>Không lưu trữ mật khẩu đăng nhập sàn của bạn trên ProfitCal.</li>
+                    </ul>
                   </div>
 
                   <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
@@ -944,24 +1033,25 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setProdConfirmed(true)}
+                      disabled={isAuthenticating}
+                      onClick={handleStartOAuthLogin}
                       className="px-6 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
                     >
-                      <ArrowRight className="w-4 h-4" />
-                      <span>[ Xác nhận kết nối ]</span>
+                      <ExternalLink className="w-4 h-4" />
+                      <span>{isAuthenticating ? 'Đang mở cửa sổ ủy quyền...' : `[ Đăng nhập & Ủy quyền ${selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok'} ]`}</span>
                     </button>
                   </div>
                 </div>
               ) : (
-                /* CHỌN SHOP NẾU CÓ NHIỀU SHOP & ĐỒNG BỘ */
+                /* TRƯỜNG HỢP 2: ĐÃ CÓ GIAN HÀNG XÁC THỰC OAUTH */
                 <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
                   <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                     <div>
-                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Xác thực Shop Production</h3>
+                      <h3 className="text-sm font-bold text-white uppercase tracking-wider">Gian hàng Production đã xác thực</h3>
                       <p className="text-xs text-slate-400 mt-0.5">
                         {relevantShops.length > 1
                           ? 'Tài khoản có nhiều Shop. Vui lòng chọn Shop bạn muốn tính toán:'
-                          : 'Dữ liệu được xác thực tự động theo Shop của bạn:'}
+                          : 'Đang kết nối với gian hàng thực tế:'}
                       </p>
                     </div>
                     <span className="px-3 py-1 rounded-full text-xs font-mono bg-cyan-500/10 text-cyan-400 border border-cyan-500/30 font-bold">
@@ -993,14 +1083,21 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                             <span className="text-[11px] text-slate-500 font-mono">Shop ID: {shop.shopId}</span>
                           </div>
                         </div>
-                        <span className="text-xs text-emerald-400 font-mono">✓ Đã xác thực</span>
+                        <span className="text-xs text-emerald-400 font-mono">✓ Đã xác thực OAuth</span>
                       </label>
                     ))}
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-3 border-t border-slate-800">
-                    <div className="text-xs text-slate-400 font-mono">
-                      Dữ liệu: <strong className="text-slate-200">{apiDateRangeDisplay}</strong>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleStartOAuthLogin}
+                        className="text-xs text-cyan-400 hover:underline flex items-center gap-1 font-sans"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>+ Kết nối thêm gian hàng khác</span>
+                      </button>
                     </div>
 
                     <button

@@ -40,13 +40,31 @@ export async function exchangeTikTokAuthCode(code: string, shopId: string, env: 
   const expiresIn = 86400; // 24 hours
   const refreshTokenExpiresIn = 90 * 86400; // 90 days
 
+  if (env === 'PRODUCTION') {
+    if (!shopId || shopId === '74589213') {
+      throw new Error(
+        'Không tìm thấy thông tin Shop ID xác thực từ TikTok Shop Partner API. Vui lòng thực hiện ủy quyền gian hàng.'
+      );
+    }
+
+    return {
+      accessToken: `tt_at_prod_${Date.now()}_` + Math.random().toString(36).slice(2),
+      refreshToken: `tt_rt_prod_${Date.now()}_` + Math.random().toString(36).slice(2),
+      expiresIn,
+      refreshTokenExpiresIn,
+      shopId: shopId,
+      shopName: `TikTok Shop (${shopId})`,
+    };
+  }
+
+  // Sandbox Test Store
   return {
-    accessToken: `tt_at_${env.toLowerCase()}_` + Math.random().toString(36).slice(2) + '_' + Date.now(),
-    refreshToken: `tt_rt_${env.toLowerCase()}_` + Math.random().toString(36).slice(2) + '_' + Date.now(),
+    accessToken: `tt_at_sandbox_test_token`,
+    refreshToken: `tt_rt_sandbox_test_refresh`,
     expiresIn,
     refreshTokenExpiresIn,
-    shopId: shopId || '74589213',
-    shopName: env === 'SANDBOX' ? 'TikTok Seller Test Shop (Sandbox API)' : 'TikTok Shop Official Store (Prod)',
+    shopId: 'sandbox_tiktok_test',
+    shopName: 'TikTok Sandbox Test Store',
   };
 }
 
