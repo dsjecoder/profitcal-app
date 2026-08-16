@@ -2,23 +2,17 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import {
   Calculator,
   RotateCcw,
-  TrendingUp,
-  TrendingDown,
   AlertCircle,
   CheckCircle2,
-  DollarSign,
-  Scale,
   FileSpreadsheet,
-  Plug,
   Upload,
   RefreshCw,
-  Store,
   ArrowRight,
   ShieldCheck,
   Info,
   ChevronDown,
   Layers,
-  ArrowLeftRight,
+  Scale,
 } from 'lucide-react';
 import { OrderItem, AuditSummary, PlatformType } from '../types';
 import { ActiveDataset } from '../types/dataset';
@@ -26,21 +20,19 @@ import { Language } from '../utils/i18n';
 import { parseUploadedFile } from '../utils/parser';
 import { ExecutiveDashboard } from './ExecutiveDashboard';
 import {
-  ShopIntegrationRecord,
   getShopIntegrations,
   syncDirectApiOrders,
-  addOrUpdateIntegration,
   updateShopSyncStatus,
 } from '../modules/integrations';
 import { saveShopApiDataset } from '../services/datasetManager';
 
 export type DataSourceOption =
-  | 'file_shopee'      // (1) File Shopee (Mặc định)
-  | 'file_tiktok'      // (2) File TikTok
-  | 'api_shopee_test'  // (3) API Shopee — Test
-  | 'api_tiktok_test'  // (4) API TikTok — Test
-  | 'api_shopee_prod'  // (5) API Shopee — Production
-  | 'api_tiktok_prod'; // (6) API TikTok — Production
+  | 'file_shopee'      // A.1 File Shopee (Mặc định)
+  | 'file_tiktok'      // A.2 File TikTok
+  | 'api_shopee_test'  // B.1 Shopee — Test
+  | 'api_tiktok_test'  // B.2 TikTok — Test
+  | 'api_shopee_prod'  // C.1 Shopee — Production
+  | 'api_tiktok_prod'; // C.2 TikTok — Production
 
 interface ProfitCalculatorModuleProps {
   summary?: AuditSummary;
@@ -88,19 +80,19 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   // Mode switcher: 'single' (⚡ Tính nhanh 1 sản phẩm) vs 'batch' (📊 Kiểm toán đơn hàng)
   const [calcMode, setCalcMode] = useState<'single' | 'batch'>('batch');
 
-  // 1. STEP 1: 6 SINGLE-SELECT RADIO DATA SOURCES (Mặc định: 'file_shopee')
+  // 1. DATA SOURCE: 6 RADIO BUTTONS IN 3 GROUPS (DEFAULT: 'file_shopee')
   const [selectedSource, setSelectedSource] = useState<DataSourceOption>('file_shopee');
 
   // 2. PRODUCTION CONFIRMATION STATE
   const [prodConfirmed, setProdConfirmed] = useState<boolean>(false);
 
-  // 3. MULTI-SHOP SELECTOR STATE FOR PRODUCTION
+  // 3. MULTI-SHOP SELECTOR FOR PRODUCTION
   const [selectedShopId, setSelectedShopId] = useState<string>('');
 
   // 4. FILE UPLOAD & PARSING STATE
   const [dragActive, setDragActive] = useState<boolean>(false);
   const [fileParsing, setFileParsing] = useState<boolean>(false);
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [uploadedFileName, setUploadedFileName] = useState<string>('');
 
   // 5. TECHNICAL CONTEXT COLLAPSIBLE (COLLAPSED BY DEFAULT)
   const [showTechnicalContext, setShowTechnicalContext] = useState<boolean>(false);
@@ -125,11 +117,10 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
     }
   }, [relevantShops, selectedShopId]);
 
-  // When radio selection changes: switch single source exclusively
+  // When radio selection changes: switch single source directly
   const handleSourceSelect = (option: DataSourceOption) => {
     setSelectedSource(option);
     setProdConfirmed(false);
-    setUploadedFile(null);
 
     const targetPlatform: PlatformType = option.includes('shopee') ? 'shopee' : 'tiktok';
     if (onPlatformChange && platform !== targetPlatform) {
@@ -137,12 +128,12 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
     }
   };
 
-  // --- FILE HANDLING FLOW (FILE SHOPEE & FILE TIKTOK) ---
+  // --- FILE HANDLING FLOW (SHOPEE & TIKTOK) ---
   const handleProcessFile = async (file: File, expectedPlatform: PlatformType) => {
     setFileParsing(true);
     try {
-      const res = await parseUploadedFile(file, expectedPlatform, packagingCost, feeThreshold);
-      setUploadedFile(file);
+      await parseUploadedFile(file, expectedPlatform, packagingCost, feeThreshold);
+      setUploadedFileName(file.name);
 
       if (onFileUpload) {
         onFileUpload(file);
@@ -173,7 +164,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
     }
   };
 
-  // --- API SYNC FLOW (API TEST & API PRODUCTION) ---
+  // --- API SYNC FLOW (TEST & PRODUCTION) ---
   const handleExecuteApiSync = async (isProd: boolean) => {
     setFileParsing(true);
     const targetPlatform: PlatformType = selectedSource.includes('shopee') ? 'shopee' : 'tiktok';
@@ -260,7 +251,6 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
       breakEvenUnitPrice,
       isProfitable: netProfit > 0,
       isLoss: netProfit < 0,
-      isBreakEven: netProfit === 0,
     };
   }, [sellPrice, quantity, costPrice, packCost, platformFeePct, taxPct]);
 
@@ -288,7 +278,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             <span>TÍNH TOÁN LỢI NHUẬN</span>
           </h1>
           <p className="text-xs text-slate-400 mt-1">
-            Chọn nguồn dữ liệu để bắt đầu kiểm toán và tính toán lợi nhuận đơn hàng.
+            Chọn nguồn dữ liệu để kiểm toán doanh thu, phí sàn, thuế và lợi nhuận ròng.
           </p>
         </div>
 
@@ -651,32 +641,29 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
       )}
 
       {/* ========================================================================= */}
-      {/* MODE B: KIỂM TOÁN ĐƠN HÀNG (6 RADIO SOURCES & DEDICATED CONTROLS)         */}
+      {/* MODE B: KIỂM TOÁN ĐƠN HÀNG (3 NHÓM NGUỒN DỮ LIỆU & DIRECT RENDER)         */}
       {/* ========================================================================= */}
       {calcMode === 'batch' && (
         <div className="space-y-6">
           
-          {/* BƯỚC 1: CHỌN NGUỒN DỮ LIỆU (6 RADIO BUTTONS — 1 ACTIVE DUY NHẤT) */}
+          {/* NGUỒN DỮ LIỆU (3 NHÓM CHUẨN) */}
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800/80 pb-3">
+            <div className="border-b border-slate-800/80 pb-3">
               <h2 className="text-xs font-bold text-white uppercase tracking-wider block">
-                Nguồn dữ liệu (Chọn 1 trong 6 nguồn):
+                NGUỒN DỮ LIỆU
               </h2>
-              <span className="text-[11px] text-slate-400 font-mono">
-                Đang chọn: <strong className="text-emerald-400 font-bold uppercase">{selectedSource.replace(/_/g, ' ')}</strong>
-              </span>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
               
-              {/* NHÓM 1: FILE ĐƠN HÀNG */}
+              {/* NHÓM A: FILE ĐƠN HÀNG */}
               <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80">
                 <span className="text-[10px] font-bold uppercase text-slate-400 tracking-wider block mb-1">
-                  📁 File đơn hàng (Tạm thời)
+                  A. FILE ĐƠN HÀNG
                 </span>
 
                 <label
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedSource === 'file_shopee'
                       ? 'bg-emerald-500/10 border-emerald-500 text-white font-bold shadow-md'
                       : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
@@ -687,18 +674,13 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     name="mainDataSourceRadio"
                     checked={selectedSource === 'file_shopee'}
                     onChange={() => handleSourceSelect('file_shopee')}
-                    className="w-4 h-4 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                    className="w-4 h-4 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700"
                   />
-                  <div className="space-y-0.5">
-                    <span className="block text-xs">File Shopee</span>
-                    <span className="text-[10px] text-slate-500 font-normal block font-sans">
-                      Nhập file dữ liệu Shopee để tính lợi nhuận.
-                    </span>
-                  </div>
+                  <span className="block text-xs">File Shopee</span>
                 </label>
 
                 <label
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedSource === 'file_tiktok'
                       ? 'bg-emerald-500/10 border-emerald-500 text-white font-bold shadow-md'
                       : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
@@ -709,25 +691,20 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     name="mainDataSourceRadio"
                     checked={selectedSource === 'file_tiktok'}
                     onChange={() => handleSourceSelect('file_tiktok')}
-                    className="w-4 h-4 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                    className="w-4 h-4 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700"
                   />
-                  <div className="space-y-0.5">
-                    <span className="block text-xs">File TikTok</span>
-                    <span className="text-[10px] text-slate-500 font-normal block font-sans">
-                      Nhập file dữ liệu TikTok để tính lợi nhuận.
-                    </span>
-                  </div>
+                  <span className="block text-xs">File TikTok</span>
                 </label>
               </div>
 
-              {/* NHÓM 2: API TEST */}
+              {/* NHÓM B: API — TEST */}
               <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80">
                 <span className="text-[10px] font-bold uppercase text-amber-400 tracking-wider block mb-1">
-                  🧪 Kết nối API — Test
+                  B. API — TEST
                 </span>
 
                 <label
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedSource === 'api_shopee_test'
                       ? 'bg-amber-500/10 border-amber-500 text-white font-bold shadow-md'
                       : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
@@ -738,16 +715,13 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     name="mainDataSourceRadio"
                     checked={selectedSource === 'api_shopee_test'}
                     onChange={() => handleSourceSelect('api_shopee_test')}
-                    className="w-4 h-4 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                    className="w-4 h-4 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700"
                   />
-                  <div className="space-y-0.5">
-                    <span className="block text-xs">API Shopee — Test</span>
-                    <span className="text-[10px] text-amber-400/80 font-mono block">Môi trường: Test (Sandbox)</span>
-                  </div>
+                  <span className="block text-xs">Shopee — Test</span>
                 </label>
 
                 <label
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedSource === 'api_tiktok_test'
                       ? 'bg-amber-500/10 border-amber-500 text-white font-bold shadow-md'
                       : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
@@ -758,23 +732,20 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     name="mainDataSourceRadio"
                     checked={selectedSource === 'api_tiktok_test'}
                     onChange={() => handleSourceSelect('api_tiktok_test')}
-                    className="w-4 h-4 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                    className="w-4 h-4 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700"
                   />
-                  <div className="space-y-0.5">
-                    <span className="block text-xs">API TikTok — Test</span>
-                    <span className="text-[10px] text-amber-400/80 font-mono block">Môi trường: Test (Sandbox)</span>
-                  </div>
+                  <span className="block text-xs">TikTok — Test</span>
                 </label>
               </div>
 
-              {/* NHÓM 3: API PRODUCTION */}
+              {/* NHÓM C: API — PRODUCTION */}
               <div className="space-y-2 p-3.5 rounded-2xl bg-slate-950/80 border border-slate-800/80">
                 <span className="text-[10px] font-bold uppercase text-cyan-400 tracking-wider block mb-1">
-                  ⚡ Kết nối API — Production
+                  C. API — PRODUCTION
                 </span>
 
                 <label
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedSource === 'api_shopee_prod'
                       ? 'bg-cyan-500/10 border-cyan-500 text-white font-bold shadow-md'
                       : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
@@ -785,16 +756,13 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     name="mainDataSourceRadio"
                     checked={selectedSource === 'api_shopee_prod'}
                     onChange={() => handleSourceSelect('api_shopee_prod')}
-                    className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                    className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700"
                   />
-                  <div className="space-y-0.5">
-                    <span className="block text-xs">API Shopee — Production</span>
-                    <span className="text-[10px] text-cyan-400/80 font-mono block">Dữ liệu thực tế của shop</span>
-                  </div>
+                  <span className="block text-xs">Shopee — Production</span>
                 </label>
 
                 <label
-                  className={`flex items-start gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                  className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
                     selectedSource === 'api_tiktok_prod'
                       ? 'bg-cyan-500/10 border-cyan-500 text-white font-bold shadow-md'
                       : 'bg-slate-900 border-slate-800 text-slate-300 hover:border-slate-700'
@@ -805,33 +773,20 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     name="mainDataSourceRadio"
                     checked={selectedSource === 'api_tiktok_prod'}
                     onChange={() => handleSourceSelect('api_tiktok_prod')}
-                    className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700 mt-0.5"
+                    className="w-4 h-4 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700"
                   />
-                  <div className="space-y-0.5">
-                    <span className="block text-xs">API TikTok — Production</span>
-                    <span className="text-[10px] text-cyan-400/80 font-mono block">Dữ liệu thực tế của shop</span>
-                  </div>
+                  <span className="block text-xs">TikTok — Production</span>
                 </label>
               </div>
 
             </div>
           </div>
 
-          {/* BƯỚC 2: FORM TƯƠNG ỨNG DUY NHẤT VỚI RADIO ĐANG CHỌN */}
+          {/* VÙNG THAO TÁC NGUỒN DỮ LIỆU TƯƠNG ỨNG DUY NHẤT */}
 
-          {/* 1. FILE SHOPEE FORM */}
+          {/* 1. FILE SHOPEE UPLOAD DROPZONE */}
           {selectedSource === 'file_shopee' && (
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">File Shopee</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Nhập file dữ liệu Shopee để tính lợi nhuận.</p>
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-mono bg-slate-950 text-slate-400 border border-slate-800">
-                  .xlsx / .xls / .csv
-                </span>
-              </div>
-
               <input
                 ref={fileInputRef}
                 type="file"
@@ -844,78 +799,39 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                 className="hidden"
               />
 
-              {!uploadedFile && orders.length === 0 ? (
-                <div
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={(e) => handleDrop(e, 'shopee')}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
-                    dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
-                  }`}
-                >
-                  <div className="max-w-md mx-auto space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
-                      <Upload className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">[ Kéo thả file vào đây ]</h4>
-                      <p className="text-xs text-slate-400 mt-1">hoặc</p>
-                    </div>
-                    <button
-                      type="button"
-                      className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
-                    >
-                      [ Chọn file Shopee ]
-                    </button>
+              <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={(e) => handleDrop(e, 'shopee')}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
+                  dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
+                }`}
+              >
+                <div className="max-w-md mx-auto space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+                    <FileSpreadsheet className="w-6 h-6" />
                   </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Kéo thả file Shopee vào đây</h4>
+                    <p className="text-xs text-slate-400 mt-1">hoặc</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
+                  >
+                    [ Chọn file Shopee ]
+                  </button>
+                  <p className="text-[11px] text-slate-500 font-mono">.xlsx / .xls / .csv</p>
                 </div>
-              ) : (
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                      <FileSpreadsheet className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-emerald-400 flex items-center gap-1.5 text-sm">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>✓ File Shopee đã được tải</span>
-                      </div>
-                      <div className="text-slate-400 mt-0.5 font-mono">
-                        Tên file: <strong className="text-white">{uploadedFile?.name || dataSourceName}</strong> · Số đơn:{' '}
-                        <strong className="text-white">{orders.length.toLocaleString('vi-VN')} đơn</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 self-end sm:self-auto">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition-colors"
-                    >
-                      [ Chọn file khác ]
-                    </button>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
 
-          {/* 2. FILE TIKTOK FORM */}
+          {/* 2. FILE TIKTOK UPLOAD DROPZONE */}
           {selectedSource === 'file_tiktok' && (
             <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4 animate-fade-in">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <h3 className="text-sm font-bold text-white uppercase tracking-wider">File TikTok</h3>
-                  <p className="text-xs text-slate-400 mt-0.5">Nhập file dữ liệu TikTok để tính lợi nhuận.</p>
-                </div>
-                <span className="px-3 py-1 rounded-full text-xs font-mono bg-slate-950 text-slate-400 border border-slate-800">
-                  .xlsx / .xls / .csv
-                </span>
-              </div>
-
               <input
                 ref={fileInputRef}
                 type="file"
@@ -928,62 +844,33 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                 className="hidden"
               />
 
-              {!uploadedFile && orders.length === 0 ? (
-                <div
-                  onDragEnter={handleDrag}
-                  onDragLeave={handleDrag}
-                  onDragOver={handleDrag}
-                  onDrop={(e) => handleDrop(e, 'tiktok')}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all ${
-                    dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
-                  }`}
-                >
-                  <div className="max-w-md mx-auto space-y-3">
-                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
-                      <Upload className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-white">[ Kéo thả file vào đây ]</h4>
-                      <p className="text-xs text-slate-400 mt-1">hoặc</p>
-                    </div>
-                    <button
-                      type="button"
-                      className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
-                    >
-                      [ Chọn file TikTok ]
-                    </button>
+              <div
+                onDragEnter={handleDrag}
+                onDragLeave={handleDrag}
+                onDragOver={handleDrag}
+                onDrop={(e) => handleDrop(e, 'tiktok')}
+                onClick={() => fileInputRef.current?.click()}
+                className={`border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all ${
+                  dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
+                }`}
+              >
+                <div className="max-w-md mx-auto space-y-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mx-auto text-emerald-400">
+                    <FileSpreadsheet className="w-6 h-6" />
                   </div>
+                  <div>
+                    <h4 className="text-sm font-bold text-white">Kéo thả file TikTok vào đây</h4>
+                    <p className="text-xs text-slate-400 mt-1">hoặc</p>
+                  </div>
+                  <button
+                    type="button"
+                    className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-md transition-colors"
+                  >
+                    [ Chọn file TikTok ]
+                  </button>
+                  <p className="text-[11px] text-slate-500 font-mono">.xlsx / .xls / .csv</p>
                 </div>
-              ) : (
-                <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
-                      <FileSpreadsheet className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <div className="font-bold text-emerald-400 flex items-center gap-1.5 text-sm">
-                        <CheckCircle2 className="w-4 h-4" />
-                        <span>✓ File TikTok đã được tải</span>
-                      </div>
-                      <div className="text-slate-400 mt-0.5 font-mono">
-                        Tên file: <strong className="text-white">{uploadedFile?.name || dataSourceName}</strong> · Số đơn:{' '}
-                        <strong className="text-white">{orders.length.toLocaleString('vi-VN')} đơn</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2 self-end sm:self-auto">
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs border border-slate-700 transition-colors"
-                    >
-                      [ Chọn file khác ]
-                    </button>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           )}
 
@@ -993,9 +880,9 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                    {selectedSource === 'api_shopee_test' ? 'API Shopee — Test' : 'API TikTok — Test'}
+                    {selectedSource === 'api_shopee_test' ? 'Shopee — Test' : 'TikTok — Test'}
                   </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-400 mt-0.5 font-mono">
                     Nền tảng: <strong className="text-white">{selectedSource === 'api_shopee_test' ? 'Shopee' : 'TikTok Shop'}</strong> · Môi trường: <strong className="text-amber-400">TEST (Sandbox)</strong>
                   </p>
                 </div>
@@ -1016,7 +903,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   className="px-6 py-3 rounded-2xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs shadow-md transition-colors flex items-center gap-2"
                 >
                   <RefreshCw className={`w-4 h-4 ${fileParsing ? 'animate-spin' : ''}`} />
-                  <span>{fileParsing ? 'Đang kết nối Test...' : '⚡ Kết nối & Lấy dữ liệu Test'}</span>
+                  <span>{fileParsing ? 'Đang kết nối Test...' : '⚡ Đồng bộ dữ liệu Test (Sandbox)'}</span>
                 </button>
               </div>
             </div>
@@ -1035,14 +922,14 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     </div>
                     <div className="space-y-1">
                       <h3 className="text-base font-bold text-white tracking-tight">
-                        Kết nối dữ liệu thực tế ({selectedSource === 'api_shopee_prod' ? 'API Shopee' : 'API TikTok'} — Production)
+                        Kết nối dữ liệu thực tế ({selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok'} — Production)
                       </h3>
                       <p className="text-xs text-slate-300 leading-relaxed">
                         Bạn đang kết nối dữ liệu Production của{' '}
                         <strong className="text-cyan-400 uppercase">
                           {selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok Shop'}
                         </strong>
-                        . Đây là dữ liệu thực tế của shop từ đầu tháng đến hiện tại ({apiDateRangeDisplay}).
+                        . Đây là dữ liệu thực tế của shop.
                       </p>
                     </div>
                   </div>
@@ -1132,63 +1019,39 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             </div>
           )}
 
-          {/* BƯỚC 3 & 4: KẾT QUẢ KIỂM TOÁN ĐƠN HÀNG (CONVERGENCE UI) */}
-          {orders.length > 0 && (
+          {/* KẾT QUẢ KIỂM TOÁN ĐƠN HÀNG THỰC TẾ (RENDER TRỰC TIẾP KHI CÓ DỮ LIỆU) */}
+          {orders.length > 0 && summary && (
             <div className="space-y-6 animate-fade-in">
               
-              {/* CONTEXT STRIP: NGUỒN, SHOP, FILE, PHẠM VI DỮ LIỆU */}
-              <div className="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs font-mono">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-slate-400 font-sans">Nguồn dữ liệu:</span>
-                  <span className="font-bold text-white px-2 py-0.5 rounded bg-slate-950 border border-slate-800">
-                    {selectedSource === 'file_shopee' && 'File Shopee'}
-                    {selectedSource === 'file_tiktok' && 'File TikTok'}
-                    {selectedSource === 'api_shopee_test' && 'API Shopee — Test'}
-                    {selectedSource === 'api_tiktok_test' && 'API TikTok — Test'}
-                    {selectedSource === 'api_shopee_prod' && 'API Shopee — Production'}
-                    {selectedSource === 'api_tiktok_prod' && 'API TikTok — Production'}
-                  </span>
+              <ExecutiveDashboard
+                summary={summary}
+                orders={orders}
+                packagingCost={packagingCost}
+                feeThreshold={feeThreshold}
+                onPackagingCostChange={onPackagingCostChange}
+                onFeeThresholdChange={onFeeThresholdChange}
+                onOpenCogsModal={onOpenCogsModal}
+                onExportExcel={onExportExcel}
+                onOpenShippingModal={onOpenShippingModal}
+                platform={platform}
+                dataSourceMode={selectedSource.startsWith('api_') ? (selectedSource.includes('test') ? 'DEMO' : 'API') : 'EXCEL'}
+                dataSourceName={uploadedFileName || dataSourceName}
+                currentLang={currentLang}
+              />
 
-                  {selectedSource.startsWith('api_') && (
-                    <>
-                      <span className="text-slate-600">•</span>
-                      <span className="text-slate-400 font-sans">Shop:</span>
-                      <span className="font-bold text-cyan-300">
-                        {relevantShops.find((s) => s.shopId === selectedShopId)?.shopName ||
-                          activeDataset?.shopName ||
-                          'Official Store'}
-                      </span>
-                      <span className="text-slate-600">•</span>
-                      <span className="text-slate-400 font-sans">Dữ liệu:</span>
-                      <span className="text-slate-200">{apiDateRangeDisplay}</span>
-                    </>
-                  )}
-
-                  {selectedSource.startsWith('file_') && (
-                    <>
-                      <span className="text-slate-600">•</span>
-                      <span className="text-slate-400 font-sans">File:</span>
-                      <span className="text-emerald-400">{uploadedFile?.name || dataSourceName}</span>
-                    </>
-                  )}
-
-                  <span className="text-slate-600">•</span>
-                  <span className="text-slate-400 font-sans">Số đơn:</span>
-                  <span className="font-bold text-white">{orders.length.toLocaleString('vi-VN')} đơn</span>
-                </div>
-
+              {/* TECHNICAL CONTEXT COLLAPSED BY DEFAULT */}
+              <div className="text-center">
                 <button
                   type="button"
                   onClick={() => setShowTechnicalContext(!showTechnicalContext)}
-                  className="text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors font-sans self-end sm:self-auto"
+                  className="text-xs text-slate-400 hover:text-slate-200 inline-flex items-center gap-1.5 transition-colors font-sans py-2 px-4 rounded-xl bg-slate-950 border border-slate-800/80"
                 >
                   <Info className="w-3.5 h-3.5" />
-                  <span>Thông tin kết nối</span>
+                  <span>Thông tin kết nối & ngữ cảnh kỹ thuật</span>
                   <ChevronDown className={`w-3 h-3 transition-transform ${showTechnicalContext ? 'rotate-180' : ''}`} />
                 </button>
               </div>
 
-              {/* TECHNICAL INFORMATION COLLAPSED BY DEFAULT */}
               {showTechnicalContext && (
                 <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-3 text-[11px] font-mono text-slate-400 animate-fade-in">
                   <div>
@@ -1212,25 +1075,6 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     <span className="text-amber-400 font-bold">IMMUTABLE_HISTORICAL</span>
                   </div>
                 </div>
-              )}
-
-              {/* EXECUTIVE DASHBOARD COMPONENT (KIỂM TOÁN ĐƠN HÀNG) */}
-              {summary && (
-                <ExecutiveDashboard
-                  summary={summary}
-                  orders={orders}
-                  packagingCost={packagingCost}
-                  feeThreshold={feeThreshold}
-                  onPackagingCostChange={onPackagingCostChange}
-                  onFeeThresholdChange={onFeeThresholdChange}
-                  onOpenCogsModal={onOpenCogsModal}
-                  onExportExcel={onExportExcel}
-                  onOpenShippingModal={onOpenShippingModal}
-                  platform={platform}
-                  dataSourceMode={selectedSource.startsWith('api_') ? 'API' : 'EXCEL'}
-                  dataSourceName={uploadedFile?.name || dataSourceName}
-                  currentLang={currentLang}
-                />
               )}
 
             </div>

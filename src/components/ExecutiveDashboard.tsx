@@ -80,13 +80,11 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         {/* 1. HEADER PANEL: TITLE + DATA SOURCE BADGE + ACTION BUTTON GROUP */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 p-4 bg-slate-950/80 rounded-2xl border border-slate-800">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xl font-bold text-white tracking-tight">KIỂM TOÁN ĐƠN HÀNG</span>
+            <span className="text-xl font-bold text-white tracking-tight">KIỂM TOÁN ĐƠN HÀNG THỰC TẾ</span>
             
             {/* Data Source Badge */}
-            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700">
-              {dataSourceMode === 'API' && `Nguồn: ${platform === 'shopee' ? 'Shopee' : 'TikTok'} Production`}
-              {dataSourceMode === 'EXCEL' && `Nguồn: File ${platform === 'shopee' ? 'Shopee' : 'TikTok'} (${dataSourceName})`}
-              {dataSourceMode === 'DEMO' && `Nguồn: ${platform === 'shopee' ? 'Shopee' : 'TikTok'} Test (Sandbox)`}
+            <span className="px-3 py-1 text-xs font-semibold rounded-full bg-slate-800 text-slate-300 border border-slate-700 font-mono">
+              {platform === 'shopee' ? 'Shopee' : 'TikTok'} • {dataSourceMode === 'API' ? 'API Production' : dataSourceMode === 'DEMO' ? 'API Test' : `File ${platform === 'shopee' ? 'Shopee' : 'TikTok'}`} • {orders.length.toLocaleString('vi-VN')} đơn
             </span>
           </div>
 
@@ -123,14 +121,14 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
           </div>
         </div>
 
-        {/* 2. CHUẨN HÓA HÀNG CHỈ SỐ (HORIZONTAL METRICS ROW GRID - ENHANCED FONT SIZE) */}
+        {/* 2. CHUẨN HÓA HÀNG 5 CHỈ SỐ (HORIZONTAL METRICS ROW GRID) */}
         <div className="bg-slate-950/60 p-5 rounded-2xl border border-slate-800">
           <div className="grid grid-cols-2 md:grid-cols-5 gap-5 divide-y md:divide-y-0 md:divide-x divide-slate-800">
             
             {/* Cell 1: Doanh thu */}
             <div className="space-y-1.5">
-              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                Doanh Thu Thô
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                DOANH THU
               </span>
               <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.grossRevenue)}
@@ -139,39 +137,38 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
 
             {/* Cell 2: Phí sàn */}
             <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                Phí Sàn ({formatPercent(summary.avgFeeRatio)})
+              <span className={`text-xs font-bold uppercase tracking-wider block font-sans ${isFeeHigh ? 'text-rose-400' : 'text-slate-400'}`}>
+                PHÍ SÀN
               </span>
               <div className={`text-base lg:text-lg font-bold font-mono ${isFeeHigh ? 'text-rose-400' : 'text-slate-100'}`}>
                 {formatVND(summary.totalFees)}
-                {isFeeHigh && <span className="text-xs ml-1.5 px-2 py-0.5 rounded bg-rose-500/20 text-rose-400 font-sans font-bold">VƯỢT NGƯỠNG</span>}
               </div>
             </div>
 
-            {/* Cell 3: Thực nhận ví */}
+            {/* Cell 3: Thực nhận về ví */}
             <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                Thực Nhận Về Ví
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                THỰC NHẬN VỀ VÍ
               </span>
               <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.netSettlement)}
               </div>
             </div>
 
-            {/* Cell 4: Giá vốn COGS */}
+            {/* Cell 4: Giá vốn hàng bán */}
             <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-              <span className="text-slate-400 text-sm font-bold uppercase tracking-wider block font-sans">
-                Giá Vốn Hàng Bán
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                GIÁ VỐN HÀNG BÁN
               </span>
               <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.totalCOGS)}
               </div>
             </div>
 
-            {/* Cell 5: Thuế TMĐT 1.5% */}
+            {/* Cell 5: Thuế TMĐT */}
             <div className="space-y-1.5 pt-3 md:pt-0 md:pl-5">
-              <span className="text-slate-400 text-sm font-semibold block">
-                Thuế TMĐT (1.5%)
+              <span className="text-slate-400 text-xs font-bold uppercase tracking-wider block font-sans">
+                THUẾ TMĐT
               </span>
               <div className="text-slate-100 text-base lg:text-lg font-bold font-mono">
                 {formatVND(summary.totalTaxAmount || 0)}
