@@ -242,13 +242,11 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
       updateShopSyncStatus(res.shopId, 'SYNCED', res.orderItems.length);
       setAllShops(getShopIntegrations());
 
-      if (onLoadDemo && !isProd) {
-        onLoadDemo(targetPlatform);
-      } else if (onShopChange) {
+      if (onShopChange) {
         onShopChange(res.shopId);
       }
     } catch (e: any) {
-      alert('Lỗi khi đồng bộ API: ' + (e.message || 'Vui lòng thử lại.'));
+      alert(`[LỖI KẾT NỐI API ${targetPlatform.toUpperCase()} ${env}]\n` + (e.message || 'Không thể đồng bộ dữ liệu API Sandbox.'));
     } finally {
       setFileParsing(false);
     }

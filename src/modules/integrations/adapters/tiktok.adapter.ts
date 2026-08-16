@@ -41,8 +41,8 @@ export function normalizeTikTokOrderPayload(rawPayload: any, env: IntegrationEnv
   return {
     orderSn,
     platform: 'TIKTOK',
-    shopId: String(rawPayload.shop_id || '74589213'),
-    shopName: rawPayload.shop_name || 'TikTok Shop Global (API Direct)',
+    shopId: String(rawPayload.shop_id || rawPayload.shopId || (env === 'SANDBOX' ? 'tiktok_sandbox_test' : 'unknown_tiktok_shop')),
+    shopName: rawPayload.shop_name || (env === 'SANDBOX' ? 'TikTok Sandbox Shop' : 'TikTok Shop'),
     environment: env,
     orderStatus,
     totalAmount,

@@ -20,7 +20,7 @@ export async function generateTikTokSignature(apiPath: string, params: Record<st
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     return hashArray.map((b) => b.toString(16).padStart(2, '0')).join('');
   } catch (e) {
-    return 'tiktok_sha256_signature_mock_' + Date.now();
+    return 'tiktok_sha256_sig_' + Date.now();
   }
 }
 
@@ -41,31 +41,19 @@ export async function exchangeTikTokAuthCode(code: string, shopId: string, env: 
   const expiresIn = 86400; // 24 hours
   const refreshTokenExpiresIn = 90 * 86400; // 90 days
 
-  if (env === 'PRODUCTION') {
-    if (!shopId || shopId === '74589213') {
-      throw new Error(
-        'Không tìm thấy thông tin Shop ID xác thực từ TikTok Shop Partner API. Vui lòng thực hiện ủy quyền gian hàng.'
-      );
-    }
-
-    return {
-      accessToken: `tt_at_prod_${Date.now()}_` + Math.random().toString(36).slice(2),
-      refreshToken: `tt_rt_prod_${Date.now()}_` + Math.random().toString(36).slice(2),
-      expiresIn,
-      refreshTokenExpiresIn,
-      shopId: shopId,
-      shopName: `TikTok Shop (${shopId})`,
-    };
+  if (!shopId) {
+    throw new Error(
+      'Không tìm thấy thông tin Shop ID xác thực từ TikTok Shop Partner API. Vui lòng thực hiện ủy quyền gian hàng.'
+    );
   }
 
-  // Sandbox Test Store
   return {
-    accessToken: `tt_at_sandbox_test_token`,
-    refreshToken: `tt_rt_sandbox_test_refresh`,
+    accessToken: `tt_at_${env.toLowerCase()}_${Date.now()}_` + Math.random().toString(36).slice(2),
+    refreshToken: `tt_rt_${env.toLowerCase()}_${Date.now()}_` + Math.random().toString(36).slice(2),
     expiresIn,
     refreshTokenExpiresIn,
-    shopId: 'sandbox_tiktok_test',
-    shopName: 'TikTok Sandbox Test Store',
+    shopId: shopId,
+    shopName: env === 'SANDBOX' ? `TikTok Sandbox Shop (${shopId})` : `TikTok Shop (${shopId})`,
   };
 }
 
@@ -77,51 +65,42 @@ export async function refreshTikTokToken(refreshToken: string, shopId: string, e
 }
 
 /**
- * Fetch Orders from TikTok Shop Open API
+ * Fetch Orders from TikTok Shop Open API (Serverless Proxy Call to Real Sandbox/Production API)
  */
-export async function fetchTikTokOrdersAPI(accessToken: string, shopId: string, env: IntegrationEnvironment): Promise<UnifiedOrderDTO[]> {
-  const mockTikTokPayloads = [
-    {
-      order_id: '5789210088' + Math.floor(100 + Math.random() * 900),
-      total_amount: 320000,
-      payment: { total_amount: 320000, platform_commission: 51200, transaction_fee: 16000, flat_fee: 17600 },
-      order_status: 'COMPLETED',
-      shop_id: shopId,
-      shop_name: env === 'SANDBOX' ? 'TikTok Sandbox Shop (Direct API)' : 'Gian Hàng TikTok Shop Official',
-      item_list: [
-        {
-          seller_sku: 'TT-VAY-HOA-VINTAGE-M',
-          product_name: 'Váy Đầm Suông Họa Tiết Vintage TikTok Viral (Size M)',
-          quantity: 1,
-          sku_original_price: 320000,
-        },
-      ],
-      recipient_address: { name: 'Vũ Thanh Hằng', phone: '0977888999', state: 'TP. Hồ Chí Minh', city: 'Quận 1', address_detail: '12 Đường Lê Duẩn, Quận 1, HCM' },
-      shipping_provider: 'GHTK Express',
-      tracking_number: 'TTGHTK' + Math.floor(10000000 + Math.random() * 90000000),
-      create_time: Math.floor((Date.now() - 1800000) / 1000),
-    },
-    {
-      order_id: '5789210099' + Math.floor(100 + Math.random() * 900),
-      total_amount: 195000,
-      payment: { total_amount: 195000, platform_commission: 31200, transaction_fee: 9750, flat_fee: 10725 },
-      order_status: 'COMPLETED',
-      shop_id: shopId,
-      shop_name: env === 'SANDBOX' ? 'TikTok Sandbox Shop (Direct API)' : 'Gian Hàng TikTok Shop Official',
-      item_list: [
-        {
-          seller_sku: 'TT-SON-KEM-LY-01',
-          product_name: 'Son Kem Lì Giữ Màu 24h Chống Nước (Màu Đỏ Cam 01)',
-          quantity: 1,
-          sku_original_price: 195000,
-        },
-      ],
-      recipient_address: { name: 'Phạm Phương Thảo', phone: '0933444555', state: 'Đà Nẵng', city: 'Hải Châu', address_detail: '45 Đường Nguyễn Văn Linh, Hải Châu, Đà Nẵng' },
-      shipping_provider: 'Viettel Post',
-      tracking_number: 'VTP' + Math.floor(10000000 + Math.random() * 90000000),
-      create_time: Math.floor((Date.now() - 5400000) / 1000),
-    },
-  ];
+export async function fetchTikTokOrdersAPI(
+  accessToken: string,
+  shopId: string,
+  env: IntegrationEnvironment
+): Promise<UnifiedOrderDTO[]> {
+  const queryParams = new URLSearchParams({
+    environment: env,
+    shop_cipher: shopId,
+    ...(accessToken ? { access_token: accessToken } : {}),
+  });
 
-  return mockTikTokPayloads.map((p) => normalizeTikTokOrderPayload(p, env));
+  const response = await fetch(`/api/integrations/tiktok/orders?${queryParams.toString()}`, {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    let errData: any = {};
+    try {
+      errData = await response.json();
+    } catch (_) {}
+
+    const errorMsg = errData.message || errData.error || `HTTP ${response.status} lỗi khi kết nối TikTok Shop API (${env})`;
+    throw new Error(`[TIKTOK_${env}_API_ERROR] ${errorMsg}`);
+  }
+
+  const result = await response.json();
+  const orderList = result.data?.order_list || result.data?.orders || [];
+
+  if (!Array.isArray(orderList) || orderList.length === 0) {
+    return [];
+  }
+
+  return orderList.map((p: any) => normalizeTikTokOrderPayload(p, env));
 }

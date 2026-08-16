@@ -42,8 +42,8 @@ export function normalizeShopeeOrderPayload(rawPayload: any, env: IntegrationEnv
   return {
     orderSn,
     platform: 'SHOPEE',
-    shopId: String(rawPayload.shop_id || '98765432'),
-    shopName: rawPayload.shop_name || 'Shopee Official Store (API Direct)',
+    shopId: String(rawPayload.shop_id || rawPayload.shopId || (env === 'SANDBOX' ? 'shopee_sandbox_test' : 'unknown_shopee_shop')),
+    shopName: rawPayload.shop_name || (env === 'SANDBOX' ? 'Shopee Sandbox Shop' : 'Shopee Store'),
     environment: env,
     orderStatus,
     totalAmount,
