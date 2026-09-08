@@ -4,14 +4,32 @@ const SUPABASE_URL = (import.meta as any).env?.VITE_SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
 export interface AnalyticsPayload {
-  eventName: 'page_view' | 'upload_report' | 'load_demo' | 'export_excel' | 'calc_switch' | 'upgrade_click';
+  eventName: 'page_view' | 'upload_report' | 'load_demo' | 'export_excel' | 'calc_switch' | 'upgrade_click' | 'invoice_mapping_execute' | 'invoice_view';
   platform?: PlatformType | string;
+  featureName?: string;
   summary?: AuditSummary;
   uniqueSkusCount?: number;
   fileName?: string;
   userEmail?: string;
   userTier?: string;
   actionDetails?: string;
+  metadata?: Record<string, any>;
+}
+
+// Compute 30-minute slot (e.g. "09:30 - 10:00")
+function get30MinSlot(date: Date): string {
+  const h = date.getHours().toString().padStart(2, '0');
+  const m = date.getMinutes() < 30 ? '00' : '30';
+  const nextH = date.getMinutes() < 30 ? h : (date.getHours() + 1).toString().padStart(2, '0');
+  const nextM = date.getMinutes() < 30 ? '30' : '00';
+  return `${h}:${m} - ${nextH}:${nextM}`;
+}
+
+// Compute Hourly slot (e.g. "09:00 - 10:00")
+function getHourSlot(date: Date): string {
+  const h = date.getHours().toString().padStart(2, '0');
+  const nextH = (date.getHours() + 1).toString().padStart(2, '0');
+  return `${h}:00 - ${nextH}:00`;
 }
 
 // Record Session Start Time in sessionStorage
@@ -173,15 +191,19 @@ export function trackEventSilent(payload: AnalyticsPayload): void {
       const record = {
         session_id: sessionId,
         event_name: payload.eventName,
+        feature_name: payload.featureName || (payload.actionDetails ? payload.actionDetails.split(':')[1]?.trim() : 'Chung'),
         platform: (payload.platform || 'SHOPEE').toUpperCase(),
         user_email: payload.userEmail || 'Khách Vô Danh',
         user_tier: (payload.userTier || 'FREE').toUpperCase(),
         
-        // Exact Date & Time
+        // Exact Date & Time & Revisit Frequency Slots
         access_timestamp: now.toISOString(),
         formatted_access_time: now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN'),
         session_duration_seconds: duration.seconds,
         session_duration_formatted: duration.formatted,
+        revisit_30min_slot: get30MinSlot(now),
+        revisit_hour_slot: getHourSlot(now),
+        revisit_date_slot: now.toISOString().split('T')[0],
 
         // Location & Demographics
         ip_address: geo.ip,
@@ -215,6 +237,7 @@ export function trackEventSilent(payload: AnalyticsPayload): void {
           action_details: payload.actionDetails || '',
           net_profit: payload.summary?.netProfit || 0,
           negative_profit_orders: payload.summary?.negativeProfitCount || 0,
+          ...(payload.metadata || {}),
         },
       };
 

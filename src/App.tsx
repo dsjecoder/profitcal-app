@@ -40,6 +40,7 @@ import { Sidebar, ModuleType } from './components/Sidebar';
 import { ProfitCalculatorModule } from './components/ProfitCalculatorModule';
 import { ExcelTransformerModule } from './components/ExcelTransformerModule';
 import { SkuSettingsModule } from './components/SkuSettingsModule';
+import { InvoiceMappingModule } from './components/InvoiceMappingModule';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
 import { submitUpgradeRequest, checkEmailProRecord } from './utils/upgradeTracker';
 
@@ -478,6 +479,15 @@ export function App() {
               onPackagingCostChange={handlePackagingCostChange}
               onFeeThresholdChange={handleFeeThresholdChange}
               onOpenCogsModal={() => setShowCogsModal(true)}
+            />
+          )}
+
+          {/* MODULE 5: ÁNH XẠ HÓA ĐƠN GTGT & TỜ KHAI NHẬP KHẨU (/invoice-mapping) */}
+          {(activeModule === 'invoice' || activeModule === '/invoice-mapping') && (
+            <InvoiceMappingModule
+              user={user}
+              orders={orders}
+              platform={platform}
             />
           )}
 

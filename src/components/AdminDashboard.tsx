@@ -745,14 +745,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               {/* Tab 6: Tracking Analytics & Demographics Telemetry */}
               {activeTab === 'analytics' && (
                 <div className="space-y-6">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
                     <div>
-                      <h3 className="font-bold text-white text-sm">Báo Cáo Tracking Analytics, Nhân Khẩu Học & Telemetry Logs</h3>
-                      <p className="text-xs text-slate-400">Theo dõi thời gian thực lượt truy cập, thời lượng, vị trí địa lý, độ phân giải màn hình & thiết bị.</p>
+                      <h3 className="font-bold text-white text-sm">Báo Cáo Tracking Analytics, Tần Suất Quay Lại & Telemetry Logs</h3>
+                      <p className="text-xs text-slate-400">Theo dõi lượt truy cập theo từng Menu, số lần quay lại (30p/Giờ/Ngày), vị trí địa lý & thiết bị.</p>
                     </div>
-                    <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs rounded-xl">
-                      Live Telemetry Stream 🟢
-                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-400 text-xs font-bold shrink-0">Lọc theo Menu:</span>
+                      <select
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          const allLogs = getStoredAnalyticsEvents();
+                          if (val === 'ALL') {
+                            setTelemetryLogs(allLogs);
+                          } else {
+                            setTelemetryLogs(allLogs.filter((l: any) => (l.feature_name || '').toLowerCase().includes(val.toLowerCase()) || (l.action_details || '').toLowerCase().includes(val.toLowerCase())));
+                          }
+                        }}
+                        className="bg-navy-950 border border-navy-700 rounded-xl px-3 py-1.5 text-xs text-emerald-400 font-bold focus:outline-none"
+                      >
+                        <option value="ALL">Tất cả Menu (5 Menu)</option>
+                        <option value="Tính lợi nhuận">Tính lợi nhuận (calc)</option>
+                        <option value="Xử lý file vận chuyển">Xử lý file vận chuyển (transformer)</option>
+                        <option value="Cảnh báo tồn kho">Cảnh báo tồn kho (inventory)</option>
+                        <option value="Cấu hình & giá vốn">Cấu hình & giá vốn (settings)</option>
+                        <option value="Ánh xạ hóa đơn">Ánh xạ hóa đơn GTGT (invoice)</option>
+                      </select>
+
+                      <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs rounded-xl">
+                        Live Stream 🟢
+                      </span>
+                    </div>
                   </div>
 
                   {/* Summary Metric Cards */}
@@ -767,10 +791,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                     <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
                       <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
-                        <span>Lượt Tải File Excel</span>
-                        <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+                        <span>Quay Lại Theo 30 Phút</span>
+                        <Activity className="w-4 h-4 text-emerald-400" />
                       </div>
-                      <div className="text-2xl font-black text-emerald-400 font-mono mt-2">96 lượt</div>
+                      <div className="text-sm font-bold text-emerald-400 font-mono mt-2">09:30-10:00 (Peak Active)</div>
                     </div>
 
                     <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
@@ -795,9 +819,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <table className="w-full text-xs text-left">
                       <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
                         <tr>
-                          <th className="p-3">Sự Kiện & Session ID</th>
+                          <th className="p-3">Sự Kiện & Menu</th>
                           <th className="p-3">Tài Khoản & Gói</th>
-                          <th className="p-3">Thời Lượng Truy Cập</th>
+                          <th className="p-3">Khung Quay Lại (30p / Giờ)</th>
                           <th className="p-3">Vị Trí & IP</th>
                           <th className="p-3">Thiết Bị & Màn Hình</th>
                           <th className="p-3 text-right">Ngày Giờ Chi Tiết</th>
@@ -809,7 +833,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                             <td className="p-3">
                               <div className="font-bold text-white uppercase flex items-center gap-1.5">
                                 <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 text-[10px]">
-                                  {log.platform || 'SHOPEE'}
+                                  {log.feature_name || log.platform || 'MENU'}
                                 </span>
                                 <span>{log.event_name}</span>
                               </div>
@@ -824,8 +848,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                               </span>
                             </td>
                             <td className="p-3 font-mono">
-                              <div className="font-bold text-emerald-400">{log.session_duration_formatted || '3 phút 15 giây'}</div>
-                              <div className="text-slate-500 text-[10px]">({log.session_duration_seconds || 195} giây)</div>
+                              <div className="font-bold text-emerald-400">{log.revisit_30min_slot || '09:30 - 10:00'}</div>
+                              <div className="text-slate-500 text-[10px]">{log.revisit_hour_slot || '09:00 - 10:00'}</div>
                             </td>
                             <td className="p-3">
                               <div className="text-slate-200 font-bold">{log.location || 'Hà Nội, Việt Nam'}</div>

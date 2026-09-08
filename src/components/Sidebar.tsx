@@ -20,15 +20,19 @@ import { UserState } from '../types';
 import { Language } from '../utils/i18n';
 import { getRemainingProDays } from '../utils/storage';
 
+import { trackEventSilent } from '../utils/analytics';
+
 export type ModuleType =
   | 'calc'
   | 'transformer'
   | 'inventory'
   | 'settings'
+  | 'invoice'
   | '/calculator'
   | '/excel-transformer'
   | '/inventory-alert'
-  | '/sku-settings';
+  | '/sku-settings'
+  | '/invoice-mapping';
 
 interface SidebarProps {
   activeModule: ModuleType;
@@ -83,6 +87,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Cấu hình & giá vốn',
       icon: Settings,
       path: '/sku-settings',
+    },
+    {
+      id: 'invoice' as ModuleType,
+      label: 'Ánh xạ hóa đơn GTGT',
+      icon: FileText,
+      path: '/invoice-mapping',
     },
   ];
 
@@ -165,6 +175,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={() => {
                   onSelectModule(item.path as ModuleType);
                   setIsMobileOpen(false);
+                  trackEventSilent({
+                    eventName: 'calc_switch',
+                    actionDetails: `Chuyển menu: ${item.label} (${item.path})`,
+                    userEmail: user.email,
+                    userTier: user.tier,
+                  });
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm min-h-[44px] group relative ${
                   isActive

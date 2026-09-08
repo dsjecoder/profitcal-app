@@ -285,4 +285,106 @@ export interface StockAuditLog {
   timestamp: string;
 }
 
+// --- INVOICE DECLARATION MAPPING TYPES ---
+export interface InvoiceLineItem {
+  id: string;
+  lineNumber: number;
+  productName: string;
+  spec?: string;
+  unit: string;
+  quantity: number;
+  unitPrice: number;
+  totalAmount: number;
+  taxRate?: number;
+  taxAmount?: number;
+  matchedDeclarationId?: string;
+  matchedDeclarationLineId?: string;
+  matchScore?: number;
+  matchStatus?: 'MATCHED' | 'SUGGESTED' | 'REVIEW_NEEDED' | 'CONFLICT' | 'UNMATCHED';
+  matchReason?: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  invoiceNumber: string;
+  invoiceDate: string;
+  sellerName: string;
+  sellerTaxCode: string;
+  buyerName: string;
+  buyerTaxCode: string;
+  totalAmountBeforeTax: number;
+  totalTaxAmount: number;
+  totalAmountWithTax: number;
+  lines: InvoiceLineItem[];
+}
+
+export interface DeclarationLineItem {
+  id: string;
+  declarationNumber: string;
+  declarationDate: string;
+  hsCode?: string;
+  description: string;
+  unit: string;
+  quantity: number;
+  foreignUnitPrice: number;
+  foreignCurrency: string;
+  taxableValueVnd: number;
+  importTaxAmount: number;
+  vatTaxAmount: number;
+  remainingQtyToMatch: number;
+}
+
+export interface UniversalTelemetryEvent {
+  session_id: string;
+  event_name: string;
+  feature_name: string;
+  module_key: string;
+  platform?: string;
+  user_email: string;
+  user_name?: string;
+  user_tier: string;
+  
+  // Timestamps & Duration
+  access_timestamp: string;
+  formatted_access_time: string;
+  session_duration_seconds: number;
+  session_duration_formatted: string;
+
+  // Revisit & Return Frequency Metrics
+  revisit_30min_slot: string; // e.g. "09:30 - 10:00"
+  revisit_hour_slot: string;  // e.g. "09:00 - 10:00"
+  revisit_date_slot: string;  // e.g. "2026-09-08"
+  total_returns_today?: number;
+  total_returns_this_hour?: number;
+  total_returns_this_30min?: number;
+
+  // Location & Demographics
+  ip_address: string;
+  city: string;
+  region: string;
+  country: string;
+  location: string;
+  timezone: string;
+  language: string;
+
+  // Hardware & Client Specs
+  device_type: string;
+  os: string;
+  browser: string;
+  screen_res: string;
+  viewport: string;
+  pixel_ratio?: number;
+  orientation?: string;
+
+  // Traffic Source
+  referrer?: string;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+
+  // Execution Metrics
+  metadata?: Record<string, any>;
+}
+
+
 
