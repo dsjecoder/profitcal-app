@@ -210,15 +210,15 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
     <div className="space-y-4 w-full max-w-7xl mx-auto animate-fade-in text-slate-200 font-sans">
       
       {/* 1. CONTROL CENTER HEADER */}
-      <div className="bg-slate-900 border border-slate-800 px-5 py-3.5 rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-navy-900 border border-navy-800 px-5 py-3.5 rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
             <FileText className="w-5 h-5" />
           </div>
           <div>
             <h1 className="text-base lg:text-lg font-black text-white tracking-tight uppercase flex items-center gap-2">
               <span>ÁNH XẠ HÓA ĐƠN GTGT & TỜ KHAI NHẬP KHẨU</span>
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
                 PRO 2026
               </span>
             </h1>
@@ -233,7 +233,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           <button
             type="button"
             onClick={() => setShowTelemetryDrawer(!showTelemetryDrawer)}
-            className="px-3 py-2 rounded-xl bg-slate-950 hover:bg-slate-800 text-cyan-400 border border-cyan-500/30 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+            className="px-3 py-2 rounded-xl bg-navy-950 hover:bg-navy-800 text-cyan-400 border border-cyan-500/30 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
           >
             <Activity className="w-3.5 h-3.5" />
             <span>📊 Nhật ký & Telemetry Tracking</span>
@@ -243,7 +243,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             type="button"
             disabled={isProcessing}
             onClick={handleExecuteMapping}
-            className="px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md disabled:opacity-50"
+            className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-navy-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md disabled:opacity-50"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isProcessing ? 'animate-spin' : ''}`} />
             <span>{isProcessing ? 'Đang ánh xạ...' : '⚡ Thực hiện Ánh Xạ'}</span>
@@ -252,24 +252,24 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
       </div>
 
       {/* 2. DUAL INPUT FILE SOURCE PANEL (COMPACT DROPZONE) */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      <div className="bg-navy-900 border border-navy-800 rounded-2xl p-4 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
         
         {/* Dropzone 1: Hóa đơn bán hàng PDF/Excel */}
-        <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+        <div className="p-3.5 rounded-xl bg-navy-950/70 border border-navy-800/80 space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-emerald-400" />
+              <FileText className="w-3.5 h-3.5 text-cyan-400" />
               <span>1. Hóa đơn bán hàng GTGT (PDF / Excel / XML)</span>
             </span>
             <span className="text-[10px] text-slate-400 font-mono">Softdreams / EasyInvoice</span>
           </div>
 
-          <div className="border border-dashed border-slate-700 hover:border-slate-600 rounded-xl p-2.5 bg-slate-900/60 flex items-center justify-between gap-2">
+          <div className="border border-dashed border-navy-700 hover:border-navy-600 rounded-xl p-2.5 bg-navy-900/60 flex items-center justify-between gap-2">
             <span className="text-slate-300 truncate font-mono text-[11px]">{invoiceFileName}</span>
             <button
               type="button"
               onClick={() => alert('Chọn file Hóa đơn PDF / Excel mới')}
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded bg-navy-800 hover:bg-navy-700 text-slate-200 text-[11px] font-bold shrink-0 transition-colors"
             >
               Đổi file HĐ
             </button>
@@ -277,7 +277,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         </div>
 
         {/* Dropzone 2: Tờ khai hải quan nhập khẩu Excel VNACCS */}
-        <div className="p-3.5 rounded-xl bg-slate-950/70 border border-slate-800/80 space-y-2">
+        <div className="p-3.5 rounded-xl bg-navy-950/70 border border-navy-800/80 space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
               <FileSpreadsheet className="w-3.5 h-3.5 text-cyan-400" />
@@ -286,12 +286,12 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <span className="text-[10px] text-slate-400 font-mono">TKN / HANG</span>
           </div>
 
-          <div className="border border-dashed border-slate-700 hover:border-slate-600 rounded-xl p-2.5 bg-slate-900/60 flex items-center justify-between gap-2">
+          <div className="border border-dashed border-navy-700 hover:border-navy-600 rounded-xl p-2.5 bg-navy-900/60 flex items-center justify-between gap-2">
             <span className="text-slate-300 truncate font-mono text-[11px]">{declarationFileName}</span>
             <button
               type="button"
               onClick={() => alert('Chọn file Tờ khai Excel mới')}
-              className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-200 text-[11px] font-bold shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded bg-navy-800 hover:bg-navy-700 text-slate-200 text-[11px] font-bold shrink-0 transition-colors"
             >
               Đổi file Tờ khai
             </button>
@@ -303,7 +303,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
       {/* 3. FINANCIAL & MATCHING KPI STRIP */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 font-mono">
         
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block font-sans">
             TỔNG DÒNG HÀNG
           </span>
@@ -312,7 +312,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
           <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block font-sans">
             KHỚP 100% (🟢)
           </span>
@@ -321,7 +321,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
           <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block font-sans">
             GỢI Ý REVIEW (🟡)
           </span>
@@ -330,7 +330,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
           <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider block font-sans">
             MÂU THUẪN (⚠️)
           </span>
@@ -339,7 +339,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-slate-800">
+        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
           <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block font-sans">
             TỔNG TIỀN HÓA ĐƠN
           </span>
@@ -348,7 +348,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-slate-900 border border-emerald-500/40 text-emerald-400">
+        <div className="p-2.5 rounded-xl bg-navy-900 border border-cyan-500/40 text-cyan-400">
           <span className="text-[10px] font-bold uppercase tracking-wider block font-sans text-slate-300">
             TỔNG THUẾ GTGT
           </span>
@@ -360,7 +360,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
       </div>
 
       {/* 4. INVOICE MAPPING DATA GRID */}
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
+      <div className="bg-navy-900 border border-navy-800 rounded-2xl p-4 shadow-xl space-y-3">
         
         {/* Toolbar: Search + Filter Tabs */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">

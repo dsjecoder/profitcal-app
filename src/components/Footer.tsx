@@ -3,7 +3,7 @@ import { ShieldCheck, Zap, Lock, Heart } from 'lucide-react';
 
 export const Footer: React.FC = () => {
   return (
-    <footer className="mt-auto w-full pt-12 pb-8 px-6 lg:px-8 border-t border-slate-800 bg-[#0a0d14] text-slate-400 text-xs">
+    <footer className="mt-auto w-full pt-12 pb-8 px-6 lg:px-8 border-t border-navy-800 bg-navy-950 text-slate-400 text-xs">
       <div className="w-full grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
         
         {/* Cột 1: ProfitCal Brand */}

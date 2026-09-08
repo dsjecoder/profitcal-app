@@ -393,7 +393,7 @@ export function App() {
   }, []);
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-[#0a0d14] text-white selection:bg-emerald-500 selection:text-navy-950 font-sans relative">
+    <div className="flex h-screen w-full overflow-hidden bg-[#0b172a] text-white selection:bg-cyan-500 selection:text-navy-950 font-sans relative">
       
       {/* 1. SIDEBAR TRÁI - Cố định không cuộn */}
       <Sidebar
@@ -410,7 +410,7 @@ export function App() {
       />
 
       {/* 2. KHU VỰC NỘI DUNG CHÍNH - Tự động cuộn dọc khi dài */}
-      <main className="flex-1 h-full overflow-y-auto flex flex-col justify-between bg-[#0a0d14]">
+      <main className="flex-1 h-full overflow-y-auto flex flex-col justify-between bg-[#0b172a]">
         
         {/* CONTAINER CHỨA UI CỦA TỪNG TAB */}
         <div className="p-6 lg:p-8 flex-1 w-full max-w-7xl mx-auto space-y-8">
@@ -494,7 +494,7 @@ export function App() {
         </div>
 
         {/* FOOTER DASHBOARD CỐ ĐỊNH Ở ĐÁY MÀN HÌNH NỘI DUNG */}
-        <footer className="w-full border-t border-slate-800/80 bg-[#07090e] p-8 mt-auto">
+        <footer className="w-full border-t border-navy-800 bg-[#081323] p-8 mt-auto">
           <Footer />
         </footer>
       </main>

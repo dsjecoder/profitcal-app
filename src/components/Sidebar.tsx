@@ -99,9 +99,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
   return (
     <>
       {/* Mobile Top Header Toggle Bar */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-slate-950/95 backdrop-blur-md border-b border-slate-800 z-40 px-4 flex items-center justify-between">
+      <div className="lg:hidden fixed top-0 left-0 right-0 h-16 bg-navy-950/95 backdrop-blur-md border-b border-navy-800 z-40 px-4 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+          <div className="w-8 h-8 rounded-lg bg-cyan-500/20 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
             ⚡
           </div>
           <span className="font-bold text-lg text-white">ProfitCal</span>
@@ -109,7 +109,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="p-2 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white"
+          className="p-2 rounded-xl bg-navy-900 border border-navy-700 text-slate-300 hover:text-white"
         >
           {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
@@ -119,21 +119,21 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen(false)}
-          className="lg:hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-40 animate-fade-in"
+          className="lg:hidden fixed inset-0 bg-navy-950/80 backdrop-blur-sm z-40 animate-fade-in"
         />
       )}
 
       {/* Fixed Left Sidebar Container */}
       <aside
-        className={`fixed lg:static top-0 left-0 bottom-0 z-50 flex flex-col justify-between bg-slate-950 border-r border-slate-800 transition-all duration-300 select-none ${
+        className={`fixed lg:static top-0 left-0 bottom-0 z-50 flex flex-col justify-between bg-navy-950 border-r border-navy-800 transition-all duration-300 select-none ${
           isCollapsed ? 'w-20' : 'w-64'
         } ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}
       >
         {/* Top Logo & System Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+        <div className="p-4 border-b border-navy-800 flex items-center justify-between">
           {!isCollapsed && (
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xl shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xl shadow-sm">
                 ⚡
               </div>
               <div>
@@ -144,14 +144,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           {isCollapsed && (
-            <div className="w-10 h-10 mx-auto rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xl">
+            <div className="w-10 h-10 mx-auto rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold text-xl">
               ⚡
             </div>
           )}
 
           <button
             onClick={() => setIsCollapsed(!isCollapsed)}
-            className="hidden lg:flex p-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-400 hover:text-white transition-colors border border-slate-800"
+            className="hidden lg:flex p-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-400 hover:text-white transition-colors border border-navy-800"
             title={isCollapsed ? 'Mở rộng thanh điều hướng' : 'Thu gọn thanh điều hướng'}
           >
             {isCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
@@ -182,13 +182,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
                     userTier: user.tier,
                   });
                 }}
-                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium transition-all text-sm min-h-[44px] group relative ${
+                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-bold transition-all min-h-[44px] ${
                   isActive
-                    ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-semibold'
-                    : 'text-slate-300 hover:bg-slate-900 hover:text-white border border-transparent'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
+                    : 'text-slate-300 hover:bg-navy-900 hover:text-white border border-transparent'
                 }`}
               >
-                <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-emerald-400' : 'text-slate-400 group-hover:text-slate-200'}`} />
+                <Icon className={`w-5 h-5 shrink-0 ${isActive ? 'text-cyan-400' : 'text-slate-400 group-hover:text-slate-200'}`} />
 
                 {!isCollapsed && (
                   <span className="truncate">{item.label}</span>
@@ -199,13 +199,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Bottom User Account & Language Section */}
-        <div className="p-3 border-t border-slate-800 space-y-2 bg-slate-950">
+        <div className="p-3 border-t border-navy-800 space-y-2 bg-navy-950">
           
           {/* Direct API Integration Button */}
           {onOpenApiIntegration && !isCollapsed && (
             <button
               onClick={onOpenApiIntegration}
-              className="w-full py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-medium text-xs border border-slate-700 transition-colors flex items-center justify-center gap-2 min-h-[40px]"
+              className="w-full py-2 px-3 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-200 font-medium text-xs border border-navy-700 transition-colors flex items-center justify-center gap-2 min-h-[40px]"
             >
               <span>🔌 Tích hợp API Shopee / TikTok</span>
             </button>
@@ -213,13 +213,13 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
           {/* Language Switcher */}
           {!isCollapsed ? (
-            <div className="bg-slate-900 border border-slate-800 p-1 rounded-xl flex items-center justify-between text-xs font-bold">
+            <div className="bg-navy-900 border border-navy-800 p-1 rounded-xl flex items-center justify-between text-xs font-bold">
               <span className="text-slate-400 text-[11px] px-2">Ngôn ngữ:</span>
               <div className="flex gap-1">
                 <button
                   onClick={() => onLanguageChange('vi')}
                   className={`px-2 py-1 rounded-lg transition-all ${
-                    currentLang === 'vi' ? 'bg-emerald-500 text-navy-950' : 'text-slate-400'
+                    currentLang === 'vi' ? 'bg-cyan-500 text-navy-950' : 'text-slate-400'
                   }`}
                 >
                   🇻🇳 VN
@@ -227,7 +227,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <button
                   onClick={() => onLanguageChange('en')}
                   className={`px-2 py-1 rounded-lg transition-all ${
-                    currentLang === 'en' ? 'bg-emerald-500 text-navy-950' : 'text-slate-400'
+                    currentLang === 'en' ? 'bg-cyan-500 text-navy-950' : 'text-slate-400'
                   }`}
                 >
                   🇬🇧 EN
@@ -251,7 +251,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="bg-navy-900 border border-navy-800 rounded-2xl p-2.5 flex items-center justify-between">
             {user.isLoggedIn ? (
               <div className="flex items-center space-x-2 overflow-hidden">
-                <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 font-bold text-xs shrink-0">
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
                 {!isCollapsed && (
@@ -268,7 +268,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 onClick={onOpenAuth}
                 className="w-full py-2 px-3 rounded-xl bg-navy-800 hover:bg-navy-700 text-slate-200 font-bold text-xs flex items-center justify-center gap-2 min-h-[44px]"
               >
-                <User className="w-4 h-4 text-emerald-400" />
+                <User className="w-4 h-4 text-cyan-400" />
                 {!isCollapsed && <span>Đăng Nhập</span>}
               </button>
             )}
