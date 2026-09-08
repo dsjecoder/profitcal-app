@@ -321,30 +321,30 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
   };
 
   return (
-    <div className="space-y-4 w-full max-w-7xl mx-auto animate-fade-in text-slate-200">
+    <div className="space-y-4 w-full max-w-7xl mx-auto animate-fade-in text-slate-800">
       
       {/* 1. COMPACT CONTROL CENTER HEADER */}
-      <div className="bg-slate-900 border border-slate-800 px-5 py-3 rounded-2xl shadow-lg flex items-center justify-between gap-4">
+      <div className="bg-white border border-sky-200 px-5 py-3 rounded-2xl shadow-md flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-base lg:text-lg font-black text-white tracking-tight uppercase">
+          <h1 className="text-base lg:text-lg font-extrabold text-slate-900 tracking-tight uppercase">
             TÍNH TOÁN LỢI NHUẬN
           </h1>
           {activeDataset && (
-            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-mono font-medium bg-slate-800 text-slate-400 border border-slate-700">
+            <span className="hidden sm:inline-block px-2.5 py-0.5 rounded-full text-[11px] font-mono font-extrabold bg-sky-100 text-sky-800 border border-sky-200">
               {platform === 'shopee' ? 'Shopee' : 'TikTok'}
             </span>
           )}
         </div>
 
         {/* Top-Level Mode Selector */}
-        <div className="bg-slate-950 p-0.5 rounded-xl border border-slate-800 flex items-center gap-1 text-xs font-bold shadow-inner">
+        <div className="bg-sky-50 p-0.5 rounded-xl border border-sky-200 flex items-center gap-1 text-xs font-extrabold shadow-inner">
           <button
             type="button"
             onClick={() => setCalcMode('single')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
               calcMode === 'single'
-                ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-sky-600 text-white border border-sky-600 shadow-sm'
+                : 'text-slate-600 hover:text-sky-700 font-bold'
             }`}
           >
             <Calculator className="w-3 h-3" />
@@ -355,8 +355,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             onClick={() => setCalcMode('batch')}
             className={`px-3 py-1.5 rounded-lg transition-all flex items-center gap-1.5 ${
               calcMode === 'batch'
-                ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
-                : 'text-slate-400 hover:text-white'
+                ? 'bg-sky-600 text-white border border-sky-600 shadow-sm'
+                : 'text-slate-600 hover:text-sky-700 font-bold'
             }`}
           >
             <Layers className="w-3 h-3" />
@@ -375,15 +375,15 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
           <div className="lg:col-span-6 space-y-4">
             
             {/* THÔNG TIN BÁN HÀNG */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-              <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-                <span className="text-xs font-bold text-white uppercase tracking-wider">
+            <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-md space-y-3">
+              <div className="flex items-center justify-between border-b border-sky-100 pb-2">
+                <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
                   1. Thông tin bán hàng
                 </span>
                 <button
                   type="button"
                   onClick={handleResetSingle}
-                  className="text-[11px] text-slate-400 hover:text-white flex items-center gap-1 transition-colors"
+                  className="text-[11px] text-slate-500 hover:text-sky-700 flex items-center gap-1 transition-colors font-bold"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Đặt lại</span>
@@ -397,14 +397,14 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     placeholder="Tên sản phẩm / Mã SKU (không bắt buộc)"
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-600"
+                    className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 shadow-sm font-medium"
                   />
                 </div>
 
                 <div className="grid grid-cols-3 gap-2">
                   <div className="col-span-2">
-                    <label className="text-slate-400 text-[11px] block mb-1">
-                      Giá bán / cái <span className="text-rose-400">*</span>:
+                    <label className="text-slate-600 text-[11px] font-extrabold block mb-1">
+                      Giá bán / cái <span className="text-rose-500">*</span>:
                     </label>
                     <div className="relative">
                       <input
@@ -413,16 +413,16 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                         step="1000"
                         value={sellPriceInput}
                         onChange={(e) => setSellPriceInput(e.target.value)}
-                        className={`w-full bg-slate-950 border rounded-xl px-3 py-1.5 text-right font-mono font-bold text-sm text-emerald-400 focus:outline-none ${
-                          isSellPriceInvalid ? 'border-rose-500' : 'border-slate-800 focus:border-emerald-500'
+                        className={`w-full bg-white border rounded-xl px-3 py-1.5 text-right font-mono font-extrabold text-sm text-sky-700 focus:outline-none shadow-sm ${
+                          isSellPriceInvalid ? 'border-rose-500' : 'border-sky-300 focus:border-sky-500'
                         }`}
                       />
-                      <span className="absolute right-3 top-2 text-xs text-slate-500 pointer-events-none">đ</span>
+                      <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">đ</span>
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-slate-400 text-[11px] block mb-1">
+                    <label className="text-slate-600 text-[11px] font-extrabold block mb-1">
                       Số lượng:
                     </label>
                     <input
@@ -430,7 +430,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       min="1"
                       value={quantityInput}
                       onChange={(e) => setQuantityInput(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-2.5 py-1.5 text-center font-mono font-bold text-sm text-slate-200 focus:outline-none"
+                      className="w-full bg-white border border-sky-300 rounded-xl px-2.5 py-1.5 text-center font-mono font-extrabold text-sm text-slate-900 focus:outline-none shadow-sm"
                     />
                   </div>
                 </div>
@@ -438,15 +438,15 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             </div>
 
             {/* CHI PHÍ & PHÍ SÀN */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-3">
-              <span className="text-xs font-bold text-white uppercase tracking-wider block border-b border-slate-800/80 pb-2">
+            <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-md space-y-3">
+              <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider block border-b border-sky-100 pb-2">
                 2. Chi phí & Phí sàn
               </span>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <label className="text-slate-400 text-[11px] block mb-1">
-                    Giá vốn / cái <span className="text-rose-400">*</span>:
+                  <label className="text-slate-600 text-[11px] font-semibold block mb-1">
+                    Giá vốn / cái <span className="text-rose-500">*</span>:
                   </label>
                   <div className="relative">
                     <input
@@ -455,14 +455,14 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       step="1000"
                       value={costPriceInput}
                       onChange={(e) => setCostPriceInput(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-200 focus:outline-none focus:border-slate-600"
+                      className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-500 pointer-events-none">đ</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">đ</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-400 text-[11px] block mb-1">
+                  <label className="text-slate-600 text-[11px] font-semibold block mb-1">
                     Bao bì đóng gói / cái:
                   </label>
                   <div className="relative">
@@ -472,14 +472,14 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       step="500"
                       value={singlePackCostInput}
                       onChange={(e) => setSinglePackCostInput(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-200 focus:outline-none focus:border-slate-600"
+                      className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-500 pointer-events-none">đ</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">đ</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-400 text-[11px] block mb-1">
+                  <label className="text-slate-600 text-[11px] font-semibold block mb-1">
                     Phí sàn TMĐT (%):
                   </label>
                   <div className="relative">
@@ -490,14 +490,14 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       step="0.5"
                       value={platformFeePctInput}
                       onChange={(e) => setPlatformFeePctInput(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-amber-400 focus:outline-none focus:border-amber-500"
+                      className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-extrabold text-xs text-amber-700 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-500 pointer-events-none">%</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">%</span>
                   </div>
                 </div>
 
                 <div>
-                  <label className="text-slate-400 text-[11px] block mb-1">
+                  <label className="text-slate-600 text-[11px] font-semibold block mb-1">
                     Thuế TMĐT (1.5%):
                   </label>
                   <div className="relative">
@@ -508,9 +508,9 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       step="0.1"
                       value={taxPctInput}
                       onChange={(e) => setTaxPctInput(e.target.value)}
-                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-200 focus:outline-none focus:border-slate-600"
+                      className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-500 pointer-events-none">%</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">%</span>
                   </div>
                 </div>
               </div>
@@ -521,31 +521,31 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
           {/* CỘT PHẢI (6 COLS): KẾT QUẢ HERO & BÓC TÁCH */}
           <div className="lg:col-span-6 space-y-4">
             
-            <div className={`p-5 rounded-2xl border shadow-xl space-y-3 transition-all ${
+            <div className={`p-5 rounded-2xl border shadow-md space-y-3 transition-all bg-white ${
               singleCalculations.isProfitable
-                ? 'bg-slate-900 border-emerald-500/40'
+                ? 'border-emerald-300'
                 : singleCalculations.isLoss
-                ? 'bg-slate-900 border-rose-500/50'
-                : 'bg-slate-900 border-slate-700'
+                ? 'border-rose-300'
+                : 'border-sky-200'
             }`}>
               
               <div className="flex items-center justify-between gap-3">
-                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider font-sans">
+                <span className="text-[11px] font-extrabold text-slate-600 uppercase tracking-wider font-sans">
                   LỢI NHUẬN RÒNG ƯỚC TÍNH
                 </span>
 
                 {singleCalculations.isProfitable ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center gap-1 font-sans">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center gap-1 font-sans shadow-sm">
                     <CheckCircle2 className="w-3 h-3" />
                     <span>🟢 Có lãi</span>
                   </span>
                 ) : singleCalculations.isLoss ? (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-400 border border-rose-500/40 flex items-center gap-1 font-sans">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-rose-50 text-rose-700 border border-rose-200 flex items-center gap-1 font-sans shadow-sm">
                     <AlertCircle className="w-3 h-3" />
                     <span>🔴 Bán lỗ</span>
                   </span>
                 ) : (
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-800 text-slate-300 font-sans">
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-slate-100 text-slate-700 font-sans border border-slate-200">
                     Hòa vốn
                   </span>
                 )}
@@ -553,22 +553,22 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
               <div className="py-1">
                 <div className={`text-4xl lg:text-5xl font-black font-mono tracking-tight ${
-                  singleCalculations.isProfitable ? 'text-[#10b981]' : singleCalculations.isLoss ? 'text-rose-400' : 'text-slate-200'
+                  singleCalculations.isProfitable ? 'text-emerald-600' : singleCalculations.isLoss ? 'text-rose-600' : 'text-slate-800'
                 }`}>
                   {formatVND(singleCalculations.netProfit)}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-slate-800 font-mono text-xs">
+              <div className="grid grid-cols-2 gap-3 pt-3 border-t border-sky-100 font-mono text-xs">
                 <div>
-                  <span className="text-slate-400 font-sans block text-[11px]">Tỷ suất lợi nhuận:</span>
-                  <span className={`text-lg font-bold ${singleCalculations.isProfitable ? 'text-white' : 'text-rose-400'}`}>
+                  <span className="text-slate-500 font-sans block text-[11px] font-medium">Tỷ suất lợi nhuận:</span>
+                  <span className={`text-lg font-extrabold ${singleCalculations.isProfitable ? 'text-slate-900' : 'text-rose-600'}`}>
                     {singleCalculations.profitMargin.toFixed(1)}%
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-400 font-sans block text-[11px]">Thực nhận ví:</span>
-                  <span className="text-lg font-bold text-slate-200">
+                  <span className="text-slate-500 font-sans block text-[11px] font-medium">Thực nhận ví:</span>
+                  <span className="text-lg font-extrabold text-slate-900">
                     {formatVND(singleCalculations.netSettlement)}
                   </span>
                 </div>
@@ -576,30 +576,30 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             </div>
 
             {/* BÓC TÁCH CHI PHÍ */}
-            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl space-y-2 text-xs font-mono">
-              <div className="flex items-center justify-between pb-1.5 border-b border-slate-800">
-                <span className="text-slate-300 font-sans">(+) Doanh thu bán hàng:</span>
-                <span className="font-bold text-slate-100">{formatVND(singleCalculations.grossRevenue)}</span>
+            <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-md space-y-2 text-xs font-mono">
+              <div className="flex items-center justify-between pb-1.5 border-b border-sky-100">
+                <span className="text-slate-700 font-sans font-bold">(+) Doanh thu bán hàng:</span>
+                <span className="font-extrabold text-slate-900">{formatVND(singleCalculations.grossRevenue)}</span>
               </div>
-              <div className="flex items-center justify-between text-slate-400">
+              <div className="flex items-center justify-between text-slate-600 font-medium">
                 <span className="font-sans">(−) Phí sàn ({platformFeePct}%):</span>
                 <span>− {formatVND(singleCalculations.platformFeeAmount)}</span>
               </div>
-              <div className="flex items-center justify-between text-slate-400">
+              <div className="flex items-center justify-between text-slate-600 font-medium">
                 <span className="font-sans">(−) Thuế TMĐT ({taxPct}%):</span>
                 <span>− {formatVND(singleCalculations.taxAmount)}</span>
               </div>
-              <div className="flex items-center justify-between text-slate-400">
+              <div className="flex items-center justify-between text-slate-600 font-medium">
                 <span className="font-sans">(−) Giá vốn COGS:</span>
                 <span>− {formatVND(singleCalculations.totalCogs)}</span>
               </div>
-              <div className="flex items-center justify-between text-slate-400">
+              <div className="flex items-center justify-between text-slate-600 font-medium">
                 <span className="font-sans">(−) Chi phí bao bì:</span>
                 <span>− {formatVND(singleCalculations.totalPackaging)}</span>
               </div>
-              <div className="flex items-center justify-between pt-2 border-t border-slate-800 font-bold">
-                <span className="font-sans text-white">(=) LỢI NHUẬN RÒNG:</span>
-                <span className={singleCalculations.isProfitable ? 'text-emerald-400' : 'text-rose-400'}>
+              <div className="flex items-center justify-between pt-2 border-t border-sky-200 font-bold">
+                <span className="font-sans text-slate-900 font-extrabold">(=) LỢI NHUẬN RÒNG:</span>
+                <span className={singleCalculations.isProfitable ? 'text-emerald-600 font-black' : 'text-rose-600 font-black'}>
                   {formatVND(singleCalculations.netProfit)}
                 </span>
               </div>
@@ -617,7 +617,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
         <div className="space-y-4">
           
           {/* COMPACT DATA SOURCE SELECTOR PANEL (1 PANEL ULTRA-COMPACT) */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 shadow-lg space-y-2.5">
+          <div className="bg-white border border-sky-200 rounded-2xl p-3.5 shadow-md space-y-2.5">
             
             {/* 6 Radio Choices in 1 compact grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-1.5 text-xs font-sans">
@@ -626,8 +626,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <label
                 className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all ${
                   selectedSource === 'file_shopee'
-                    ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold shadow-sm'
-                    : 'bg-slate-950/70 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                    ? 'bg-sky-50 border-2 border-sky-500 text-sky-900 font-extrabold shadow-sm'
+                    : 'bg-white border-sky-200 text-slate-700 hover:border-sky-300 font-semibold'
                 }`}
               >
                 <input
@@ -635,7 +635,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   name="mainDataSourceRadio"
                   checked={selectedSource === 'file_shopee'}
                   onChange={() => handleSourceSelect('file_shopee')}
-                  className="w-3.5 h-3.5 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700"
+                  className="w-3.5 h-3.5 text-sky-600 focus:ring-0 bg-white border-sky-300"
                 />
                 <span className="truncate">File Shopee</span>
               </label>
@@ -644,8 +644,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <label
                 className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all ${
                   selectedSource === 'file_tiktok'
-                    ? 'bg-emerald-500/15 border-emerald-500 text-white font-bold shadow-sm'
-                    : 'bg-slate-950/70 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                    ? 'bg-sky-50 border-2 border-sky-500 text-sky-900 font-extrabold shadow-sm'
+                    : 'bg-white border-sky-200 text-slate-700 hover:border-sky-300 font-semibold'
                 }`}
               >
                 <input
@@ -653,7 +653,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   name="mainDataSourceRadio"
                   checked={selectedSource === 'file_tiktok'}
                   onChange={() => handleSourceSelect('file_tiktok')}
-                  className="w-3.5 h-3.5 text-emerald-500 focus:ring-0 bg-slate-950 border-slate-700"
+                  className="w-3.5 h-3.5 text-sky-600 focus:ring-0 bg-white border-sky-300"
                 />
                 <span className="truncate">File TikTok</span>
               </label>
@@ -662,8 +662,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <label
                 className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all ${
                   selectedSource === 'api_shopee_test'
-                    ? 'bg-amber-500/15 border-amber-500 text-white font-bold shadow-sm'
-                    : 'bg-slate-950/70 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                    ? 'bg-amber-50 border-2 border-amber-500 text-amber-900 font-extrabold shadow-sm'
+                    : 'bg-white border-sky-200 text-slate-700 hover:border-sky-300 font-semibold'
                 }`}
               >
                 <input
@@ -671,7 +671,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   name="mainDataSourceRadio"
                   checked={selectedSource === 'api_shopee_test'}
                   onChange={() => handleSourceSelect('api_shopee_test')}
-                  className="w-3.5 h-3.5 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700"
+                  className="w-3.5 h-3.5 text-amber-600 focus:ring-0 bg-white border-sky-300"
                 />
                 <span className="truncate">Shopee — Test</span>
               </label>
@@ -680,8 +680,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <label
                 className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all ${
                   selectedSource === 'api_tiktok_test'
-                    ? 'bg-amber-500/15 border-amber-500 text-white font-bold shadow-sm'
-                    : 'bg-slate-950/70 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                    ? 'bg-amber-50 border-2 border-amber-500 text-amber-900 font-extrabold shadow-sm'
+                    : 'bg-white border-sky-200 text-slate-700 hover:border-sky-300 font-semibold'
                 }`}
               >
                 <input
@@ -689,7 +689,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   name="mainDataSourceRadio"
                   checked={selectedSource === 'api_tiktok_test'}
                   onChange={() => handleSourceSelect('api_tiktok_test')}
-                  className="w-3.5 h-3.5 text-amber-500 focus:ring-0 bg-slate-950 border-slate-700"
+                  className="w-3.5 h-3.5 text-amber-600 focus:ring-0 bg-white border-sky-300"
                 />
                 <span className="truncate">TikTok — Test</span>
               </label>
@@ -698,8 +698,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <label
                 className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all ${
                   selectedSource === 'api_shopee_prod'
-                    ? 'bg-cyan-500/15 border-cyan-500 text-white font-bold shadow-sm'
-                    : 'bg-slate-950/70 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                    ? 'bg-sky-50 border-2 border-sky-600 text-sky-950 font-extrabold shadow-sm'
+                    : 'bg-white border-sky-200 text-slate-700 hover:border-sky-300 font-semibold'
                 }`}
               >
                 <input
@@ -707,7 +707,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   name="mainDataSourceRadio"
                   checked={selectedSource === 'api_shopee_prod'}
                   onChange={() => handleSourceSelect('api_shopee_prod')}
-                  className="w-3.5 h-3.5 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700"
+                  className="w-3.5 h-3.5 text-sky-600 focus:ring-0 bg-white border-sky-300"
                 />
                 <span className="truncate">Shopee — Prod</span>
               </label>
@@ -716,8 +716,8 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               <label
                 className={`flex items-center gap-2 p-2 rounded-xl border cursor-pointer transition-all ${
                   selectedSource === 'api_tiktok_prod'
-                    ? 'bg-cyan-500/15 border-cyan-500 text-white font-bold shadow-sm'
-                    : 'bg-slate-950/70 border-slate-800/80 text-slate-300 hover:border-slate-700'
+                    ? 'bg-sky-50 border-2 border-sky-600 text-sky-950 font-extrabold shadow-sm'
+                    : 'bg-white border-sky-200 text-slate-700 hover:border-sky-300 font-semibold'
                 }`}
               >
                 <input
@@ -725,7 +725,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                   name="mainDataSourceRadio"
                   checked={selectedSource === 'api_tiktok_prod'}
                   onChange={() => handleSourceSelect('api_tiktok_prod')}
-                  className="w-3.5 h-3.5 text-cyan-500 focus:ring-0 bg-slate-950 border-slate-700"
+                  className="w-3.5 h-3.5 text-sky-600 focus:ring-0 bg-white border-sky-300"
                 />
                 <span className="truncate">TikTok — Prod</span>
               </label>
@@ -733,7 +733,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
             </div>
 
             {/* COMPACT CONTEXTUAL ACTION ROW */}
-            <div className="border-t border-slate-800/80 pt-2.5">
+            <div className="border-t border-sky-200 pt-2.5">
               
               {/* File Shopee / File TikTok Compact Dropzone */}
               {(selectedSource === 'file_shopee' || selectedSource === 'file_tiktok') && (
@@ -755,17 +755,17 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     onDragOver={handleDrag}
                     onDrop={(e) => handleDrop(e, selectedSource === 'file_shopee' ? 'shopee' : 'tiktok')}
                     className={`border border-dashed rounded-xl px-4 py-2.5 flex items-center justify-between gap-3 text-xs transition-all ${
-                      dragActive ? 'border-emerald-500 bg-emerald-950/20' : 'border-slate-800 hover:border-slate-700 bg-slate-950/60'
+                      dragActive ? 'border-sky-500 bg-sky-100/60' : 'border-sky-300 hover:border-sky-400 bg-sky-50/50'
                     }`}
                   >
-                    <div className="flex items-center gap-2 text-slate-400">
-                      <FileSpreadsheet className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="flex items-center gap-2 text-slate-600 font-medium">
+                      <FileSpreadsheet className="w-4 h-4 text-sky-600 shrink-0" />
                       <span>Kéo thả file {selectedSource === 'file_shopee' ? 'Shopee' : 'TikTok'} vào đây (.xlsx, .xls, .csv) hoặc</span>
                     </div>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="px-3.5 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-sm shrink-0 transition-colors"
+                      className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs shadow-sm shrink-0 transition-colors"
                     >
                       Chọn file {selectedSource === 'file_shopee' ? 'Shopee' : 'TikTok'}
                     </button>
@@ -775,15 +775,15 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
 
               {/* API Test (Shopee / TikTok) Compact Strip */}
               {(selectedSource === 'api_shopee_test' || selectedSource === 'api_tiktok_test') && (
-                <div className="p-2.5 rounded-xl bg-slate-950/60 border border-amber-500/20 flex items-center justify-between gap-3 text-xs animate-fade-in">
-                  <span className="text-slate-400">
+                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 flex items-center justify-between gap-3 text-xs animate-fade-in">
+                  <span className="text-amber-900 font-semibold">
                     Môi trường Test (Sandbox) • Dữ liệu giả lập an toàn để kiểm toán
                   </span>
                   <button
                     type="button"
                     disabled={fileParsing}
                     onClick={() => handleExecuteApiSync(false)}
-                    className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 shrink-0 transition-colors shadow-sm"
+                    className="px-3.5 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white font-extrabold text-xs flex items-center gap-1.5 shrink-0 transition-colors shadow-sm"
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${fileParsing ? 'animate-spin' : ''}`} />
                     <span>{fileParsing ? 'Đang kết nối...' : '⚡ Đồng bộ dữ liệu Test'}</span>
@@ -795,18 +795,18 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               {(selectedSource === 'api_shopee_prod' || selectedSource === 'api_tiktok_prod') && (
                 <div className="animate-fade-in">
                   {relevantShops.length === 0 ? (
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-cyan-500/20 flex flex-wrap items-center justify-between gap-3 text-xs">
-                      <div className="flex items-center gap-2 text-slate-300">
-                        <span className="text-cyan-400 font-bold uppercase">
+                    <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 flex flex-wrap items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2 text-slate-700 font-medium">
+                        <span className="text-sky-800 font-extrabold uppercase">
                           {selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok Shop'} Production:
                         </span>
-                        <span className="text-slate-400">
+                        <span className="text-slate-600">
                           🔒 Chỉ cấp quyền đọc đơn hàng. ProfitCal không nhận hoặc lưu mật khẩu sàn.
                         </span>
                       </div>
 
                       {authError && (
-                        <div className="w-full text-xs text-rose-400 bg-rose-500/10 p-2 rounded-lg border border-rose-500/20">
+                        <div className="w-full text-xs text-rose-700 bg-rose-50 p-2 rounded-lg border border-rose-200 font-semibold">
                           {authError}
                         </div>
                       )}
@@ -815,7 +815,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                         <button
                           type="button"
                           onClick={() => handleSourceSelect('file_shopee')}
-                          className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 text-xs transition-colors"
+                          className="px-3 py-1.5 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs transition-colors border border-slate-200 font-bold"
                         >
                           Hủy
                         </button>
@@ -823,7 +823,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                           type="button"
                           disabled={isAuthenticating}
                           onClick={handleStartOAuthLogin}
-                          className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+                          className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
                         >
                           <ExternalLink className="w-3.5 h-3.5" />
                           <span>{isAuthenticating ? 'Đang mở cửa sổ...' : `Đăng nhập & Ủy quyền ${selectedSource === 'api_shopee_prod' ? 'Shopee' : 'TikTok'}`}</span>
@@ -831,17 +831,17 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       </div>
                     </div>
                   ) : (
-                    <div className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between gap-3 text-xs">
+                    <div className="p-2.5 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2 text-xs">
-                        <span className="text-emerald-400 font-mono">✓ Đã xác thực:</span>
-                        <span className="font-bold text-white">{relevantShops[0]?.shopName}</span>
+                        <span className="text-emerald-700 font-mono font-extrabold">✓ Đã xác thực:</span>
+                        <span className="font-extrabold text-slate-900">{relevantShops[0]?.shopName}</span>
                         <span className="text-slate-500 font-mono text-[11px]">({relevantShops[0]?.shopId})</span>
                       </div>
                       <div className="flex items-center gap-2 shrink-0">
                         <button
                           type="button"
                           onClick={handleStartOAuthLogin}
-                          className="text-xs text-cyan-400 hover:underline font-sans"
+                          className="text-xs text-sky-700 hover:underline font-bold"
                         >
                           + Đổi shop
                         </button>
@@ -849,7 +849,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                           type="button"
                           disabled={fileParsing}
                           onClick={() => handleExecuteApiSync(true)}
-                          className="px-3.5 py-1.5 rounded-lg bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
+                          className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
                         >
                           <RefreshCw className={`w-3.5 h-3.5 ${fileParsing ? 'animate-spin' : ''}`} />
                           <span>{fileParsing ? 'Đang đồng bộ...' : 'Lấy dữ liệu & Tính lợi nhuận'}</span>
@@ -889,7 +889,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                 <button
                   type="button"
                   onClick={() => setShowTechnicalContext(!showTechnicalContext)}
-                  className="text-[11px] text-slate-500 hover:text-slate-300 inline-flex items-center gap-1 transition-colors font-sans py-1 px-3 rounded-lg bg-slate-950/40 border border-slate-800/40"
+                  className="text-[11px] text-slate-600 hover:text-slate-900 inline-flex items-center gap-1 transition-colors font-semibold py-1 px-3 rounded-lg bg-white border border-sky-200 shadow-sm"
                 >
                   <Info className="w-3 h-3" />
                   <span>Thông tin kỹ thuật & Dataset</span>
@@ -898,26 +898,26 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
               </div>
 
               {showTechnicalContext && (
-                <div className="p-3 bg-slate-950 rounded-xl border border-slate-800 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono text-slate-400 animate-fade-in">
+                <div className="p-3 bg-sky-50/80 rounded-xl border border-sky-200 grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono text-slate-700 animate-fade-in">
                   <div>
                     <span className="text-slate-500 block">Dataset ID:</span>
-                    <span className="text-slate-200 truncate block font-bold">
+                    <span className="text-slate-900 truncate block font-bold">
                       {activeDataset?.datasetId || `${selectedSource.toUpperCase()}_SESSION`}
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Môi trường:</span>
-                    <span className="text-cyan-400 font-bold">
+                    <span className="text-sky-700 font-bold">
                       {selectedSource.includes('prod') ? 'PRODUCTION' : selectedSource.includes('test') ? 'SANDBOX' : 'SESSION_LOCAL'}
                     </span>
                   </div>
                   <div>
                     <span className="text-slate-500 block">Deduplication:</span>
-                    <span className="text-emerald-400 font-bold">ORDER_ID_LOCKED</span>
+                    <span className="text-emerald-700 font-bold">ORDER_ID_LOCKED</span>
                   </div>
                   <div>
                     <span className="text-slate-500 block">COGS Lock:</span>
-                    <span className="text-amber-400 font-bold">IMMUTABLE_HISTORICAL</span>
+                    <span className="text-amber-700 font-bold">IMMUTABLE_HISTORICAL</span>
                   </div>
                 </div>
               )}
