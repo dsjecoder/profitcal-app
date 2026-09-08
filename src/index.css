@@ -6,39 +6,40 @@
 
 :root {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 body {
   margin: 0;
   padding: 0;
-  background-color: #0c2340; /* Professional Xanh Lơ Cyan Blue */
-  color: #f8fafc;
+  background-color: #f0f9ff; /* Bright Sky Blue / Soft Cyan Light Theme */
+  color: #0f172a;
   overflow-x: hidden;
 }
 
-/* Custom Scrollbars */
+/* Custom Scrollbars for Light Theme */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #091a30;
+  background: #e0f2fe;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1d4ed8;
+  background: #38bdf8;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #0284c7;
 }
 
-/* Custom Glassmorphism Utility with Cyan Slate Glow */
+/* Glassmorphism Panel for Bright Theme */
 .glass-panel {
-  background: rgba(14, 42, 77, 0.88);
+  background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(14, 165, 233, 0.25);
+  border: 1px solid #bae6fd;
+  box-shadow: 0 10px 25px -5px rgba(14, 165, 233, 0.12), 0 8px 10px -6px rgba(14, 165, 233, 0.08);
 }
 
 /* Animations */
@@ -57,11 +58,34 @@ body {
   animation: fadeIn 0.25s ease-out forwards;
 }
 
-/* Cyan Lơ Blue Palette utility classes */
-.bg-navy-950 { background-color: #0d2545; }
-.bg-navy-900 { background-color: #12325b; }
-.bg-navy-800 { background-color: #1a4173; }
-.bg-navy-700 { background-color: #245491; }
+/* Bright Light Mode Palette utility classes */
+.bg-navy-950, .bg-slate-950 { background-color: #ffffff; }
+.bg-navy-900, .bg-slate-900 { background-color: #ffffff; }
+.bg-navy-800, .bg-slate-800 { background-color: #f8fafc; }
+.bg-navy-700, .bg-slate-700 { background-color: #f1f5f9; }
 
-.border-navy-800 { border-color: #1e4b85; }
-.border-navy-700 { border-color: #2a61a6; }
+.border-navy-800, .border-slate-800 { border-color: #e2e8f0; }
+.border-navy-700, .border-slate-700 { border-color: #cbd5e1; }
+
+/* Modal overlay backdrop fix */
+.bg-navy-950\/90, .bg-slate-950\/80, .bg-slate-950\/85 {
+  background-color: rgba(15, 23, 42, 0.45) !important;
+}
+
+/* Light mode text & input fixes */
+.text-white:not(button *, button) {
+  color: #0f172a;
+}
+.text-slate-400 { color: #64748b; }
+.text-slate-300 { color: #475569; }
+.text-slate-200 { color: #334155; }
+.text-slate-100 { color: #0f172a; }
+
+input, select, textarea {
+  background-color: #ffffff;
+  color: #0f172a;
+  border-color: #bae6fd;
+}
+input::placeholder, textarea::placeholder {
+  color: #94a3b8;
+}

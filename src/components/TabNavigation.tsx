@@ -45,7 +45,7 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   ];
 
   return (
-    <div className="bg-navy-900 border border-navy-800 rounded-3xl p-2 shadow-2xl flex flex-wrap items-center justify-between gap-2 my-6">
+    <div className="bg-white border border-sky-200 rounded-3xl p-2 shadow-lg flex flex-wrap items-center justify-between gap-2 my-6">
       <div className="flex flex-wrap items-center gap-1.5 w-full md:w-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -54,13 +54,13 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs transition-all ${
+              className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl font-extrabold text-xs transition-all ${
                 isActive
-                  ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-navy-950 shadow-lg shadow-emerald-500/20 scale-[1.02]'
-                  : 'bg-navy-950 text-slate-300 hover:bg-navy-800 hover:text-white border border-navy-800'
+                  ? 'bg-sky-600 text-white shadow-md shadow-sky-600/30 scale-[1.02]'
+                  : 'bg-white text-slate-700 hover:bg-sky-50 hover:text-sky-700 border border-sky-200'
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? 'text-navy-950' : 'text-emerald-400'}`} />
+              <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-sky-600'}`} />
               <span>{currentLang === 'en' ? tab.labelEn : tab.labelVi}</span>
             </button>
           );
@@ -70,9 +70,9 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
       {onOpenShippingModal && (
         <button
           onClick={onOpenShippingModal}
-          className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-bold text-xs transition-all shadow-sm"
+          className="flex-1 md:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-2xl bg-sky-50 hover:bg-sky-100 border border-sky-300 text-sky-700 font-extrabold text-xs transition-all shadow-sm"
         >
-          <Truck className="w-4 h-4 text-cyan-400" />
+          <Truck className="w-4 h-4 text-sky-600" />
           <span>{currentLang === 'en' ? '🚚 Match Shipping Excel' : '🚚 Ghép File Vận Chuyển Excel'}</span>
         </button>
       )}
