@@ -46,8 +46,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   // Pending Upgrade Requests State
   const [upgradeRequests, setUpgradeRequests] = useState(getUpgradeRequests());
 
-  // Analytics Logs
+  // Analytics Logs & Filters
   const [telemetryLogs, setTelemetryLogs] = useState(getStoredAnalyticsEvents());
+  const [userSearchTerm, setUserSearchTerm] = useState('');
+  const [selectedMenuFilter, setSelectedMenuFilter] = useState('ALL');
+  const [analyticsTimeView, setAnalyticsTimeView] = useState<'all' | 'weekly' | 'monthly'>('all');
 
   // Sample Users List with Expiration Date Tracking
   const [usersList, setUsersList] = useState([
@@ -743,132 +746,438 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               )}
 
               {/* Tab 6: Tracking Analytics & Demographics Telemetry */}
-              {activeTab === 'analytics' && (
-                <div className="space-y-6">
-                  <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-                    <div>
-                      <h3 className="font-bold text-white text-sm">Báo Cáo Tracking Analytics, Tần Suất Quay Lại & Telemetry Logs</h3>
-                      <p className="text-xs text-slate-400">Theo dõi lượt truy cập theo từng Menu, số lần quay lại (30p/Giờ/Ngày), vị trí địa lý & thiết bị.</p>
+              {activeTab === 'analytics' && (() => {
+                const rawLogs = getStoredAnalyticsEvents();
+                const filteredTelemetryLogs = rawLogs.filter((log: any) => {
+                  const matchesMenu =
+                    selectedMenuFilter === 'ALL' ||
+                    (log.feature_name || '').toLowerCase().includes(selectedMenuFilter.toLowerCase()) ||
+                    (log.action_details || '').toLowerCase().includes(selectedMenuFilter.toLowerCase());
+
+                  const term = userSearchTerm.trim().toLowerCase();
+                  const matchesUser =
+                    !term ||
+                    (log.user_email || '').toLowerCase().includes(term) ||
+                    (log.user_name || '').toLowerCase().includes(term) ||
+                    (log.session_id || '').toLowerCase().includes(term);
+
+                  return matchesMenu && matchesUser;
+                });
+
+                const uniqueUserEmails = Array.from(new Set(rawLogs.map((l: any) => l.user_email).filter(Boolean)));
+
+                // Weekly Aggregations
+                const weeklyMap = new Map<string, { weekSlot: string; sessionCount: number; usersSet: Set<string>; totalOrders: number; grossRevenue: number; featureCounts: Record<string, number> }>();
+                filteredTelemetryLogs.forEach((log: any) => {
+                  const weekKey = log.revisit_week_slot || 'Tuần 37, 2026';
+                  if (!weeklyMap.has(weekKey)) {
+                    weeklyMap.set(weekKey, {
+                      weekSlot: weekKey,
+                      sessionCount: 0,
+                      usersSet: new Set(),
+                      totalOrders: 0,
+                      grossRevenue: 0,
+                      featureCounts: {},
+                    });
+                  }
+                  const item = weeklyMap.get(weekKey)!;
+                  item.sessionCount += 1;
+                  if (log.user_email) item.usersSet.add(log.user_email);
+                  item.totalOrders += log.total_orders || 0;
+                  item.grossRevenue += log.gross_revenue || 0;
+                  const feat = log.feature_name || 'Chung';
+                  item.featureCounts[feat] = (item.featureCounts[feat] || 0) + 1;
+                });
+                const weeklyStatsList = Array.from(weeklyMap.values()).map(item => {
+                  const topFeat = Object.entries(item.featureCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Chung';
+                  return {
+                    weekSlot: item.weekSlot,
+                    sessionCount: item.sessionCount,
+                    uniqueUsersCount: item.usersSet.size,
+                    usersListStr: Array.from(item.usersSet).join(', '),
+                    totalOrders: item.totalOrders,
+                    grossRevenue: item.grossRevenue,
+                    topFeature: topFeat,
+                  };
+                });
+
+                // Monthly Aggregations
+                const monthlyMap = new Map<string, { monthSlot: string; sessionCount: number; usersSet: Set<string>; totalOrders: number; grossRevenue: number; featureCounts: Record<string, number> }>();
+                filteredTelemetryLogs.forEach((log: any) => {
+                  const monthKey = log.revisit_month_slot || 'Tháng 09/2026';
+                  if (!monthlyMap.has(monthKey)) {
+                    monthlyMap.set(monthKey, {
+                      monthSlot: monthKey,
+                      sessionCount: 0,
+                      usersSet: new Set(),
+                      totalOrders: 0,
+                      grossRevenue: 0,
+                      featureCounts: {},
+                    });
+                  }
+                  const item = monthlyMap.get(monthKey)!;
+                  item.sessionCount += 1;
+                  if (log.user_email) item.usersSet.add(log.user_email);
+                  item.totalOrders += log.total_orders || 0;
+                  item.grossRevenue += log.gross_revenue || 0;
+                  const feat = log.feature_name || 'Chung';
+                  item.featureCounts[feat] = (item.featureCounts[feat] || 0) + 1;
+                });
+                const monthlyStatsList = Array.from(monthlyMap.values()).map(item => {
+                  const topFeat = Object.entries(item.featureCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 'Chung';
+                  return {
+                    monthSlot: item.monthSlot,
+                    sessionCount: item.sessionCount,
+                    uniqueUsersCount: item.usersSet.size,
+                    usersListStr: Array.from(item.usersSet).join(', '),
+                    totalOrders: item.totalOrders,
+                    grossRevenue: item.grossRevenue,
+                    topFeature: topFeat,
+                  };
+                });
+
+                return (
+                  <div className="space-y-6">
+                    {/* Header Controls & Filters */}
+                    <div className="bg-navy-950 border border-navy-800 p-5 rounded-3xl space-y-4">
+                      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+                        <div>
+                          <h3 className="font-bold text-white text-sm flex items-center gap-2">
+                            <span>⚡ Nhật Ký Telemetry & Báo Cáo Thống Kê Sử Dụng Admin</span>
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-extrabold text-[11px] border border-emerald-500/30">
+                              Real-Time Tracking 🟢
+                            </span>
+                          </h3>
+                          <p className="text-xs text-slate-400 mt-0.5">Lọc tìm kiếm theo User, xem báo cáo tổng hợp theo Tuần, Tháng & Nhật ký chi tiết.</p>
+                        </div>
+
+                        {/* View Switcher Buttons */}
+                        <div className="flex items-center gap-1.5 bg-navy-900 p-1.5 rounded-2xl border border-navy-800 text-xs font-bold">
+                          <button
+                            onClick={() => setAnalyticsTimeView('all')}
+                            className={`px-3 py-1.5 rounded-xl transition-all ${
+                              analyticsTimeView === 'all' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            📋 Nhật Ký Chi Tiết
+                          </button>
+                          <button
+                            onClick={() => setAnalyticsTimeView('weekly')}
+                            className={`px-3 py-1.5 rounded-xl transition-all ${
+                              analyticsTimeView === 'weekly' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            📅 Thống Kê Theo Tuần ({weeklyStatsList.length})
+                          </button>
+                          <button
+                            onClick={() => setAnalyticsTimeView('monthly')}
+                            className={`px-3 py-1.5 rounded-xl transition-all ${
+                              analyticsTimeView === 'monthly' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                            }`}
+                          >
+                            📆 Thống Kê Theo Tháng ({monthlyStatsList.length})
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Filters Toolbar: User Search & Menu Dropdown */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-navy-800 text-xs">
+                        {/* 1. User Search Input */}
+                        <div>
+                          <label className="text-slate-400 font-bold block mb-1">🔍 Lọc Tìm Kiếm Theo User Email:</label>
+                          <div className="relative">
+                            <input
+                              type="text"
+                              value={userSearchTerm}
+                              onChange={(e) => setUserSearchTerm(e.target.value)}
+                              placeholder="Nhập email user (e.g. dsjecoder@gmail.com)..."
+                              className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+                            />
+                            {userSearchTerm && (
+                              <button
+                                onClick={() => setUserSearchTerm('')}
+                                className="absolute right-2.5 top-2 text-slate-400 hover:text-white font-bold"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* 2. Quick User Select Dropdown */}
+                        <div>
+                          <label className="text-slate-400 font-bold block mb-1">👤 Chọn Nhanh User Trong Hệ Thống:</label>
+                          <select
+                            value={userSearchTerm}
+                            onChange={(e) => setUserSearchTerm(e.target.value)}
+                            className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono font-bold focus:outline-none"
+                          >
+                            <option value="">Tất cả Users ({uniqueUserEmails.length} Users)</option>
+                            {uniqueUserEmails.map((email: any, idx: number) => (
+                              <option key={idx} value={email}>
+                                {email}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* 3. Menu Filter Dropdown */}
+                        <div>
+                          <label className="text-slate-400 font-bold block mb-1">📌 Lọc Theo Menu / Tính Năng:</label>
+                          <select
+                            value={selectedMenuFilter}
+                            onChange={(e) => setSelectedMenuFilter(e.target.value)}
+                            className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-bold focus:outline-none"
+                          >
+                            <option value="ALL">Tất cả Menu (Full 5 Modules)</option>
+                            <option value="Tính lợi nhuận">Tính lợi nhuận & Thuế (calc)</option>
+                            <option value="Xử lý file vận chuyển">Xử lý file vận chuyển (transformer)</option>
+                            <option value="Cảnh báo tồn kho">Cảnh báo tồn kho (inventory)</option>
+                            <option value="Cấu hình & giá vốn">Cấu hình & giá vốn (settings)</option>
+                            <option value="Ánh xạ hóa đơn">Ánh xạ hóa đơn GTGT (invoice)</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-400 text-xs font-bold shrink-0">Lọc theo Menu:</span>
-                      <select
-                        onChange={(e) => {
-                          const val = e.target.value;
-                          const allLogs = getStoredAnalyticsEvents();
-                          if (val === 'ALL') {
-                            setTelemetryLogs(allLogs);
-                          } else {
-                            setTelemetryLogs(allLogs.filter((l: any) => (l.feature_name || '').toLowerCase().includes(val.toLowerCase()) || (l.action_details || '').toLowerCase().includes(val.toLowerCase())));
-                          }
-                        }}
-                        className="bg-navy-950 border border-navy-700 rounded-xl px-3 py-1.5 text-xs text-emerald-400 font-bold focus:outline-none"
-                      >
-                        <option value="ALL">Tất cả Menu (5 Menu)</option>
-                        <option value="Tính lợi nhuận">Tính lợi nhuận (calc)</option>
-                        <option value="Xử lý file vận chuyển">Xử lý file vận chuyển (transformer)</option>
-                        <option value="Cảnh báo tồn kho">Cảnh báo tồn kho (inventory)</option>
-                        <option value="Cấu hình & giá vốn">Cấu hình & giá vốn (settings)</option>
-                        <option value="Ánh xạ hóa đơn">Ánh xạ hóa đơn GTGT (invoice)</option>
-                      </select>
+                    {/* Summary Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                          <span>Tổng Phiên Truy Cập</span>
+                          <Eye className="w-4 h-4 text-cyan-400" />
+                        </div>
+                        <div className="text-2xl font-black text-white font-mono mt-2">{filteredTelemetryLogs.length}</div>
+                        <p className="text-[10px] text-slate-500 mt-1">Đã lọc theo điều kiện tìm kiếm</p>
+                      </div>
 
-                      <span className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold text-xs rounded-xl">
-                        Live Stream 🟢
-                      </span>
+                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                          <span>Số User Hoạt Động</span>
+                          <Users className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div className="text-2xl font-black text-emerald-400 font-mono mt-2">
+                          {new Set(filteredTelemetryLogs.map((l: any) => l.user_email)).size} Users
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">Số tài khoản duy nhất phát sinh log</p>
+                      </div>
+
+                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                          <span>Tổng Đơn Hàng Kiểm Toán</span>
+                          <FileSpreadsheet className="w-4 h-4 text-amber-400" />
+                        </div>
+                        <div className="text-2xl font-black text-amber-300 font-mono mt-2">
+                          {filteredTelemetryLogs.reduce((acc: number, l: any) => acc + (l.total_orders || 0), 0)} đơn
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">Ghi nhận từ các lượt chạy audit</p>
+                      </div>
+
+                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                          <span>Tổng Doanh Thu Audit</span>
+                          <CreditCard className="w-4 h-4 text-indigo-400" />
+                        </div>
+                        <div className="text-lg font-bold text-indigo-300 font-mono mt-2">
+                          {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(
+                            filteredTelemetryLogs.reduce((acc: number, l: any) => acc + (l.gross_revenue || 0), 0)
+                          )}
+                        </div>
+                        <p className="text-[10px] text-slate-500 mt-1">Doanh thu kiểm toán trên hệ thống</p>
+                      </div>
                     </div>
+
+                    {/* VIEW 1: WEEKLY REPORT TABLE */}
+                    {analyticsTimeView === 'weekly' && (
+                      <div className="space-y-3 bg-navy-950 border border-navy-800 p-5 rounded-3xl animate-fade-in">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-extrabold text-amber-300 text-xs flex items-center gap-2">
+                            <span>📅 Báo Cáo Thống Kê Số Lượt & Hành Vi Theo Tuần (Weekly Summary Report)</span>
+                          </h4>
+                          <span className="text-[11px] text-slate-400">Tự động tổng hợp theo ISO Week</span>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-900/50">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-navy-950 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                              <tr>
+                                <th className="p-3">Khung Thời Gian Tuần</th>
+                                <th className="p-3">Số Lượt Truy Cập</th>
+                                <th className="p-3">Số Users Duy Nhất</th>
+                                <th className="p-3">Danh Sách User Emails</th>
+                                <th className="p-3">Tổng Số Đơn Xử Lý</th>
+                                <th className="p-3">Doanh Thu Kiểm Toán</th>
+                                <th className="p-3">Menu Sử Dụng Nhiều Nhất</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-navy-800/60 font-medium">
+                              {weeklyStatsList.map((row, idx) => (
+                                <tr key={idx} className="hover:bg-navy-900">
+                                  <td className="p-3 font-mono font-bold text-amber-400">
+                                    {row.weekSlot}
+                                  </td>
+                                  <td className="p-3 font-mono font-bold text-white">
+                                    {row.sessionCount} phiên
+                                  </td>
+                                  <td className="p-3 font-mono text-emerald-400 font-bold">
+                                    {row.uniqueUsersCount} users
+                                  </td>
+                                  <td className="p-3 font-mono text-[11px] text-slate-300 max-w-[200px] truncate">
+                                    {row.usersListStr || 'Khách Vô Danh'}
+                                  </td>
+                                  <td className="p-3 font-mono text-cyan-300 font-bold">
+                                    {row.totalOrders} đơn
+                                  </td>
+                                  <td className="p-3 font-mono text-slate-200">
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.grossRevenue)}
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30 text-[10px]">
+                                      {row.topFeature}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* VIEW 2: MONTHLY REPORT TABLE */}
+                    {analyticsTimeView === 'monthly' && (
+                      <div className="space-y-3 bg-navy-950 border border-navy-800 p-5 rounded-3xl animate-fade-in">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-extrabold text-cyan-300 text-xs flex items-center gap-2">
+                            <span>📆 Báo Cáo Thống Kê Số Lượt & Hành Vi Theo Tháng (Monthly Summary Report)</span>
+                          </h4>
+                          <span className="text-[11px] text-slate-400">Tự động tổng hợp theo Tháng</span>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-900/50">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-navy-950 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                              <tr>
+                                <th className="p-3">Khung Thời Gian Tháng</th>
+                                <th className="p-3">Số Lượt Truy Cập</th>
+                                <th className="p-3">Số Users Duy Nhất</th>
+                                <th className="p-3">Danh Sách User Emails</th>
+                                <th className="p-3">Tổng Số Đơn Xử Lý</th>
+                                <th className="p-3">Doanh Thu Kiểm Toán</th>
+                                <th className="p-3">Menu Sử Dụng Nhiều Nhất</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-navy-800/60 font-medium">
+                              {monthlyStatsList.map((row, idx) => (
+                                <tr key={idx} className="hover:bg-navy-900">
+                                  <td className="p-3 font-mono font-bold text-cyan-400">
+                                    {row.monthSlot}
+                                  </td>
+                                  <td className="p-3 font-mono font-bold text-white">
+                                    {row.sessionCount} phiên
+                                  </td>
+                                  <td className="p-3 font-mono text-emerald-400 font-bold">
+                                    {row.uniqueUsersCount} users
+                                  </td>
+                                  <td className="p-3 font-mono text-[11px] text-slate-300 max-w-[200px] truncate">
+                                    {row.usersListStr || 'Khách Vô Danh'}
+                                  </td>
+                                  <td className="p-3 font-mono text-amber-300 font-bold">
+                                    {row.totalOrders} đơn
+                                  </td>
+                                  <td className="p-3 font-mono text-slate-200">
+                                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.grossRevenue)}
+                                  </td>
+                                  <td className="p-3">
+                                    <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30 text-[10px]">
+                                      {row.topFeature}
+                                    </span>
+                                  </td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* VIEW 3: FULL TELEMETRY LOGS TABLE */}
+                    {(analyticsTimeView === 'all' || true) && (
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-bold text-white text-xs">📋 Chi Tiết Nhật Ký Telemetry Event Logs ({filteredTelemetryLogs.length} sự kiện)</h4>
+                        </div>
+
+                        <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+                          <table className="w-full text-xs text-left">
+                            <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                              <tr>
+                                <th className="p-3">Sự Kiện & Menu</th>
+                                <th className="p-3">Tài Khoản User & Gói</th>
+                                <th className="p-3">Khung Quay Lại (Tuần / Tháng)</th>
+                                <th className="p-3">Slot Quay Lại (30p / Giờ)</th>
+                                <th className="p-3">Vị Trí & IP</th>
+                                <th className="p-3">Thiết Bị & Màn Hình</th>
+                                <th className="p-3 text-right">Thời Gian Chi Tiết</th>
+                              </tr>
+                            </thead>
+                            <tbody className="divide-y divide-navy-800/60 font-medium">
+                              {filteredTelemetryLogs.length === 0 ? (
+                                <tr>
+                                  <td colSpan={7} className="p-8 text-center text-slate-400 font-mono">
+                                    Không tìm thấy nhật ký Telemetry phù hợp với từ khóa search "{userSearchTerm}".
+                                  </td>
+                                </tr>
+                              ) : (
+                                filteredTelemetryLogs.map((log: any, idx: number) => (
+                                  <tr key={idx} className="hover:bg-navy-900/50">
+                                    <td className="p-3">
+                                      <div className="font-bold text-white uppercase flex items-center gap-1.5">
+                                        <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 text-[10px]">
+                                          {log.feature_name || log.platform || 'MENU'}
+                                        </span>
+                                        <span>{log.event_name}</span>
+                                      </div>
+                                      <div className="text-slate-400 font-mono text-[11px] truncate max-w-[180px]">{log.session_id}</div>
+                                    </td>
+                                    <td className="p-3">
+                                      <div className="font-bold text-amber-300">{log.user_email || 'Khách Vô Danh'}</div>
+                                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                        log.user_tier === 'PRO' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400'
+                                      }`}>
+                                        {log.user_tier || 'FREE'}
+                                      </span>
+                                    </td>
+                                    <td className="p-3 font-mono">
+                                      <div className="font-bold text-amber-400">{log.revisit_week_slot || 'Tuần 37, 2026'}</div>
+                                      <div className="text-cyan-400 text-[10px]">{log.revisit_month_slot || 'Tháng 09/2026'}</div>
+                                    </td>
+                                    <td className="p-3 font-mono">
+                                      <div className="font-bold text-emerald-400">{log.revisit_30min_slot || '09:30 - 10:00'}</div>
+                                      <div className="text-slate-500 text-[10px]">{log.revisit_hour_slot || '09:00 - 10:00'}</div>
+                                    </td>
+                                    <td className="p-3">
+                                      <div className="text-slate-200 font-bold">{log.location || 'Hà Nội, Việt Nam'}</div>
+                                      <div className="text-slate-400 font-mono text-[11px]">IP: {log.ip_address || '14.226.12.88'}</div>
+                                    </td>
+                                    <td className="p-3">
+                                      <div className="text-slate-200 font-bold">{log.device_type} ({log.os} / {log.browser})</div>
+                                      <div className="text-slate-400 font-mono text-[10px]">Res: {log.screen_res || '1920x1080'} ({log.orientation || 'Ngang'})</div>
+                                    </td>
+                                    <td className="p-3 text-right font-mono text-slate-300 text-[11px]">
+                                      {log.formatted_access_time || (log.access_timestamp ? new Date(log.access_timestamp).toLocaleString('vi-VN') : 'Vừa xong')}
+                                    </td>
+                                  </tr>
+                                ))
+                              )}
+                            </tbody>
+                          </table>
+                        </div>
+                      </div>
+                    )}
                   </div>
-
-                  {/* Summary Metric Cards */}
-                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
-                        <span>Tổng Phiên Truy Cập</span>
-                        <Eye className="w-4 h-4 text-cyan-400" />
-                      </div>
-                      <div className="text-2xl font-black text-white font-mono mt-2">{telemetryLogs.length + 142}</div>
-                    </div>
-
-                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
-                        <span>Quay Lại Theo 30 Phút</span>
-                        <Activity className="w-4 h-4 text-emerald-400" />
-                      </div>
-                      <div className="text-sm font-bold text-emerald-400 font-mono mt-2">09:30-10:00 (Peak Active)</div>
-                    </div>
-
-                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
-                        <span>Top Tỉnh/Thành</span>
-                        <Activity className="w-4 h-4 text-amber-400" />
-                      </div>
-                      <div className="text-sm font-bold text-amber-300 font-mono mt-2">Hà Nội (52%) • HCM (38%)</div>
-                    </div>
-
-                    <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                      <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
-                        <span>Thiết Bị Desktop vs Mobile</span>
-                        <Monitor className="w-4 h-4 text-indigo-400" />
-                      </div>
-                      <div className="text-sm font-bold text-indigo-300 font-mono mt-2">Desktop 68% • Mobile 32%</div>
-                    </div>
-                  </div>
-
-                  {/* Telemetry Logs Table */}
-                  <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
-                    <table className="w-full text-xs text-left">
-                      <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
-                        <tr>
-                          <th className="p-3">Sự Kiện & Menu</th>
-                          <th className="p-3">Tài Khoản & Gói</th>
-                          <th className="p-3">Khung Quay Lại (30p / Giờ)</th>
-                          <th className="p-3">Vị Trí & IP</th>
-                          <th className="p-3">Thiết Bị & Màn Hình</th>
-                          <th className="p-3 text-right">Ngày Giờ Chi Tiết</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-navy-800/60 font-medium">
-                        {telemetryLogs.map((log: any, idx: number) => (
-                          <tr key={idx} className="hover:bg-navy-900/50">
-                            <td className="p-3">
-                              <div className="font-bold text-white uppercase flex items-center gap-1.5">
-                                <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 text-[10px]">
-                                  {log.feature_name || log.platform || 'MENU'}
-                                </span>
-                                <span>{log.event_name}</span>
-                              </div>
-                              <div className="text-slate-400 font-mono text-[11px] truncate max-w-[180px]">{log.session_id}</div>
-                            </td>
-                            <td className="p-3">
-                              <div className="font-bold text-slate-200">{log.user_email || 'Khách Vô Danh'}</div>
-                              <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                log.user_tier === 'PRO' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400'
-                              }`}>
-                                {log.user_tier || 'FREE'}
-                              </span>
-                            </td>
-                            <td className="p-3 font-mono">
-                              <div className="font-bold text-emerald-400">{log.revisit_30min_slot || '09:30 - 10:00'}</div>
-                              <div className="text-slate-500 text-[10px]">{log.revisit_hour_slot || '09:00 - 10:00'}</div>
-                            </td>
-                            <td className="p-3">
-                              <div className="text-slate-200 font-bold">{log.location || 'Hà Nội, Việt Nam'}</div>
-                              <div className="text-slate-400 font-mono text-[11px]">IP: {log.ip_address || '14.226.12.88'}</div>
-                            </td>
-                            <td className="p-3">
-                              <div className="text-slate-200 font-bold">{log.device_type} ({log.os} / {log.browser})</div>
-                              <div className="text-slate-400 font-mono text-[10px]">Res: {log.screen_res || '1920x1080'} ({log.orientation || 'Ngang'})</div>
-                            </td>
-                            <td className="p-3 text-right font-mono text-slate-300 text-[11px]">
-                              {log.formatted_access_time || (log.access_timestamp ? new Date(log.access_timestamp).toLocaleString('vi-VN') : 'Vừa xong')}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              )}
+                );
+              })()}
 
             </div>
 

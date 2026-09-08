@@ -354,6 +354,8 @@ export interface UniversalTelemetryEvent {
   revisit_30min_slot: string; // e.g. "09:30 - 10:00"
   revisit_hour_slot: string;  // e.g. "09:00 - 10:00"
   revisit_date_slot: string;  // e.g. "2026-09-08"
+  revisit_week_slot?: string; // e.g. "Tuần 37, 2026"
+  revisit_month_slot?: string;// e.g. "Tháng 09/2026"
   total_returns_today?: number;
   total_returns_this_hour?: number;
   total_returns_this_30min?: number;

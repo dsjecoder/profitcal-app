@@ -32,6 +32,22 @@ function getHourSlot(date: Date): string {
   return `${h}:00 - ${nextH}:00`;
 }
 
+// Compute ISO Week Slot (e.g. "Tuần 37, 2026")
+export function getWeekSlot(date: Date): string {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7);
+  return `Tuần ${weekNo < 10 ? '0' + weekNo : weekNo}, ${d.getUTCFullYear()}`;
+}
+
+// Compute Month Slot (e.g. "Tháng 09/2026")
+export function getMonthSlot(date: Date): string {
+  const m = (date.getMonth() + 1).toString().padStart(2, '0');
+  return `Tháng ${m}/${date.getFullYear()}`;
+}
+
 // Record Session Start Time in sessionStorage
 const SESSION_START_KEY = 'profitcal_session_start_time';
 function getSessionStartTime(): number {
@@ -204,6 +220,8 @@ export function trackEventSilent(payload: AnalyticsPayload): void {
         revisit_30min_slot: get30MinSlot(now),
         revisit_hour_slot: getHourSlot(now),
         revisit_date_slot: now.toISOString().split('T')[0],
+        revisit_week_slot: getWeekSlot(now),
+        revisit_month_slot: getMonthSlot(now),
 
         // Location & Demographics
         ip_address: geo.ip,
@@ -281,18 +299,67 @@ export function getStoredAnalyticsEvents(): any[] {
   } catch (e) {}
 
   const now = new Date();
-  // Fallback demo telemetry records with complete demographics, dates, times, and duration
+  const dMinus1 = new Date(now.getTime() - 86400000);
+  const dMinus7 = new Date(now.getTime() - 7 * 86400000);
+  const dMinus14 = new Date(now.getTime() - 14 * 86400000);
+  const dMinus30 = new Date(now.getTime() - 30 * 86400000);
+
+  // Rich multi-user, multi-week, multi-month telemetry logs
   return [
     {
-      session_id: 'sess_9x8a7b_17861800',
-      event_name: 'upload_report',
+      session_id: 'sess_dsj_99812_17861900',
+      event_name: 'invoice_mapping_execute',
+      feature_name: 'Ánh xạ hóa đơn GTGT',
       platform: 'SHOPEE',
-      user_email: 'ecoder108@gmail.com',
+      user_email: 'dsjecoder@gmail.com',
       user_tier: 'PRO',
       access_timestamp: now.toISOString(),
       formatted_access_time: now.toLocaleTimeString('vi-VN') + ' - ' + now.toLocaleDateString('vi-VN'),
+      session_duration_seconds: 340,
+      session_duration_formatted: '5 phút 40 giây',
+      revisit_30min_slot: get30MinSlot(now),
+      revisit_hour_slot: getHourSlot(now),
+      revisit_date_slot: now.toISOString().split('T')[0],
+      revisit_week_slot: getWeekSlot(now),
+      revisit_month_slot: getMonthSlot(now),
+      ip_address: '14.226.12.88',
+      city: 'Hà Nội',
+      region: 'Hà Nội',
+      country: 'Việt Nam',
+      location: 'Hà Nội, Việt Nam',
+      timezone: 'Asia/Ho_Chi_Minh',
+      language: 'vi-VN',
+      device_type: 'Máy tính (Desktop)',
+      os: 'macOS',
+      browser: 'Chrome 127',
+      screen_res: '2560x1440',
+      viewport: '1440x900',
+      pixel_ratio: 2,
+      orientation: 'Ngang (Landscape)',
+      referrer: 'Direct (Trực tiếp)',
+      utm_source: 'Direct',
+      total_orders: 85,
+      gross_revenue: 42500000,
+      avg_fee_pct: 25.1,
+      unique_skus: 12,
+      metadata: { file_name: 'HoaDonGTGT_Thang092026.xlsx', net_profit: 9100000 },
+    },
+    {
+      session_id: 'sess_9x8a7b_17861800',
+      event_name: 'upload_report',
+      feature_name: 'Tính lợi nhuận',
+      platform: 'SHOPEE',
+      user_email: 'ecoder108@gmail.com',
+      user_tier: 'PRO',
+      access_timestamp: dMinus1.toISOString(),
+      formatted_access_time: dMinus1.toLocaleTimeString('vi-VN') + ' - ' + dMinus1.toLocaleDateString('vi-VN'),
       session_duration_seconds: 285,
       session_duration_formatted: '4 phút 45 giây',
+      revisit_30min_slot: get30MinSlot(dMinus1),
+      revisit_hour_slot: getHourSlot(dMinus1),
+      revisit_date_slot: dMinus1.toISOString().split('T')[0],
+      revisit_week_slot: getWeekSlot(dMinus1),
+      revisit_month_slot: getMonthSlot(dMinus1),
       ip_address: '14.226.12.88',
       city: 'Hà Nội',
       region: 'Hà Nội',
@@ -313,18 +380,24 @@ export function getStoredAnalyticsEvents(): any[] {
       gross_revenue: 35800000,
       avg_fee_pct: 26.4,
       unique_skus: 18,
-      metadata: { file_name: 'BaoCaoDoiSoat_Shopee_082026.xlsx', net_profit: 6420000 },
+      metadata: { file_name: 'BaoCaoDoiSoat_Shopee_092026.xlsx', net_profit: 6420000 },
     },
     {
       session_id: 'sess_3c4d5e_17861850',
       event_name: 'load_demo',
+      feature_name: 'Tính lợi nhuận',
       platform: 'TIKTOK',
       user_email: 'owner.shop1@gmail.com',
       user_tier: 'FREE',
-      access_timestamp: new Date(Date.now() - 1800000).toISOString(),
-      formatted_access_time: new Date(Date.now() - 1800000).toLocaleTimeString('vi-VN') + ' - ' + new Date(Date.now() - 1800000).toLocaleDateString('vi-VN'),
+      access_timestamp: dMinus7.toISOString(),
+      formatted_access_time: dMinus7.toLocaleTimeString('vi-VN') + ' - ' + dMinus7.toLocaleDateString('vi-VN'),
       session_duration_seconds: 120,
       session_duration_formatted: '2 phút 0 giây',
+      revisit_30min_slot: get30MinSlot(dMinus7),
+      revisit_hour_slot: getHourSlot(dMinus7),
+      revisit_date_slot: dMinus7.toISOString().split('T')[0],
+      revisit_week_slot: getWeekSlot(dMinus7),
+      revisit_month_slot: getMonthSlot(dMinus7),
       ip_address: '113.161.44.12',
       city: 'Hồ Chí Minh',
       region: 'TP. Hồ Chí Minh',
@@ -346,6 +419,82 @@ export function getStoredAnalyticsEvents(): any[] {
       avg_fee_pct: 28.1,
       unique_skus: 5,
       metadata: { file_name: 'Data Mẫu TikTok Shop', net_profit: 1850000 },
+    },
+    {
+      session_id: 'sess_thiem_5521a_17861700',
+      event_name: 'export_excel',
+      feature_name: 'Xử lý file vận chuyển',
+      platform: 'SHOPEE',
+      user_email: 'thiemvv@gmail.com',
+      user_tier: 'PRO',
+      access_timestamp: dMinus14.toISOString(),
+      formatted_access_time: dMinus14.toLocaleTimeString('vi-VN') + ' - ' + dMinus14.toLocaleDateString('vi-VN'),
+      session_duration_seconds: 410,
+      session_duration_formatted: '6 phút 50 giây',
+      revisit_30min_slot: get30MinSlot(dMinus14),
+      revisit_hour_slot: getHourSlot(dMinus14),
+      revisit_date_slot: dMinus14.toISOString().split('T')[0],
+      revisit_week_slot: getWeekSlot(dMinus14),
+      revisit_month_slot: getMonthSlot(dMinus14),
+      ip_address: '118.70.12.99',
+      city: 'Đà Nẵng',
+      region: 'Đà Nẵng',
+      country: 'Việt Nam',
+      location: 'Đà Nẵng, Việt Nam',
+      timezone: 'Asia/Ho_Chi_Minh',
+      language: 'vi-VN',
+      device_type: 'Máy tính (Desktop)',
+      os: 'Windows 11',
+      browser: 'Edge 126',
+      screen_res: '1920x1080',
+      viewport: '1920x1080',
+      pixel_ratio: 1,
+      orientation: 'Ngang (Landscape)',
+      referrer: 'google.com',
+      utm_source: 'google_search',
+      total_orders: 68,
+      gross_revenue: 21500000,
+      avg_fee_pct: 24.8,
+      unique_skus: 9,
+      metadata: { file_name: 'VanChuyenGHTK_Tuan35.xlsx', net_profit: 4200000 },
+    },
+    {
+      session_id: 'sess_dsj_11029_17861600',
+      event_name: 'calc_switch',
+      feature_name: 'Cảnh báo tồn kho',
+      platform: 'TIKTOK',
+      user_email: 'dsjecoder@gmail.com',
+      user_tier: 'PRO',
+      access_timestamp: dMinus30.toISOString(),
+      formatted_access_time: dMinus30.toLocaleTimeString('vi-VN') + ' - ' + dMinus30.toLocaleDateString('vi-VN'),
+      session_duration_seconds: 190,
+      session_duration_formatted: '3 phút 10 giây',
+      revisit_30min_slot: get30MinSlot(dMinus30),
+      revisit_hour_slot: getHourSlot(dMinus30),
+      revisit_date_slot: dMinus30.toISOString().split('T')[0],
+      revisit_week_slot: getWeekSlot(dMinus30),
+      revisit_month_slot: getMonthSlot(dMinus30),
+      ip_address: '14.226.12.88',
+      city: 'Hà Nội',
+      region: 'Hà Nội',
+      country: 'Việt Nam',
+      location: 'Hà Nội, Việt Nam',
+      timezone: 'Asia/Ho_Chi_Minh',
+      language: 'vi-VN',
+      device_type: 'Máy tính (Desktop)',
+      os: 'macOS',
+      browser: 'Chrome 126',
+      screen_res: '2560x1440',
+      viewport: '1440x900',
+      pixel_ratio: 2,
+      orientation: 'Ngang (Landscape)',
+      referrer: 'Direct (Trực tiếp)',
+      utm_source: 'Direct',
+      total_orders: 110,
+      gross_revenue: 56000000,
+      avg_fee_pct: 23.5,
+      unique_skus: 24,
+      metadata: { file_name: 'CanhBaoTonKho_Thang08.xlsx', net_profit: 14200000 },
     },
   ];
 }
