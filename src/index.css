@@ -12,7 +12,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #0b172a; /* Professional Cyan-Lơ Slate Blue */
+  background-color: #0c2340; /* Professional Xanh Lơ Cyan Blue */
   color: #f8fafc;
   overflow-x: hidden;
 }
@@ -23,10 +23,10 @@ body {
   height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d1e36;
+  background: #091a30;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e3a5f;
+  background: #1d4ed8;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -35,10 +35,10 @@ body {
 
 /* Custom Glassmorphism Utility with Cyan Slate Glow */
 .glass-panel {
-  background: rgba(13, 29, 51, 0.85);
+  background: rgba(14, 42, 77, 0.88);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(14, 165, 233, 0.15);
+  border: 1px solid rgba(14, 165, 233, 0.25);
 }
 
 /* Animations */
@@ -57,11 +57,11 @@ body {
   animation: fadeIn 0.25s ease-out forwards;
 }
 
-/* Cyan Lơ Slate Blue Palette utility classes */
-.bg-navy-950 { background-color: #0c182c; }
-.bg-navy-900 { background-color: #11223b; }
-.bg-navy-800 { background-color: #1a3152; }
-.bg-navy-700 { background-color: #24436c; }
+/* Cyan Lơ Blue Palette utility classes */
+.bg-navy-950 { background-color: #0d2545; }
+.bg-navy-900 { background-color: #12325b; }
+.bg-navy-800 { background-color: #1a4173; }
+.bg-navy-700 { background-color: #245491; }
 
-.border-navy-800 { border-color: #1e3a5f; }
-.border-navy-700 { border-color: #2b4c7e; }
+.border-navy-800 { border-color: #1e4b85; }
+.border-navy-700 { border-color: #2a61a6; }
