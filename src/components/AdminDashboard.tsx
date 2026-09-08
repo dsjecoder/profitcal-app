@@ -156,22 +156,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/90 backdrop-blur-md animate-fade-in">
-      <div className="bg-navy-900 border border-navy-700 rounded-3xl w-full max-w-5xl h-[88vh] flex flex-col shadow-2xl overflow-hidden relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-5xl h-[88vh] flex flex-col shadow-2xl overflow-hidden relative">
         
         {/* Header */}
-        <div className="bg-navy-950 border-b border-navy-800 px-6 py-4 flex items-center justify-between">
+        <div className="bg-sky-50/60 border-b border-sky-200 px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">
+            <div className="w-9 h-9 rounded-xl bg-sky-100 border border-sky-200 flex items-center justify-center text-sky-700 font-bold shadow-sm">
               🛡️
             </div>
             <div>
-              <h2 className="text-base font-extrabold text-white">Trang Quản Trị Hệ Thống Admin (/admin)</h2>
-              <p className="text-[11px] text-slate-400 font-mono">ProfitCal Ecom Audit System Control Panel</p>
+              <h2 className="text-base font-extrabold text-slate-900">Trang Quản Trị Hệ Thống Admin (/admin)</h2>
+              <p className="text-[11px] text-slate-600 font-mono">ProfitCal Ecom Audit System Control Panel</p>
             </div>
           </div>
 
-          <button onClick={onClose} className="px-3 py-1.5 rounded-xl bg-navy-900 border border-navy-700 text-slate-400 hover:text-white text-xs font-bold">
+          <button onClick={onClose} className="px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-slate-600 hover:text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all shadow-sm">
             ✕ Đóng
           </button>
         </div>
@@ -179,41 +179,41 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         {/* BODY CONTENT */}
         {!isAuthenticated ? (
           /* LOGIN FORM FOR ADMIN */
-          <div className="flex-1 flex items-center justify-center p-6">
-            <form onSubmit={handleLogin} className="bg-navy-950 border border-navy-800 rounded-3xl p-8 w-full max-w-sm space-y-4 shadow-2xl text-xs">
+          <div className="flex-1 flex items-center justify-center p-6 bg-[#f0f9ff]/40">
+            <form onSubmit={handleLogin} className="bg-white border border-sky-200 rounded-3xl p-8 w-full max-w-sm space-y-4 shadow-xl text-xs">
               <div className="text-center space-y-1">
-                <Shield className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
-                <h3 className="text-lg font-bold text-white">Đăng Nhập Admin Portal</h3>
-                <p className="text-slate-400">Default: admin@tagki.com / admin123</p>
+                <Shield className="w-10 h-10 text-sky-600 mx-auto mb-2" />
+                <h3 className="text-lg font-extrabold text-slate-900">Đăng Nhập Admin Portal</h3>
+                <p className="text-slate-500 font-medium">Default: admin@tagki.com / admin123</p>
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Email Quản Trị:</label>
+                <label className="text-slate-700 font-extrabold block mb-1">Email Quản Trị:</label>
                 <input
                   type="email"
                   value={inputEmail}
                   onChange={(e) => setInputEmail(e.target.value)}
                   placeholder="admin@tagki.com"
-                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
+                  className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2.5 text-slate-900 font-mono focus:border-sky-500 focus:outline-none shadow-sm"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Mật Khẩu Admin:</label>
+                <label className="text-slate-700 font-extrabold block mb-1">Mật Khẩu Admin:</label>
                 <input
                   type="password"
                   value={inputPass}
                   onChange={(e) => setInputPass(e.target.value)}
                   placeholder="••••••••"
-                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
+                  className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2.5 text-slate-900 font-mono focus:border-sky-500 focus:outline-none shadow-sm"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-emerald-500 text-navy-950 font-bold rounded-xl shadow-lg hover:bg-emerald-400 transition-all text-xs"
+                className="w-full py-3 bg-sky-600 text-white font-extrabold rounded-xl shadow-md hover:bg-sky-700 transition-all text-xs"
               >
                 Vào Hệ Thống Quản Trị 🚀
               </button>
@@ -221,43 +221,43 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           </div>
         ) : secState.isFirstLogin ? (
           /* MANDATORY FIRST LOGIN PASSWORD CHANGE PROMPT */
-          <div className="flex-1 flex items-center justify-center p-6">
-            <form onSubmit={handleForceChangePassword} className="bg-navy-950 border-2 border-amber-500/50 rounded-3xl p-8 w-full max-w-md space-y-4 shadow-2xl text-xs">
+          <div className="flex-1 flex items-center justify-center p-6 bg-[#f0f9ff]/40">
+            <form onSubmit={handleForceChangePassword} className="bg-white border-2 border-amber-400 rounded-3xl p-8 w-full max-w-md space-y-4 shadow-xl text-xs">
               <div className="text-center space-y-1">
-                <Lock className="w-10 h-10 text-amber-400 mx-auto mb-2 animate-bounce" />
-                <h3 className="text-lg font-bold text-amber-400">Yêu Cầu Đổi Mật Khẩu Lần Đầu!</h3>
-                <p className="text-slate-300">
-                  Để đảm bảo an toàn tuyệt đối cho hệ thống, bạn phải đổi mật khẩu mặc định <code className="text-amber-300 font-mono bg-navy-900 px-1 py-0.5 rounded">admin123</code> sang mật khẩu mới trước khi truy cập Admin.
+                <Lock className="w-10 h-10 text-amber-600 mx-auto mb-2 animate-bounce" />
+                <h3 className="text-lg font-extrabold text-amber-800">Yêu Cầu Đổi Mật Khẩu Lần Đầu!</h3>
+                <p className="text-slate-700 font-medium">
+                  Để đảm bảo an toàn tuyệt đối cho hệ thống, bạn phải đổi mật khẩu mặc định <code className="text-amber-800 font-mono bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-extrabold">admin123</code> sang mật khẩu mới trước khi truy cập Admin.
                 </p>
               </div>
 
               <div>
-                <label className="text-slate-300 block mb-1 font-bold">Mật Khẩu Mới của Admin:</label>
+                <label className="text-slate-800 block mb-1 font-extrabold">Mật Khẩu Mới của Admin:</label>
                 <input
                   type="password"
                   value={newPass}
                   onChange={(e) => setNewPass(e.target.value)}
                   placeholder="Nhập ít nhất 6 ký tự"
-                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
+                  className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2.5 text-slate-900 font-mono focus:border-sky-500 focus:outline-none shadow-sm"
                   required
                 />
               </div>
 
               <div>
-                <label className="text-slate-300 block mb-1 font-bold">Xác Nhận Mật Khẩu Mới:</label>
+                <label className="text-slate-800 block mb-1 font-extrabold">Xác Nhận Mật Khẩu Mới:</label>
                 <input
                   type="password"
                   value={confirmPass}
                   onChange={(e) => setConfirmPass(e.target.value)}
                   placeholder="Nhập lại mật khẩu mới"
-                  className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2.5 text-white font-mono"
+                  className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2.5 text-slate-900 font-mono focus:border-sky-500 focus:outline-none shadow-sm"
                   required
                 />
               </div>
 
               <button
                 type="submit"
-                className="w-full py-3 bg-amber-500 text-navy-950 font-extrabold rounded-xl shadow-lg hover:bg-amber-400 transition-all text-xs"
+                className="w-full py-3 bg-amber-500 text-white font-extrabold rounded-xl shadow-md hover:bg-amber-600 transition-all text-xs"
               >
                 Xác Nhận Đổi Mật Khẩu & Truy Cập 🔐
               </button>
@@ -265,14 +265,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           </div>
         ) : (
           /* FULL ADMIN MANAGEMENT PANEL */
-          <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="flex-1 flex flex-col overflow-hidden bg-[#f0f9ff]/30">
             
             {/* Admin Tabs */}
-            <div className="bg-navy-950 border-b border-navy-800 px-6 py-2 flex items-center gap-2 overflow-x-auto text-xs font-bold">
+            <div className="bg-white border-b border-sky-200 px-6 py-2 flex items-center gap-2 overflow-x-auto text-xs font-bold shadow-sm">
               <button
                 onClick={() => setActiveTab('users')}
                 className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeTab === 'users' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  activeTab === 'users' ? 'bg-sky-600 text-white font-extrabold shadow-md' : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                 }`}
               >
                 <Users className="w-4 h-4" />
@@ -282,7 +282,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               <button
                 onClick={() => setActiveTab('rules')}
                 className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeTab === 'rules' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  activeTab === 'rules' ? 'bg-sky-600 text-white font-extrabold shadow-md' : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                 }`}
               >
                 <Settings className="w-4 h-4" />
@@ -292,7 +292,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               <button
                 onClick={() => setActiveTab('payment')}
                 className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeTab === 'payment' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  activeTab === 'payment' ? 'bg-sky-600 text-white font-extrabold shadow-md' : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                 }`}
               >
                 <CreditCard className="w-4 h-4" />
@@ -302,7 +302,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               <button
                 onClick={() => setActiveTab('socials')}
                 className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeTab === 'socials' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  activeTab === 'socials' ? 'bg-sky-600 text-white font-extrabold shadow-md' : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                 }`}
               >
                 <MessageSquare className="w-4 h-4" />
@@ -312,7 +312,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               <button
                 onClick={() => setActiveTab('email')}
                 className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeTab === 'email' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  activeTab === 'email' ? 'bg-sky-600 text-white font-extrabold shadow-md' : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                 }`}
               >
                 <Mail className="w-4 h-4" />
@@ -322,7 +322,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               <button
                 onClick={() => setActiveTab('analytics')}
                 className={`py-2 px-4 rounded-xl flex items-center gap-1.5 transition-all ${
-                  activeTab === 'analytics' ? 'bg-emerald-500 text-navy-950 shadow-md' : 'text-slate-400 hover:text-white'
+                  activeTab === 'analytics' ? 'bg-sky-600 text-white font-extrabold shadow-md' : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                 }`}
               >
                 <Activity className="w-4 h-4" />

@@ -81,11 +81,27 @@ body {
 .text-slate-200 { color: #334155; }
 .text-slate-100 { color: #0f172a; }
 
+/* Table Light Mode Overrides */
+table thead {
+  background-color: #f0f9ff !important;
+  color: #0369a1 !important;
+  border-bottom: 1px solid #bae6fd !important;
+}
+
+table tbody tr:hover {
+  background-color: #f0f9ff/60 !important;
+}
+
+/* High Contrast Input Fields */
 input, select, textarea {
-  background-color: #ffffff;
-  color: #0f172a;
-  border-color: #bae6fd;
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  border-color: #7dd3fc !important;
 }
 input::placeholder, textarea::placeholder {
-  color: #94a3b8;
+  color: #94a3b8 !important;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: #0284c7 !important;
+  box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.2) !important;
 }

@@ -121,52 +121,50 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+      <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden relative">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
+        <div className="p-6 border-b border-sky-200 flex items-center justify-between bg-sky-50/60">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-rose-500 to-amber-500 p-0.5 shadow-lg shadow-rose-500/20">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <ShieldAlert className="w-5 h-5 text-rose-400" />
-              </div>
+            <div className="w-10 h-10 rounded-2xl bg-rose-100 border border-rose-200 flex items-center justify-center text-rose-600 shadow-sm">
+              <ShieldAlert className="w-5 h-5 text-rose-600" />
             </div>
             <div>
-              <h3 className="text-base font-black text-white flex items-center gap-2">
+              <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <span>Điều Chỉnh Ngoại Lệ Thủ Công</span>
-                <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-500/20 text-rose-300 font-mono border border-rose-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-rose-100 text-rose-700 font-mono font-bold border border-rose-200">
                   Audited
                 </span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Master SKU: <span className="text-amber-400 font-mono font-bold">{masterSku.masterSku}</span>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Master SKU: <span className="text-sky-700 font-mono font-extrabold">{masterSku.masterSku}</span>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Form Body */}
-        <div className="p-6 space-y-5">
+        <div className="p-6 space-y-5 bg-[#f0f9ff]/30">
 
           {/* Error Banner */}
           {errorMessage && (
-            <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-2.5 text-rose-400 text-xs font-medium animate-shake">
-              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl flex items-start gap-2.5 text-rose-700 text-xs font-medium animate-shake">
+              <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
               <span>{errorMessage}</span>
             </div>
           )}
 
           {/* Success Banner */}
           {isSuccess && (
-            <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center gap-2.5 text-emerald-400 text-xs font-semibold">
-              <CheckCircle2 className="w-4 h-4" />
+            <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-2.5 text-emerald-800 text-xs font-semibold">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               <span>✓ Giao dịch điều chỉnh ngoại lệ đã được thực thi & lưu vào Sổ cái Kiểm toán!</span>
             </div>
           )}
@@ -176,17 +174,17 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
               
               {/* Target Entity Tabs */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-[11px] font-extrabold text-slate-600 uppercase tracking-wider mb-2">
                   Hạng Mục Cần Điều Chỉnh:
                 </label>
-                <div className="grid grid-cols-3 gap-2 bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+                <div className="grid grid-cols-3 gap-2 bg-white p-1.5 rounded-2xl border border-sky-200 shadow-sm">
                   <button
                     type="button"
                     onClick={() => handleTargetChange('INVENTORY')}
                     className={`py-2 text-xs font-bold rounded-xl transition-all ${
                       targetEntity === 'INVENTORY'
-                        ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40 shadow-sm'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-rose-100 text-rose-800 border border-rose-300 shadow-sm'
+                        : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                     }`}
                   >
                     Tồn Kho Thực Tế
@@ -196,8 +194,8 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                     onClick={() => handleTargetChange('COGS')}
                     className={`py-2 text-xs font-bold rounded-xl transition-all ${
                       targetEntity === 'COGS'
-                        ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-amber-100 text-amber-800 border border-amber-300 shadow-sm'
+                        : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                     }`}
                   >
                     Đơn Giá Vốn COGS
@@ -207,8 +205,8 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                     onClick={() => handleTargetChange('MASTER_SKU')}
                     className={`py-2 text-xs font-bold rounded-xl transition-all ${
                       targetEntity === 'MASTER_SKU'
-                        ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm'
-                        : 'text-slate-400 hover:text-white'
+                        ? 'bg-sky-100 text-sky-800 border border-sky-300 shadow-sm'
+                        : 'text-slate-600 hover:bg-sky-50 hover:text-sky-700'
                     }`}
                   >
                     Ngưỡng An Toàn
@@ -217,35 +215,35 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
               </div>
 
               {/* Before / After / Delta Grid */}
-              <div className="grid grid-cols-3 gap-3 p-4 bg-slate-950/80 rounded-2xl border border-slate-800 items-center">
+              <div className="grid grid-cols-3 gap-3 p-4 bg-white rounded-2xl border border-sky-200 items-center shadow-sm">
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block mb-1">Hiện Tại (Before)</span>
-                  <span className="text-sm font-mono font-bold text-slate-300">
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">Hiện Tại (Before)</span>
+                  <span className="text-sm font-mono font-extrabold text-slate-800">
                     {beforeValue.toLocaleString('vi-VN')} {unitLabel}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-amber-400 uppercase font-semibold block mb-1">Mới (After)</span>
+                  <span className="text-[10px] text-amber-700 uppercase font-bold block mb-1">Mới (After)</span>
                   <input
                     type="number"
                     min="0"
                     step={targetEntity === 'COGS' ? '100' : '1'}
                     value={requestedValue}
                     onChange={(e) => setRequestedValue(parseFloat(e.target.value) || 0)}
-                    className="w-full px-2.5 py-1.5 bg-slate-900 border border-amber-500/50 rounded-lg text-white font-mono text-sm font-bold focus:outline-none focus:border-amber-400"
+                    className="w-full px-2.5 py-1.5 bg-white border border-sky-300 rounded-lg text-slate-900 font-mono text-sm font-extrabold focus:outline-none focus:border-sky-500 shadow-sm"
                   />
                 </div>
 
                 <div>
-                  <span className="text-[10px] text-slate-400 uppercase font-semibold block mb-1">Biến Động (Delta)</span>
+                  <span className="text-[10px] text-slate-500 uppercase font-bold block mb-1">Biến Động (Delta)</span>
                   <span
                     className={`text-sm font-mono font-black ${
                       delta > 0
-                        ? 'text-emerald-400'
+                        ? 'text-emerald-600'
                         : delta < 0
-                        ? 'text-rose-400'
-                        : 'text-slate-400'
+                        ? 'text-rose-600'
+                        : 'text-slate-500'
                     }`}
                   >
                     {delta > 0 ? `+${delta.toLocaleString('vi-VN')}` : delta.toLocaleString('vi-VN')} {unitLabel}
@@ -255,14 +253,14 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
 
               {/* Mandatory Reason Selection */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <FileText className="w-3.5 h-3.5 text-amber-400" />
+                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-amber-600" />
                   <span>Lý Do Điều Chỉnh (Bắt buộc):</span>
                 </label>
                 <select
                   value={selectedPresetReason}
                   onChange={(e) => setSelectedPresetReason(e.target.value)}
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs font-medium focus:outline-none focus:border-amber-500 mb-2"
+                  className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-sky-500 mb-2 shadow-sm"
                 >
                   {COMMON_REASONS.map((r, i) => (
                     <option key={i} value={r}>
@@ -277,15 +275,15 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                     value={customReason}
                     onChange={(e) => setCustomReason(e.target.value)}
                     placeholder="Nhập chi tiết biên bản kiểm kê hoặc lý do giải trình..."
-                    className="w-full px-3 py-2 bg-slate-950 border border-amber-500/40 rounded-xl text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-amber-400"
+                    className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-sky-500 shadow-sm"
                   />
                 )}
               </div>
 
               {/* Actor Name */}
               <div>
-                <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
-                  <User className="w-3.5 h-3.5 text-cyan-400" />
+                <label className="block text-[11px] font-extrabold text-slate-700 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <User className="w-3.5 h-3.5 text-sky-600" />
                   <span>Người Thực Hiện (Actor):</span>
                 </label>
                 <input
@@ -293,7 +291,7 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                   value={actor}
                   onChange={(e) => setActor(e.target.value)}
                   placeholder="VD: Quản trị viên / Thủ kho A"
-                  className="w-full px-3 py-2 bg-slate-950 border border-slate-700 rounded-xl text-white text-xs font-semibold focus:outline-none focus:border-cyan-500"
+                  className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-slate-900 text-xs font-semibold focus:outline-none focus:border-sky-500 shadow-sm"
                 />
               </div>
 
@@ -302,13 +300,13 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-colors"
                 >
                   Hủy Bỏ
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-rose-500 to-amber-500 hover:from-rose-400 hover:to-amber-400 text-slate-950 text-xs font-black shadow-lg shadow-rose-500/25 transition-all flex items-center gap-1.5"
+                  className="px-6 py-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-1.5"
                 >
                   <span>Tiếp Tục Xác Nhận</span>
                   <ArrowRight className="w-4 h-4" />
@@ -318,21 +316,21 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
           ) : (
             /* CONFIRMATION STEP (TWO-STEP CONFIRMATION) */
             <div className="space-y-4">
-              <div className="p-4 bg-rose-500/10 border border-rose-500/40 rounded-2xl space-y-2.5">
-                <div className="flex items-center gap-2 text-rose-400 text-xs font-extrabold">
+              <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl space-y-2.5">
+                <div className="flex items-center gap-2 text-rose-700 text-xs font-extrabold">
                   <ShieldAlert className="w-4 h-4" />
                   <span>CẢNH BÁO KIỂM TOÁN (AUDIT TRAIL NOTICE)</span>
                 </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-slate-700 leading-relaxed">
                   Đây là thao tác điều chỉnh thủ công có ảnh hưởng đến số liệu tồn kho/giá vốn hiện hành và được ghi vào Sổ cái Kiểm toán (Audit Trail).{' '}
-                  <strong className="text-amber-300">Thao tác này KHÔNG thay đổi COGS của các OrderItem lịch sử.</strong>
+                  <strong className="text-amber-800 font-extrabold">Thao tác này KHÔNG thay đổi COGS của các OrderItem lịch sử.</strong>
                 </p>
 
-                <div className="pt-2 border-t border-rose-500/20 text-[11px] text-slate-300 space-y-1">
-                  <div>• Hạng mục: <strong className="text-amber-300">{targetEntity}</strong></div>
-                  <div>• Giá trị: <strong className="text-slate-400">{beforeValue.toLocaleString('vi-VN')}</strong> $\longrightarrow$ <strong className="text-emerald-400">{Number(requestedValue).toLocaleString('vi-VN')} {unitLabel}</strong> (Biến động: {delta > 0 ? `+${delta}` : delta})</div>
-                  <div>• Lý do: <span className="italic text-slate-200">"{finalReason}"</span></div>
-                  <div>• Người thực hiện: <strong className="text-cyan-300">{actor}</strong></div>
+                <div className="pt-2 border-t border-rose-200 text-[11px] text-slate-700 space-y-1">
+                  <div>• Hạng mục: <strong className="text-amber-800">{targetEntity}</strong></div>
+                  <div>• Giá trị: <strong className="text-slate-600">{beforeValue.toLocaleString('vi-VN')}</strong> $\longrightarrow$ <strong className="text-emerald-700 font-bold">{Number(requestedValue).toLocaleString('vi-VN')} {unitLabel}</strong> (Biến động: {delta > 0 ? `+${delta}` : delta})</div>
+                  <div>• Lý do: <span className="italic text-slate-800">"{finalReason}"</span></div>
+                  <div>• Người thực hiện: <strong className="text-sky-700 font-bold">{actor}</strong></div>
                 </div>
               </div>
 
@@ -340,7 +338,7 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setStep('EDIT')}
-                  className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold border border-slate-200 transition-colors"
                 >
                   Quay Lại Chỉnh Sửa
                 </button>
@@ -348,7 +346,7 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                   type="button"
                   onClick={handleExecuteCommit}
                   disabled={isSuccess}
-                  className="px-6 py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white text-xs font-black shadow-lg shadow-rose-500/30 transition-all flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-extrabold shadow-md transition-all flex items-center gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Xác Nhận & Ghi Sổ Cái</span>
