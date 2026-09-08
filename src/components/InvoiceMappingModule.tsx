@@ -232,15 +232,6 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         <div className="flex items-center gap-2">
           <button
             type="button"
-            onClick={() => setShowTelemetryDrawer(!showTelemetryDrawer)}
-            className="px-3 py-2 rounded-xl bg-navy-950 hover:bg-navy-800 text-cyan-400 border border-cyan-500/30 font-semibold text-xs flex items-center gap-1.5 transition-colors shadow-sm"
-          >
-            <Activity className="w-3.5 h-3.5" />
-            <span>📊 Nhật ký & Telemetry Tracking</span>
-          </button>
-
-          <button
-            type="button"
             disabled={isProcessing}
             onClick={handleExecuteMapping}
             className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-navy-950 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-md disabled:opacity-50"
@@ -541,89 +532,6 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         </div>
 
       </div>
-
-      {/* 5. TELEMETRY & REVISIT ANALYTICS DRAWER MODAL */}
-      {showTelemetryDrawer && (
-        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 max-w-4xl w-full max-h-[85vh] overflow-y-auto space-y-5 shadow-2xl animate-fade-in">
-            
-            <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-              <div>
-                <h3 className="text-base font-bold text-white flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-cyan-400" />
-                  <span>BÁO CÁO TELEMETRY TRACKING & TẦN SUẤT QUAY LẠI</span>
-                </h3>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Thống kê thời gian thực người dùng, vị trí địa lý, trình duyệt, thiết bị và tần suất quay lại (30p/Giờ/Ngày).
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowTelemetryDrawer(false)}
-                className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs"
-              >
-                Đóng
-              </button>
-            </div>
-
-            {/* Revisit Frequency Stats */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-xs">
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                <span className="text-slate-400 font-sans block text-[10px]">Tần suất theo 30 phút:</span>
-                <span className="text-emerald-400 font-bold text-sm block mt-1">09:30 - 10:00 (Đang hoạt động)</span>
-              </div>
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                <span className="text-slate-400 font-sans block text-[10px]">Khung giờ cao điểm:</span>
-                <span className="text-amber-400 font-bold text-sm block mt-1">09:00 - 10:00 (3 lượt quay lại)</span>
-              </div>
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800">
-                <span className="text-slate-400 font-sans block text-[10px]">Tần suất theo ngày:</span>
-                <span className="text-cyan-400 font-bold text-sm block mt-1">Daily Active Return: 100%</span>
-              </div>
-            </div>
-
-            {/* Telemetry Logs Table */}
-            <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950">
-              <table className="w-full text-xs text-left font-mono">
-                <thead className="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold border-b border-slate-800">
-                  <tr>
-                    <th className="p-2.5">Sự Kiện & User</th>
-                    <th className="p-2.5">Tần Suất Quay Lại</th>
-                    <th className="p-2.5">Vị Trí & IP</th>
-                    <th className="p-2.5">Thiết Bị & Màn Hình</th>
-                    <th className="p-2.5 text-right">Ngày Giờ</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800/60 text-[11px]">
-                  {telemetryLogs.slice(0, 10).map((log: any, idx: number) => (
-                    <tr key={idx} className="hover:bg-slate-800/40">
-                      <td className="p-2.5">
-                        <span className="font-bold text-white block">{log.user_email || 'Khách Vô Danh'}</span>
-                        <span className="text-[10px] text-cyan-400">{log.event_name} ({log.feature_name || 'Hóa đơn'})</span>
-                      </td>
-                      <td className="p-2.5 text-emerald-400 font-bold">
-                        {log.revisit_30min_slot || '09:30 - 10:00'}
-                      </td>
-                      <td className="p-2.5">
-                        <span className="text-slate-200 block">{log.location || 'Hà Nội, Việt Nam'}</span>
-                        <span className="text-slate-500 text-[10px]">IP: {log.ip_address || '14.226.12.88'}</span>
-                      </td>
-                      <td className="p-2.5">
-                        <span className="text-slate-300 block">{log.device_type} ({log.browser})</span>
-                        <span className="text-slate-500 text-[10px]">{log.screen_res || '1920x1080'}</span>
-                      </td>
-                      <td className="p-2.5 text-right text-slate-400 text-[10px]">
-                        {log.formatted_access_time || 'Vừa xong'}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-          </div>
-        </div>
-      )}
 
     </div>
   );
