@@ -80,9 +80,16 @@ export function App() {
 
   // Auto detect `/admin` route or Google OAuth `#access_token=` in URL
   useEffect(() => {
-    if (window.location.pathname.includes('/admin') || window.location.hash === '#admin') {
-      setShowAdminDashboard(true);
-    }
+    const checkAdminRoute = () => {
+      if (window.location.pathname.includes('/admin') || window.location.hash === '#admin') {
+        setShowAdminDashboard(true);
+      } else {
+        setShowAdminDashboard(false);
+      }
+    };
+
+    checkAdminRoute();
+    window.addEventListener('popstate', checkAdminRoute);
 
     // Catch Real Google OAuth Token Callback
     const oauthUser = parseOAuthRedirectHash();
@@ -105,7 +112,18 @@ export function App() {
       setActiveModule('invoice');
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
     }
+
+    return () => {
+      window.removeEventListener('popstate', checkAdminRoute);
+    };
   }, []);
+
+  const handleCloseAdmin = () => {
+    if (typeof window !== 'undefined' && (window.location.pathname.includes('/admin') || window.location.hash === '#admin')) {
+      window.history.pushState({}, '', '/');
+    }
+    setShowAdminDashboard(false);
+  };
 
   const handleLogout = () => {
     const loggedOutUser: UserState = {
@@ -414,7 +432,7 @@ export function App() {
 
         {showAdminDashboard && (
           <AdminDashboard
-            onClose={() => setShowAdminDashboard(false)}
+            onClose={handleCloseAdmin}
           />
         )}
 
