@@ -19,6 +19,8 @@ import {
 import { calculateExtendedProExpiration, getRemainingProDays } from '../utils/storage';
 import { getFreemiumRule, saveFreemiumRule, FreemiumRule } from '../utils/freemium';
 import { getStoredAnalyticsEvents } from '../utils/analytics';
+import { getSentEmailLogs } from '../services/mailService';
+import { getLoginHistory, getRegisteredUsers } from '../services/authService';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -487,7 +489,53 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           );
                         })}
                       </tbody>
-                    </table>
+                  </div>
+
+                  {/* 2FA LOGIN HISTORY TELEMETRY TABLE */}
+                  <div className="pt-6 space-y-3">
+                    <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                      <Shield className="w-4 h-4 text-sky-600" />
+                      <span>Lịch sử Đăng nhập & Xác thực 2FA OTP ({getLoginHistory().length} lượt)</span>
+                    </h4>
+
+                    <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white shadow-sm">
+                      <table className="w-full text-left text-xs font-mono">
+                        <thead className="bg-sky-100 text-sky-900 uppercase font-bold text-[10px]">
+                          <tr>
+                            <th className="p-2.5">Thời gian</th>
+                            <th className="p-2.5">Email tài khoản</th>
+                            <th className="p-2.5">Địa chỉ IP</th>
+                            <th className="p-2.5">Thiết bị & Trình duyệt</th>
+                            <th className="p-2.5 text-center">Trạng thái 2FA</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-sky-100">
+                          {getLoginHistory().length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="p-4 text-center text-slate-500 font-sans">
+                                Chưa có nhật ký đăng nhập 2FA nào được ghi nhận.
+                              </td>
+                            </tr>
+                          ) : (
+                            getLoginHistory().map((log) => (
+                              <tr key={log.id} className="hover:bg-sky-50">
+                                <td className="p-2.5 text-slate-500">{new Date(log.timestamp).toLocaleString('vi-VN')}</td>
+                                <td className="p-2.5 font-bold text-slate-900">{log.email}</td>
+                                <td className="p-2.5 text-sky-700 font-mono">{log.ip}</td>
+                                <td className="p-2.5 text-slate-700 font-sans">{log.device} • {log.browser}</td>
+                                <td className="p-2.5 text-center">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-sans font-bold ${
+                                    log.status === 'SUCCESS' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                                  }`}>
+                                    {log.status === 'SUCCESS' ? '🟢 THÀNH CÔNG' : '🔴 THẤT BẠI'}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
                   </div>
                 </div>
               )}
@@ -738,10 +786,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                   <button
                     type="submit"
-                    className="py-2.5 px-5 bg-emerald-500 text-navy-950 font-bold rounded-xl shadow-lg hover:bg-emerald-400"
+                    className="py-2.5 px-5 bg-sky-600 text-white font-extrabold rounded-xl shadow-lg hover:bg-sky-700"
                   >
-                    Lưu Cấu Hình Email Server
+                    Lưu cấu hình email server
                   </button>
+
+                  {/* SENT EMAIL DISPATCH LOGS TABLE */}
+                  <div className="pt-6 space-y-3">
+                    <h4 className="font-extrabold text-slate-900 text-sm flex items-center gap-2">
+                      <Mail className="w-4 h-4 text-sky-600" />
+                      <span>Nhật ký gửi Email OTP thực tế ({getSentEmailLogs().length} lượt)</span>
+                    </h4>
+
+                    <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
+                      <table className="w-full text-left text-xs font-mono">
+                        <thead className="bg-sky-100 text-sky-900 uppercase font-bold text-[10px]">
+                          <tr>
+                            <th className="p-2.5">Thời gian</th>
+                            <th className="p-2.5">Email người nhận</th>
+                            <th className="p-2.5">Loại xác thực</th>
+                            <th className="p-2.5">Tiêu đề email</th>
+                            <th className="p-2.5 text-center">Trạng thái</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-sky-100">
+                          {getSentEmailLogs().length === 0 ? (
+                            <tr>
+                              <td colSpan={5} className="p-4 text-center text-slate-500 font-sans">
+                                Chưa có email OTP nào được khởi tạo gửi đi.
+                              </td>
+                            </tr>
+                          ) : (
+                            getSentEmailLogs().map((m) => (
+                              <tr key={m.id} className="hover:bg-sky-50">
+                                <td className="p-2.5 text-slate-500">{new Date(m.sentAt).toLocaleString('vi-VN')}</td>
+                                <td className="p-2.5 font-bold text-slate-900">{m.recipient}</td>
+                                <td className="p-2.5 text-sky-700 font-bold">{m.type}</td>
+                                <td className="p-2.5 text-slate-600 font-sans">{m.subject}</td>
+                                <td className="p-2.5 text-center">
+                                  <span className="px-2 py-0.5 rounded text-[10px] font-sans font-bold bg-emerald-100 text-emerald-800">
+                                    {m.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
                 </form>
               )}
 

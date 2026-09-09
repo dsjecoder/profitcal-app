@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle2, X, PlusCircle, Check, ArrowLeft } from 'lucide-react';
+import { Mail, Lock, User, ArrowRight, ShieldCheck, CheckCircle2, X, PlusCircle, Check, ArrowLeft, RefreshCw, Send } from 'lucide-react';
 import { UserState } from '../types';
 import { signInWithGoogleOAuth, SUPABASE_URL } from '../utils/supabaseAuth';
 import { getPaymentGatewaysConfig } from '../utils/adminConfig';
+import { requestRegisterOtp, requestLogin2faOtp, verifyOtpCode } from '../services/authService';
 
 interface AuthModalProps {
   user: UserState;
@@ -19,8 +20,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
   const [name, setName] = useState('');
   const [password, setPassword] = useState('');
   const [otpCode, setOtpCode] = useState('');
-  const [generatedOtp, setGeneratedOtp] = useState('');
-  const [otpNotification, setOtpNotification] = useState<string | null>(null);
+  
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [infoMessage, setInfoMessage] = useState<string | null>(null);
+  const [resendCountdown, setResendCountdown] = useState<number>(0);
 
   const paymentConfig = getPaymentGatewaysConfig();
   const realGoogleClientId = paymentConfig.googleClientId || (import.meta as any).env?.VITE_GOOGLE_CLIENT_ID || '';
@@ -30,6 +34,15 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
     { email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', avatar: 'E', bg: 'bg-blue-600' },
     { email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', avatar: 'D', bg: 'bg-teal-600' },
   ];
+
+  // 60-second Countdown Timer for Resend OTP
+  useEffect(() => {
+    if (resendCountdown <= 0) return;
+    const timer = setInterval(() => {
+      setResendCountdown((prev) => prev - 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [resendCountdown]);
 
   // Initialize official Google Identity Services (GIS) SDK ONLY if real Client ID is provided
   useEffect(() => {
@@ -50,7 +63,6 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
   }, [realGoogleClientId, onLoginSuccess]);
 
   const handleGoogleClick = () => {
-    // 1. If real Google Client ID is configured, try Google GSI prompt
     if (realGoogleClientId && !realGoogleClientId.includes('placeholder')) {
       try {
         const google = (window as any).google;
@@ -61,13 +73,11 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
       } catch (e) {}
     }
 
-    // 2. If Supabase URL is configured, trigger Supabase OAuth redirect
     if (SUPABASE_URL && SUPABASE_URL.includes('supabase.co')) {
       signInWithGoogleOAuth();
       return;
     }
 
-    // 3. Fallback: Smooth inline Google Account Picker
     setShowGooglePicker(true);
   };
 
@@ -75,29 +85,95 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
     onLoginSuccess(acc.email, acc.name);
   };
 
-  const handleStartRegister = (e: React.FormEvent) => {
+  // Step A: Request Registration OTP
+  const handleStartRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password || !name) return alert('Vui lòng điền đầy đủ thông tin!');
-    
-    const mockOtp = String(Math.floor(100000 + Math.random() * 900000));
-    setGeneratedOtp(mockOtp);
-    setStep('verify_otp');
-    setOtpNotification(mockOtp);
-  };
+    setErrorMessage(null);
+    setInfoMessage(null);
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (otpCode === generatedOtp || otpCode === '123456') {
-      onLoginSuccess(email, name);
+    if (!email || !password || !name) {
+      setErrorMessage('Vui lòng điền đầy đủ Tên, Email và Mật khẩu!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const res = await requestRegisterOtp({ email, name, password });
+    setIsSubmitting(false);
+
+    if (res.success) {
+      setStep('verify_otp');
+      setResendCountdown(60);
+      setInfoMessage(res.message);
     } else {
-      alert('Mã OTP không chính xác! Vui lòng thử lại.');
+      setErrorMessage(res.message);
     }
   };
 
-  const handleStandardLogin = (e: React.FormEvent) => {
+  // Step A: Request Login 2FA OTP
+  const handleStandardLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email || !password) return alert('Vui lòng điền Email và Mật khẩu!');
-    onLoginSuccess(email, name || 'Chủ Shop');
+    setErrorMessage(null);
+    setInfoMessage(null);
+
+    if (!email || !password) {
+      setErrorMessage('Vui lòng điền địa chỉ Email và Mật khẩu!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const res = await requestLogin2faOtp({ email, password });
+    setIsSubmitting(false);
+
+    if (res.success) {
+      setStep('verify_otp');
+      setResendCountdown(60);
+      setInfoMessage(res.message);
+    } else {
+      setErrorMessage(res.message);
+    }
+  };
+
+  // Step B: Verify OTP Code (Final 2FA completion)
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage(null);
+
+    if (!otpCode || otpCode.trim().length !== 6) {
+      setErrorMessage('Mã OTP phải bao gồm đúng 6 chữ số!');
+      return;
+    }
+
+    setIsSubmitting(true);
+    const result = verifyOtpCode({ email, userOtp: otpCode.trim() });
+    setIsSubmitting(false);
+
+    if (result.success) {
+      onLoginSuccess(email, result.name || name || 'Chủ Shop');
+    } else {
+      setErrorMessage(result.message);
+    }
+  };
+
+  // Resend OTP Action
+  const handleResendOtp = async () => {
+    if (resendCountdown > 0 || isSubmitting) return;
+    setErrorMessage(null);
+    setIsSubmitting(true);
+
+    let res;
+    if (mode === 'register') {
+      res = await requestRegisterOtp({ email, name, password });
+    } else {
+      res = await requestLogin2faOtp({ email, password });
+    }
+    setIsSubmitting(false);
+
+    if (res.success) {
+      setResendCountdown(60);
+      setInfoMessage('Đã gửi lại mã OTP mới tới email của bạn!');
+    } else {
+      setErrorMessage(res.message);
+    }
   };
 
   return (
@@ -298,34 +374,89 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp} className="space-y-4 text-xs text-left animate-fade-in">
-                {otpNotification && (
-                  <div className="p-3.5 rounded-2xl bg-blue-50 border border-blue-200 text-blue-900 text-left space-y-1">
-                    <span className="font-bold text-blue-700 block">📧 [EMAIL SERVER OTP]:</span>
-                    <p className="text-[11px]">
-                      Mã OTP 6 số gửi tới <strong>{email}</strong> là: <strong className="font-mono text-base text-blue-700 font-black">{otpNotification}</strong>
-                    </p>
+                
+                {/* Back to input step */}
+                <button
+                  type="button"
+                  onClick={() => { setStep('input'); setErrorMessage(null); }}
+                  className="inline-flex items-center gap-1.5 text-xs text-slate-500 hover:text-blue-600 font-semibold mb-1"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Quay lại đổi thông tin</span>
+                </button>
+
+                {/* Info Callout */}
+                <div className="p-3.5 rounded-2xl bg-sky-50 border border-sky-200 text-sky-900 text-left space-y-1">
+                  <div className="flex items-center gap-1.5 font-bold text-sky-800 text-xs">
+                    <Mail className="w-4 h-4 text-sky-600" />
+                    <span>Xác thực OTP 2FA</span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 leading-relaxed">
+                    Hệ thống đã gửi mã xác thực 6 chữ số tới email <strong className="text-slate-900">{email}</strong>. Vui lòng kiểm tra Hòm thư đến (Inbox / Spam).
+                  </p>
+                </div>
+
+                {/* Error Banner */}
+                {errorMessage && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 font-bold text-xs">
+                    ⚠️ {errorMessage}
                   </div>
                 )}
 
+                {/* OTP Input Field */}
                 <div>
-                  <label className="text-slate-700 font-bold block mb-1 text-center">Nhập Mã OTP 6 Số</label>
+                  <label className="text-slate-700 font-bold block mb-1 text-center">
+                    Nhập mã OTP 6 chữ số (Hiệu lực 5 phút)
+                  </label>
                   <input
                     type="text"
                     maxLength={6}
                     value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    placeholder="123456"
-                    className="w-full bg-white border border-slate-300 rounded-xl px-3 py-3 text-center text-xl font-mono tracking-widest text-blue-700 font-black focus:border-blue-600 focus:outline-none"
+                    onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                    placeholder="• • • • • •"
+                    className="w-full bg-white border border-sky-300 rounded-xl px-3 py-3 text-center text-2xl font-mono tracking-[10px] text-sky-700 font-black focus:border-sky-500 focus:outline-none shadow-inner"
                     required
                   />
                 </div>
 
+                {/* Submit Verification Button */}
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-blue-600 text-white font-extrabold text-sm shadow-lg shadow-blue-500/30 hover:bg-blue-700 transition-all"
+                  disabled={isSubmitting || otpCode.length !== 6}
+                  className="w-full py-3.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-sm shadow-lg shadow-sky-600/30 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  Xác Nhận OTP & Kích Hoạt
+                  {isSubmitting ? (
+                    <>
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                      <span>Đang xác thực...</span>
+                    </>
+                  ) : (
+                    <>
+                      <ShieldCheck className="w-4 h-4" />
+                      <span>Xác nhận OTP & kích hoạt</span>
+                    </>
+                  )}
                 </button>
+
+                {/* Resend OTP Action with 60s Countdown Timer */}
+                <div className="pt-2 text-center border-t border-slate-100">
+                  {resendCountdown > 0 ? (
+                    <span className="text-xs text-slate-500 font-mono">
+                      Gửi lại mã OTP sau: <strong className="text-sky-700 font-bold">{resendCountdown}s</strong>
+                    </span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={handleResendOtp}
+                      disabled={isSubmitting}
+                      className="text-xs text-sky-700 hover:text-sky-900 font-bold underline inline-flex items-center gap-1"
+                    >
+                      <Send className="w-3 h-3" />
+                      <span>Bấm vào đây để gửi lại mã OTP mới</span>
+                    </button>
+                  )}
+                </div>
+
               </form>
             )}
           </>
