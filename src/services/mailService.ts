@@ -8,6 +8,7 @@ export interface SentEmailLog {
   sentAt: string;
   status: 'DELIVERED' | 'FAILED' | 'QUEUED';
   type: 'OTP_REGISTER' | 'OTP_LOGIN_2FA' | 'PASSWORD_RESET';
+  errorMessage?: string;
 }
 
 const SENT_EMAILS_STORAGE_KEY = 'profitcal_sent_emails_v1';
@@ -116,7 +117,7 @@ export function buildOtpEmailHtml(recipientName: string, otpCode: string, isRegi
           <tr>
             <td style="background-color: #f8fafc; border-top: 1px solid #f1f5f9; padding: 20px 32px; text-align: center; font-size: 12px; color: #94a3b8; line-height: 1.6;">
               © 2026 Tagki Media Tech. Tất cả các quyền được bảo lưu.<br>
-              Email tự động từ hệ thống xác thực <strong>no-reply@tagki.com</strong>
+              Email tự động từ hệ thống xác thực <strong>noreply@profitcal.tagki.com</strong>
             </td>
           </tr>
 
@@ -182,94 +183,90 @@ export async function sendOtpEmail(params: {
 
   // 2. Try Resend API if API Key is configured
   if (apiKey && apiKey.trim().length > 5 && !apiKey.includes('placeholder') && !apiKey.includes('live_api_key')) {
-    try {
-      const payload = JSON.stringify({
-        from: senderFormatted,
-        to: [params.recipientEmail],
-        subject: subject,
-        html: htmlBody,
-      });
+    const payload = JSON.stringify({
+      from: senderFormatted,
+      to: [params.recipientEmail],
+      subject: subject,
+      html: htmlBody,
+    });
 
-      const headers = {
-        'Authorization': `Bearer ${apiKey.trim()}`,
-        'Content-Type': 'application/json',
-      };
+    const headers = {
+      'Authorization': `Bearer ${apiKey.trim()}`,
+      'Content-Type': 'application/json',
+    };
 
-      let res: Response | null = null;
+    // List of CORS proxy fallbacks for browser SPA execution
+    const proxyUrls = [
+      'https://thingproxy.freeboard.io/fetch/https://api.resend.com/emails',
+      `https://corsproxy.io/?${encodeURIComponent('https://api.resend.com/emails')}`,
+      `https://api.allorigins.win/raw?url=${encodeURIComponent('https://api.resend.com/emails')}`,
+      'https://api.resend.com/emails',
+    ];
 
+    let lastErrorDetail = '';
+    let success = false;
+
+    for (const url of proxyUrls) {
       try {
-        // Direct Browser Fetch
-        res = await fetch('https://api.resend.com/emails', {
+        const res = await fetch(url, {
           method: 'POST',
           headers,
           body: payload,
         });
-      } catch (corsErr) {
-        // Fallback via CORS proxy if browser blocks direct fetch
-        try {
-          res = await fetch(`https://corsproxy.io/?${encodeURIComponent('https://api.resend.com/emails')}`, {
-            method: 'POST',
-            headers,
-            body: payload,
+
+        if (res.ok) {
+          success = true;
+          logSentEmail({
+            recipient: params.recipientEmail,
+            subject: subject,
+            sender: senderFormatted,
+            status: 'DELIVERED',
+            type: params.type,
           });
-        } catch (proxyErr) {}
+          return { success: true, message: '🎉 Mã OTP đã được gửi thành công tới hòm thư Email thực tế của bạn!' };
+        } else {
+          const errText = await res.text().catch(() => '');
+          try {
+            const parsed = JSON.parse(errText);
+            lastErrorDetail = parsed.message || parsed.name || errText;
+          } catch (e) {
+            lastErrorDetail = errText || `HTTP ${res.status}`;
+          }
+        }
+      } catch (err: any) {
+        lastErrorDetail = err.message || 'Lỗi mạng kết nối Server';
       }
+    }
 
-      if (res && res.ok) {
-        logSentEmail({
-          recipient: params.recipientEmail,
-          subject: subject,
-          sender: senderFormatted,
-          status: 'DELIVERED',
-          type: params.type,
-        });
-        return { success: true, message: '🎉 Mã OTP đã được gửi thành công tới hòm thư Email thực tế của bạn!' };
-      } else {
-        const errBody = res ? await res.text().catch(() => '') : '';
-        let errDetail = errBody;
-        try {
-          const parsed = JSON.parse(errBody);
-          errDetail = parsed.message || parsed.name || errBody;
-        } catch (e) {}
-
-        logSentEmail({
-          recipient: params.recipientEmail,
-          subject: subject,
-          sender: senderFormatted,
-          status: 'FAILED',
-          type: params.type,
-        });
-        return {
-          success: false,
-          message: `Lỗi Server Email Resend API (${res ? res.status : 'Fetch Failed'}): ${errDetail || 'Vui lòng kiểm tra API Key và Tên miền người gửi'}.`,
-        };
-      }
-    } catch (err: any) {
+    if (!success) {
       logSentEmail({
         recipient: params.recipientEmail,
         subject: subject,
         sender: senderFormatted,
         status: 'FAILED',
         type: params.type,
+        errorMessage: lastErrorDetail || 'Lỗi kết nối Resend API',
       });
       return {
         success: false,
-        message: `Lỗi kết nối Email Server: ${err.message || 'Chưa cấu hình API Key hòm thư hợp lệ'}.`,
+        message: `Lỗi Server Email Resend: ${lastErrorDetail || 'Không thể kết nối API Key'}. Hãy kiểm tra API Key Resend và Tên miền người gửi trong Admin Portal.`,
       };
     }
   }
 
   // 3. Warning Mode when API Key is empty
+  const missingKeyMsg = 'Chưa nhập Resend.com API Key! Vui lòng dán API Key vào ô "Resend.com API Key" trong Admin Portal (/admin -> Cấu hình Email Server) và bấm "Lưu cấu hình email server".';
   logSentEmail({
     recipient: params.recipientEmail,
     subject: subject,
     sender: senderFormatted,
-    status: 'QUEUED',
+    status: 'FAILED',
     type: params.type,
+    errorMessage: 'Chưa cấu hình API Key',
   });
 
   return {
     success: false,
-    message: 'Chưa cấu hình Resend API Key! Vui lòng truy cập Admin Portal (/admin -> Cấu hình Email Server) nhập API Key của Resend để kích hoạt gửi Email thực tế.',
+    message: missingKeyMsg,
   };
 }

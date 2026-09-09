@@ -731,7 +731,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
               {/* Tab 5: Email Server Config */}
               {activeTab === 'email' && (
                 <form onSubmit={handleSaveEmailConfig} className="space-y-4 max-w-xl text-xs">
-                  <h3 className="font-bold text-white text-sm">Cấu Hình Email Server Sending (Resend / SMTP / Supabase)</h3>
+                  <h3 className="font-bold text-slate-900 text-sm">Cấu Hình Email Server Sending (Resend / EmailJS / SMTP)</h3>
+
+                  {/* Status Banner */}
+                  {emailConfig.resendApiKey && emailConfig.resendApiKey.startsWith('re_') ? (
+                    <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl font-medium text-[11px] flex items-center gap-2">
+                      <span className="font-bold text-emerald-600 text-sm">✓</span>
+                      <div>
+                        <strong className="block">Đã cấu hình Resend API Key: {emailConfig.resendApiKey.substring(0, 7)}***</strong>
+                        Email người gửi: <code className="font-mono font-bold text-emerald-900">{emailConfig.senderEmail || 'noreply@profitcal.tagki.com'}</code>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 bg-amber-50 border border-amber-200 text-amber-900 rounded-xl font-medium text-[11px] flex items-center gap-2">
+                      <span className="font-bold text-amber-600 text-sm">⚠️</span>
+                      <div>
+                        <strong className="block">Chưa nhập Resend.com API Key (Cần thiết để gửi mail tới Gmail khách hàng)</strong>
+                        Vui lòng lấy API Key tại <a href="https://resend.com/api-keys" target="_blank" rel="noreferrer" className="underline font-bold text-amber-700">Resend.com/api-keys</a>, dán vào ô bên dưới và bấm <strong>Lưu cấu hình Email Server</strong>.
+                      </div>
+                    </div>
+                  )}
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
@@ -755,12 +774,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   </div>
 
                   <div>
-                    <label className="text-slate-600 block mb-1">Resend.com API Key (Khuyên dùng):</label>
+                    <label className="text-slate-600 block mb-1 font-bold">Resend.com API Key (Ví dụ: re_123456...):</label>
                     <input
                       type="text"
                       value={emailConfig.resendApiKey}
                       onChange={(e) => setEmailConfig({ ...emailConfig, resendApiKey: e.target.value })}
-                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-amber-300 font-mono"
+                      placeholder="Dán API Key dạng re_xxxx... từ Resend.com vào đây"
+                      className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2 text-amber-700 font-mono font-bold text-xs shadow-sm"
                     />
                   </div>
 
@@ -775,12 +795,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                       />
                     </div>
                     <div>
-                      <label className="text-slate-600 block mb-1">Email Người Gửi (From Email):</label>
+                      <label className="text-slate-600 block mb-1 font-bold">Email Người Gửi (Domain Verified):</label>
                       <input
                         type="email"
                         value={emailConfig.senderEmail}
                         onChange={(e) => setEmailConfig({ ...emailConfig, senderEmail: e.target.value })}
-                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-emerald-700 font-mono"
+                        placeholder="noreply@profitcal.tagki.com"
+                        className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2 text-emerald-700 font-mono font-bold"
                       />
                     </div>
                   </div>
@@ -791,9 +812,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                       <span>Hướng dẫn cấu hình gửi Email thực tế vào Inbox:</span>
                     </div>
                     <p>
-                      1. Đăng ký tài khoản miễn phí tại <a href="https://resend.com" target="_blank" rel="noreferrer" className="text-sky-700 underline font-bold">Resend.com</a> (miễn phí 3.000 email/tháng).<br />
-                      2. Tạo API Key tại Resend và dán vào ô <strong>Resend.com API Key</strong> ở trên.<br />
-                      3. Bấm <strong>Lưu cấu hình Email Server</strong> và test thử bằng nút gửi bên dưới!
+                      1. Đăng ký tài khoản tại <a href="https://resend.com" target="_blank" rel="noreferrer" className="text-sky-700 underline font-bold">Resend.com</a> (miễn phí 3.000 email/tháng).<br />
+                      2. Đã verify domain <strong>profitcal.tagki.com</strong> (Đã hoàn thành! ✅).<br />
+                      3. Tạo API Key tại Resend (`re_...`), dán vào ô <strong>Resend.com API Key</strong> ở trên và bấm <strong>Lưu cấu hình Email Server</strong>.
                     </p>
                   </div>
 
@@ -808,6 +829,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <button
                       type="button"
                       onClick={async () => {
+                        if (!emailConfig.resendApiKey || emailConfig.resendApiKey.trim().length < 5) {
+                          alert('⚠️ CHƯA CẤU HÌNH RESEND API KEY!\n\nVui lòng dán API Key lấy từ Resend.com (dạng re_123456...) vào ô "Resend.com API Key" ở trên và bấm "Lưu cấu hình email server" trước khi gửi thử!');
+                          return;
+                        }
                         const target = prompt('Nhập địa chỉ Email cá nhân của bạn để nhận thử 1 Email OTP:', 'dsjecoder@gmail.com');
                         if (!target || !target.includes('@')) return;
                         alert('Đang thực hiện gửi email test qua Server...');
@@ -841,7 +866,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                             <th className="p-2.5">Email người nhận</th>
                             <th className="p-2.5">Loại xác thực</th>
                             <th className="p-2.5">Tiêu đề email</th>
-                            <th className="p-2.5 text-center">Trạng thái</th>
+                            <th className="p-2.5 text-center">Trạng thái &amp; Nguyên nhân</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-sky-100">
@@ -859,9 +884,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                 <td className="p-2.5 text-sky-700 font-bold">{m.type}</td>
                                 <td className="p-2.5 text-slate-600 font-sans">{m.subject}</td>
                                 <td className="p-2.5 text-center">
-                                  <span className="px-2 py-0.5 rounded text-[10px] font-sans font-bold bg-emerald-100 text-emerald-800">
+                                  <span className={`px-2 py-0.5 rounded text-[10px] font-sans font-bold ${
+                                    m.status === 'DELIVERED' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                                  }`}>
                                     {m.status}
                                   </span>
+                                  {m.errorMessage && (
+                                    <div className="text-[10px] text-rose-600 font-sans mt-1 max-w-xs truncate mx-auto" title={m.errorMessage}>
+                                      {m.errorMessage}
+                                    </div>
+                                  )}
                                 </td>
                               </tr>
                             ))
