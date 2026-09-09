@@ -26,6 +26,9 @@ export interface EmailServerConfig {
   senderName: string;
   senderEmail: string;
   resendApiKey: string;
+  emailjsServiceId?: string;
+  emailjsTemplateId?: string;
+  emailjsPublicKey?: string;
 }
 
 export interface AdminSecurityState {
@@ -116,8 +119,11 @@ export function getEmailServerConfig(): EmailServerConfig {
     smtpUser: 'resend',
     smtpPass: 're_123456789_tagkiprofitcal',
     senderName: 'Tagki ProfitCal System',
-    senderEmail: 'noreply@profitcal.tagki.com',
-    resendApiKey: 're_tagki_live_api_key_2026',
+    senderEmail: 'onboarding@resend.dev',
+    resendApiKey: '',
+    emailjsServiceId: '',
+    emailjsTemplateId: '',
+    emailjsPublicKey: '',
   };
 }
 
