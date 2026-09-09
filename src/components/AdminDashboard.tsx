@@ -19,7 +19,7 @@ import {
 import { calculateExtendedProExpiration, getRemainingProDays } from '../utils/storage';
 import { getFreemiumRule, saveFreemiumRule, FreemiumRule } from '../utils/freemium';
 import { getStoredAnalyticsEvents } from '../utils/analytics';
-import { getSentEmailLogs } from '../services/mailService';
+import { getSentEmailLogs, sendOtpEmail } from '../services/mailService';
 import { getLoginHistory, getRegisteredUsers } from '../services/authService';
 
 interface AdminDashboardProps {
@@ -784,12 +784,46 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     </div>
                   </div>
 
-                  <button
-                    type="submit"
-                    className="py-2.5 px-5 bg-sky-600 text-white font-extrabold rounded-xl shadow-lg hover:bg-sky-700"
-                  >
-                    Lưu cấu hình email server
-                  </button>
+                  <div className="p-3 bg-sky-50 rounded-xl border border-sky-200 space-y-1 text-[11px] text-slate-700">
+                    <div className="font-bold text-sky-800 flex items-center gap-1.5">
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>Hướng dẫn cấu hình gửi Email thực tế vào Inbox:</span>
+                    </div>
+                    <p>
+                      1. Đăng ký tài khoản miễn phí tại <a href="https://resend.com" target="_blank" rel="noreferrer" className="text-sky-700 underline font-bold">Resend.com</a> (miễn phí 3.000 email/tháng).<br />
+                      2. Tạo API Key tại Resend và dán vào ô <strong>Resend.com API Key</strong> ở trên.<br />
+                      3. Bấm <strong>Lưu cấu hình Email Server</strong> và test thử bằng nút gửi bên dưới!
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="submit"
+                      className="py-2.5 px-5 bg-sky-600 text-white font-extrabold rounded-xl shadow-lg hover:bg-sky-700"
+                    >
+                      Lưu cấu hình email server
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const target = prompt('Nhập địa chỉ Email cá nhân của bạn để nhận thử 1 Email OTP:', 'dsjecoder@gmail.com');
+                        if (!target || !target.includes('@')) return;
+                        alert('Đang thực hiện gửi email test qua Server...');
+                        const res = await sendOtpEmail({
+                          recipientEmail: target,
+                          recipientName: 'Khách hàng Test Admin',
+                          otpCode: String(Math.floor(100000 + Math.random() * 900000)),
+                          type: 'OTP_REGISTER',
+                        });
+                        alert(res.message);
+                      }}
+                      className="py-2.5 px-4 bg-emerald-600 text-white font-extrabold rounded-xl shadow-lg hover:bg-emerald-700 flex items-center gap-1.5"
+                    >
+                      <Mail className="w-3.5 h-3.5" />
+                      <span>Gửi thử 1 Email OTP Test</span>
+                    </button>
+                  </div>
 
                   {/* SENT EMAIL DISPATCH LOGS TABLE */}
                   <div className="pt-6 space-y-3">
