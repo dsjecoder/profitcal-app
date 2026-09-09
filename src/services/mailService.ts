@@ -148,7 +148,40 @@ export async function sendOtpEmail(params: {
   const rawFrom = emailConfig.senderEmail && emailConfig.senderEmail.includes('@') ? emailConfig.senderEmail : 'noreply@profitcal.tagki.com';
   const senderFormatted = rawFrom.includes('<') ? rawFrom : `${emailConfig.senderName || 'Tagki ProfitCal System'} <${rawFrom}>`;
 
-  // 1. Try EmailJS API if configured (Native CORS support for browser)
+  // 1. Try Vercel / Netlify Serverless Relay Function (/api/send-otp) FIRST (Server-to-Server, ZERO CORS error)
+  if (apiKey && apiKey.trim().length > 5 && !apiKey.includes('placeholder') && !apiKey.includes('live_api_key')) {
+    try {
+      const serverlessRes = await fetch('/api/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          apiKey: apiKey.trim(),
+          from: senderFormatted,
+          to: params.recipientEmail,
+          subject: subject,
+          html: htmlBody,
+        }),
+      });
+
+      if (serverlessRes.ok) {
+        const data = await serverlessRes.json().catch(() => ({}));
+        if (data.success) {
+          logSentEmail({
+            recipient: params.recipientEmail,
+            subject: subject,
+            sender: senderFormatted,
+            status: 'DELIVERED',
+            type: params.type,
+          });
+          return { success: true, message: '🎉 Mã OTP đã được gửi thành công tới hòm thư Email thực tế của bạn!' };
+        }
+      }
+    } catch (e) {
+      // If /api/send-otp endpoint is not available (e.g. static dev preview), proceed to fallback proxies below
+    }
+  }
+
+  // 2. Try EmailJS API if configured (Native CORS support for browser)
   if (emailConfig.emailjsServiceId && emailConfig.emailjsTemplateId && emailConfig.emailjsPublicKey) {
     try {
       const res = await fetch('https://api.emailjs.com/api/v1.0/email/send', {
@@ -181,7 +214,7 @@ export async function sendOtpEmail(params: {
     } catch (e) {}
   }
 
-  // 2. Try Resend API if API Key is configured
+  // 3. Try Resend API directly or via proxies if API Key is configured
   if (apiKey && apiKey.trim().length > 5 && !apiKey.includes('placeholder') && !apiKey.includes('live_api_key')) {
     const payload = JSON.stringify({
       from: senderFormatted,
