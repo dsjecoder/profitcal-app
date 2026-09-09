@@ -41,6 +41,7 @@ import { ProfitCalculatorModule } from './components/ProfitCalculatorModule';
 import { ExcelTransformerModule } from './components/ExcelTransformerModule';
 import { SkuSettingsModule } from './components/SkuSettingsModule';
 import { InvoiceMappingModule } from './components/InvoiceMappingModule';
+import { LandingIntro } from './components/LandingIntro';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
 import { submitUpgradeRequest, checkEmailProRecord } from './utils/upgradeTracker';
 
@@ -101,6 +102,7 @@ export function App() {
       };
       setUser(updatedUser);
       saveUserState(updatedUser);
+      setActiveModule('invoice');
       confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
     }
   }, []);
@@ -354,6 +356,7 @@ export function App() {
     };
     saveUserState(updated);
     setUser(updated);
+    setActiveModule('invoice');
     setShowAuthModal(false);
   };
 
@@ -391,6 +394,38 @@ export function App() {
       handleLoadDemo('shopee');
     }
   }, []);
+
+  // Route Guard & Gateway: Render Landing Intro when NOT logged in
+  if (!user.isLoggedIn) {
+    return (
+      <div className="w-full min-h-screen relative bg-[#f0f9ff]">
+        <LandingIntro
+          onOpenGoogleLogin={() => setShowAuthModal(true)}
+          onOpenEmailLogin={() => setShowAuthModal(true)}
+        />
+
+        {showAuthModal && (
+          <AuthModal
+            user={user}
+            onClose={() => setShowAuthModal(false)}
+            onLoginSuccess={handleLoginSuccess}
+          />
+        )}
+
+        {showAdminDashboard && (
+          <AdminDashboard
+            onClose={() => setShowAdminDashboard(false)}
+          />
+        )}
+
+        {showTermsModal && (
+          <TermsModal
+            onClose={() => setShowTermsModal(false)}
+          />
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#f0f9ff] text-slate-900 selection:bg-sky-500 selection:text-white font-sans relative">
