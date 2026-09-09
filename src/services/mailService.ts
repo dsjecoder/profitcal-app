@@ -148,7 +148,7 @@ export async function sendOtpEmail(params: {
   const rawFrom = emailConfig.senderEmail && emailConfig.senderEmail.includes('@') ? emailConfig.senderEmail : 'noreply@profitcal.tagki.com';
   const senderFormatted = rawFrom.includes('<') ? rawFrom : `${emailConfig.senderName || 'Tagki ProfitCal System'} <${rawFrom}>`;
 
-  // 1. Try Vercel / Netlify Serverless Relay Function (/api/send-otp) FIRST (Server-to-Server, ZERO CORS error)
+  // 1. Try Vercel / Netlify / Vite Dev Serverless Relay Function (/api/send-otp) FIRST (Server-to-Server, ZERO CORS error)
   if (apiKey && apiKey.trim().length > 5 && !apiKey.includes('placeholder') && !apiKey.includes('live_api_key')) {
     try {
       const serverlessRes = await fetch('/api/send-otp', {
@@ -163,9 +163,10 @@ export async function sendOtpEmail(params: {
         }),
       });
 
-      if (serverlessRes.ok) {
+      // If Serverless Relay Endpoint exists (status is not 404/502)
+      if (serverlessRes.status !== 404 && serverlessRes.status !== 502 && serverlessRes.status !== 504) {
         const data = await serverlessRes.json().catch(() => ({}));
-        if (data.success) {
+        if (serverlessRes.ok && data.success) {
           logSentEmail({
             recipient: params.recipientEmail,
             subject: subject,
@@ -174,10 +175,24 @@ export async function sendOtpEmail(params: {
             type: params.type,
           });
           return { success: true, message: '🎉 Mã OTP đã được gửi thành công tới hòm thư Email thực tế của bạn!' };
+        } else {
+          // Relay executed and returned explicit Resend API error (401, 403, 422, etc.)
+          logSentEmail({
+            recipient: params.recipientEmail,
+            subject: subject,
+            sender: senderFormatted,
+            status: 'FAILED',
+            type: params.type,
+            errorMessage: data.message || `HTTP ${serverlessRes.status}`,
+          });
+          return {
+            success: false,
+            message: `Lỗi Server Email Resend (${serverlessRes.status}): ${data.message || 'Không thể kết nối API Key'}.`,
+          };
         }
       }
     } catch (e) {
-      // If /api/send-otp endpoint is not available (e.g. static dev preview), proceed to fallback proxies below
+      // If endpoint is unreachable, fall back to EmailJS / proxies below
     }
   }
 
