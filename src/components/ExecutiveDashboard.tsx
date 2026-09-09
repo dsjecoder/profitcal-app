@@ -441,26 +441,28 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
         </div>
 
         {/* DENSE DATA TABLE (DATA GRID) */}
-        <div className="border border-sky-200 rounded-xl overflow-hidden bg-sky-50/70">
+        <div className="border border-sky-200 rounded-xl overflow-hidden bg-white shadow-sm">
           <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
             <table className="w-full text-left text-xs font-mono border-collapse">
               
               {/* Sticky Table Header */}
-              <thead className="bg-white text-slate-600 uppercase text-[10px] font-bold tracking-wider sticky top-0 z-10 border-b border-sky-200">
+              <thead className="bg-sky-100/90 text-sky-900 text-[11px] font-extrabold tracking-tight sticky top-0 z-20 border-b border-sky-200">
                 <tr>
-                  <th className="py-2.5 px-3 font-sans">Mã Đơn Hàng</th>
-                  <th className="py-2.5 px-3 font-sans">Sản Phẩm / SKU</th>
-                  <th className="py-2.5 px-3 text-right">Doanh Thu</th>
-                  <th className="py-2.5 px-3 text-right">Phí Sàn</th>
-                  <th className="py-2.5 px-3 text-right">Giá Vốn</th>
-                  <th className="py-2.5 px-3 text-right">Thực Nhận</th>
-                  <th className="py-2.5 px-3 text-right">Lợi Nhuận Ròng</th>
-                  <th className="py-2.5 px-3 text-center font-sans">Trạng Thái</th>
+                  <th className="py-2.5 px-3 font-sans sticky left-0 z-30 bg-sky-100 border-r border-sky-200 min-w-[160px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                    Mã đơn hàng
+                  </th>
+                  <th className="py-2.5 px-3 font-sans min-w-[180px]">Sản phẩm / SKU</th>
+                  <th className="py-2.5 px-3 text-right w-32">Doanh thu (VND)</th>
+                  <th className="py-2.5 px-3 text-right w-32">Phí sàn (VND)</th>
+                  <th className="py-2.5 px-3 text-right w-32">Giá vốn (VND)</th>
+                  <th className="py-2.5 px-3 text-right w-32">Thực nhận (VND)</th>
+                  <th className="py-2.5 px-3 text-right w-36">Lợi nhuận ròng (VND)</th>
+                  <th className="py-2.5 px-3 text-center font-sans w-28">Trạng thái</th>
                 </tr>
               </thead>
 
               {/* Table Body */}
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-sky-100">
                 {paginatedOrders.length === 0 ? (
                   <tr>
                     <td colSpan={8} className="py-8 text-center text-slate-500 font-sans text-xs">
@@ -477,20 +479,20 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({
                       <React.Fragment key={order.id || order.orderId}>
                         <tr
                           onClick={() => setExpandedOrderId(isExpanded ? null : order.orderId)}
-                          className={`hover:bg-sky-50/50 cursor-pointer transition-colors ${
-                            isExpanded ? 'bg-sky-50/40' : ''
+                          className={`group hover:bg-sky-50/80 cursor-pointer transition-colors ${
+                            isExpanded ? 'bg-sky-50/50' : ''
                           }`}
                         >
-                          {/* 1. Mã đơn hàng */}
-                          <td className="py-2 px-3 whitespace-nowrap">
+                          {/* 1. Mã đơn hàng (Sticky Column) */}
+                          <td className="py-2.5 px-3 sticky left-0 z-10 bg-white group-hover:bg-sky-50 border-r border-sky-200 min-w-[160px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
                             <div className="flex items-center gap-1.5">
                               {isExpanded ? (
-                                <ChevronUp className="w-3 h-3 text-slate-500 shrink-0" />
+                                <ChevronUp className="w-3.5 h-3.5 text-sky-600 shrink-0" />
                               ) : (
-                                <ChevronDown className="w-3 h-3 text-slate-500 shrink-0" />
+                                <ChevronDown className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                               )}
                               <div>
-                                <span className="font-bold text-white block">{order.orderId}</span>
+                                <span className="font-extrabold text-slate-900 block">{order.orderId}</span>
                                 <span className="text-[10px] text-slate-500 block">{order.orderDate}</span>
                               </div>
                             </div>

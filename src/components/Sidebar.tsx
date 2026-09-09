@@ -65,6 +65,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
   const navItems = [
     {
+      id: 'invoice' as ModuleType,
+      label: 'Ánh xạ hóa đơn GTGT',
+      icon: FileText,
+      path: '/invoice-mapping',
+    },
+    {
       id: 'calc' as ModuleType,
       label: 'Tính lợi nhuận',
       icon: Calculator,
@@ -87,12 +93,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
       label: 'Cấu hình & giá vốn',
       icon: Settings,
       path: '/sku-settings',
-    },
-    {
-      id: 'invoice' as ModuleType,
-      label: 'Ánh xạ hóa đơn GTGT',
-      icon: FileText,
-      path: '/invoice-mapping',
     },
   ];
 

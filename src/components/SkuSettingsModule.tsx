@@ -39,8 +39,8 @@ export const SkuSettingsModule: React.FC<SkuSettingsModuleProps> = ({
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700">
               <Settings className="w-4 h-4" />
             </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
-              CẤU HÌNH
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
+              Cấu hình
             </h2>
           </div>
           <p className="text-xs text-slate-600 mt-1">
@@ -60,7 +60,7 @@ export const SkuSettingsModule: React.FC<SkuSettingsModuleProps> = ({
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700">
                 <Package className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Giá vốn hàng hóa</h3>
+              <h3 className="text-base font-bold text-slate-900">Giá vốn hàng hóa</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Quản lý và cập nhật giá vốn hiện tại của các mã hàng để hệ thống tính toán lợi nhuận ròng.
               </p>
@@ -85,14 +85,14 @@ export const SkuSettingsModule: React.FC<SkuSettingsModuleProps> = ({
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700">
                 <DollarSign className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Chi phí đóng gói</h3>
+              <h3 className="text-base font-bold text-slate-900">Chi phí đóng gói</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Chi phí bao bì, hộp carton, túi niêm phong mặc định được tính tự động cho mỗi đơn hàng.
               </p>
               
               <div className="space-y-1.5 pt-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
-                  Chi phí mặc định / đơn:
+                <label className="text-xs font-bold text-slate-700 tracking-wider block">
+                  Chi phí mặc định / đơn (VND):
                 </label>
                 <div className="flex items-center gap-2">
                   <input
@@ -119,13 +119,13 @@ export const SkuSettingsModule: React.FC<SkuSettingsModuleProps> = ({
               <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-amber-700">
                 <AlertCircle className="w-5 h-5" />
               </div>
-              <h3 className="text-base font-bold text-white">Cảnh báo phí sàn</h3>
+              <h3 className="text-base font-bold text-slate-900">Cảnh báo phí sàn</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
                 Phát cảnh báo màu đỏ khi tổng tỷ lệ phí sàn trên đơn hàng vượt quá ngưỡng được cài đặt.
               </p>
 
               <div className="space-y-1.5 pt-2">
-                <label className="text-xs font-bold text-slate-700 uppercase tracking-wider block">
+                <label className="text-xs font-bold text-slate-700 tracking-wider block">
                   Ngưỡng cảnh báo (%):
                 </label>
                 <div className="flex items-center gap-2">

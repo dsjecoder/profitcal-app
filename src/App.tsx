@@ -57,8 +57,8 @@ export function App() {
   const [orders, setOrders] = useState<OrderItem[]>(() => activeDataset.orders);
   const [extractedSkus, setExtractedSkus] = useState<SKUData[]>([]);
 
-  // Active Navigation Module State ('calc' | 'transformer' | 'inventory' | 'settings')
-  const [activeModule, setActiveModule] = useState<ModuleType>('calc');
+  // Active Navigation Module State ('invoice' | 'calc' | 'transformer' | 'inventory' | 'settings')
+  const [activeModule, setActiveModule] = useState<ModuleType>('invoice');
 
   // Data Source Provenance Tracking ('DEMO' | 'EXCEL' | 'API')
   const [dataSourceMode, setDataSourceMode] = useState<'DEMO' | 'EXCEL' | 'API'>(() => activeDataset.source);

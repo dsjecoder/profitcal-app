@@ -148,10 +148,10 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
           <Search className="w-4 h-4 text-slate-500 absolute left-3 top-3" />
           <input
             type="text"
-            placeholder="Tìm theo Mã đơn hàng, Mã SKU, Tên sản phẩm..."
+            placeholder="Tìm theo mã đơn hàng, mã SKU, tên sản phẩm..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-white border border-sky-200 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+            className="w-full bg-white border border-sky-200 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-500 focus:outline-none focus:border-sky-500"
           />
         </div>
         <span className="text-xs text-slate-600 font-mono hidden sm:inline">
@@ -160,31 +160,33 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
       </div>
 
       {/* Data Table */}
-      <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
+      <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white shadow-sm">
         <table className="w-full text-left text-xs">
-          <thead className="bg-white border-b border-sky-200 text-slate-600 uppercase tracking-wider font-bold">
+          <thead className="bg-sky-100/90 border-b border-sky-200 text-sky-900 tracking-tight font-extrabold sticky top-0 z-20">
             <tr>
-              <th className="py-3.5 px-4">Mã Đơn / Ngày</th>
-              <th className="py-3.5 px-4">Sản Phẩm & SKU</th>
-              <th className="py-3.5 px-4 text-right">Doanh Thu</th>
-              <th className="py-3.5 px-4 text-right">Thực Nhận</th>
-              <th className="py-3.5 px-4 text-right">Phí Sàn (% Rate)</th>
-              <th className="py-3.5 px-4 text-right">Giá Vốn</th>
-              <th className="py-3.5 px-4 text-right">Lợi Nhuận Ròng</th>
-              <th className="py-3.5 px-4 text-center">Chi Tiết Cảnh Báo</th>
+              <th className="py-3.5 px-4 sticky left-0 z-30 bg-sky-100 border-r border-sky-200 min-w-[140px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                Mã đơn / ngày
+              </th>
+              <th className="py-3.5 px-4 min-w-[180px]">Sản phẩm & SKU</th>
+              <th className="py-3.5 px-4 text-right w-32">Doanh thu (VND)</th>
+              <th className="py-3.5 px-4 text-right w-32">Thực nhận (VND)</th>
+              <th className="py-3.5 px-4 text-right w-36">Phí sàn (% rate)</th>
+              <th className="py-3.5 px-4 text-right w-32">Giá vốn (VND)</th>
+              <th className="py-3.5 px-4 text-right w-36">Lợi nhuận ròng (VND)</th>
+              <th className="py-3.5 px-4 text-center min-w-[180px]">Chi tiết cảnh báo</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-navy-800/60 font-medium">
+          <tbody className="divide-y divide-sky-100 font-medium">
             {displayedOrders.length > 0 ? (
               displayedOrders.map((order) => (
                 <tr
                   key={order.id}
                   onClick={() => setSelectedOrder(order)}
-                  className="hover:bg-white/60 cursor-pointer transition-colors"
+                  className="group hover:bg-sky-50/80 cursor-pointer transition-colors"
                 >
-                  {/* Order ID & Date */}
-                  <td className="py-3.5 px-4">
-                    <div className="font-mono font-bold text-slate-800">{order.orderId}</div>
+                  {/* Order ID & Date (Sticky Column) */}
+                  <td className="py-3.5 px-4 sticky left-0 z-10 bg-white group-hover:bg-sky-50 border-r border-sky-200 min-w-[140px] shadow-[2px_0_5px_-2px_rgba(0,0,0,0.05)]">
+                    <div className="font-mono font-extrabold text-slate-900">{order.orderId}</div>
                     <div className="text-[10px] text-slate-500">{order.orderDate}</div>
                   </td>
 

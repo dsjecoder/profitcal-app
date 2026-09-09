@@ -212,7 +212,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700">
               <Package className="w-4 h-4" />
             </div>
-            <h2 className="text-2xl font-bold text-white tracking-tight">
+            <h2 className="text-2xl font-bold text-slate-900 tracking-tight">
               KHO HÀNG
             </h2>
           </div>
@@ -455,7 +455,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'catalog'
               ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
-              : 'text-slate-600 hover:text-white'
+              : 'text-slate-600 hover:text-sky-900'
           }`}
         >
           <Package className="w-4 h-4" />
@@ -468,7 +468,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'mapping'
               ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
-              : 'text-slate-600 hover:text-white'
+              : 'text-slate-600 hover:text-sky-900'
           }`}
         >
           <ArrowRightLeft className="w-4 h-4" />
@@ -481,11 +481,11 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'import'
               ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
-              : 'text-slate-600 hover:text-white'
+              : 'text-slate-600 hover:text-sky-900'
           }`}
         >
           <Plus className="w-4 h-4" />
-          <span>Nhập hàng & Giá vốn</span>
+          <span>Nhập hàng & giá vốn</span>
         </button>
 
         {/* Tab 4: Nhật ký kho */}
@@ -494,7 +494,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'logs'
               ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
-              : 'text-slate-600 hover:text-white'
+              : 'text-slate-600 hover:text-sky-900'
           }`}
         >
           <History className="w-4 h-4" />
@@ -543,7 +543,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               <div className="w-12 h-12 rounded-2xl bg-sky-50 text-slate-600 flex items-center justify-center mx-auto">
                 <Package className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-white">Không tìm thấy hàng hóa phù hợp</h3>
+              <h3 className="text-sm font-bold text-slate-900">Không tìm thấy hàng hóa phù hợp</h3>
               <p className="text-xs text-slate-600 max-w-sm mx-auto">
                 {masterList.length === 0
                   ? 'Chưa có hàng hóa nào trong kho. Hãy thêm mã hàng đầu tiên bằng cách nhập kho.'
@@ -581,7 +581,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                   <div>
                     {/* Header: Title & Status Badge */}
                     <div className="space-y-1">
-                      <h4 className="text-sm font-semibold text-white line-clamp-1" title={item.productName}>
+                      <h4 className="text-sm font-bold text-slate-900 line-clamp-1" title={item.productName}>
                         {item.productName}
                       </h4>
                       <div className="flex items-center justify-between text-xs">

@@ -20,25 +20,25 @@ export const TabNavigation: React.FC<TabNavigationProps> = ({
   const tabs = [
     {
       id: 'financial' as MainTabType,
-      labelVi: '📊 Báo Cáo Tài Chính & Thuế',
+      labelVi: '📊 Báo cáo tài chính & thuế',
       labelEn: '📊 Financial & Tax Audit',
       icon: BarChart3,
     },
     {
       id: 'ads' as MainTabType,
-      labelVi: '🎯 Soi Phí Ads (ROAS & CIR)',
+      labelVi: '🎯 Soi phí Ads (ROAS & CIR)',
       labelEn: '🎯 Ad Audit (ROAS & CIR)',
       icon: Target,
     },
     {
       id: 'growth' as MainTabType,
-      labelVi: '📈 Tăng Trưởng & Bất Thường',
+      labelVi: '📈 Tăng trưởng & bất thường',
       labelEn: '📈 Growth & Anomalies',
       icon: TrendingUp,
     },
     {
       id: 'inventory' as MainTabType,
-      labelVi: '🚨 Cảnh Báo Tồn Kho',
+      labelVi: '🚨 Cảnh báo tồn kho',
       labelEn: '🚨 Inventory Safety Alert',
       icon: AlertTriangle,
     },
