@@ -833,6 +833,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           alert('⚠️ CHƯA CẤU HÌNH RESEND API KEY!\n\nVui lòng dán API Key lấy từ Resend.com (dạng re_123456...) vào ô "Resend.com API Key" ở trên và bấm "Lưu cấu hình email server" trước khi gửi thử!');
                           return;
                         }
+
+                        // Auto-save form configuration to localStorage so sendOtpEmail always receives latest typed values
+                        saveEmailServerConfig(emailConfig);
+
                         const target = prompt('Nhập địa chỉ Email cá nhân của bạn để nhận thử 1 Email OTP:', 'dsjecoder@gmail.com');
                         if (!target || !target.includes('@')) return;
                         alert('Đang thực hiện gửi email test qua Server...');

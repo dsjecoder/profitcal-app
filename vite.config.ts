@@ -14,21 +14,23 @@ function resendApiDevPlugin() {
           req.on('end', async () => {
             try {
               const { apiKey, from, to, subject, html } = JSON.parse(body || '{}');
-              const resendApiKey = apiKey || process.env.VITE_RESEND_API_KEY || process.env.RESEND_API_KEY;
+              const rawApiKey = apiKey || process.env.VITE_RESEND_API_KEY || process.env.RESEND_API_KEY;
 
-              if (!resendApiKey || resendApiKey.trim().length < 5) {
+              if (!rawApiKey) {
                 res.statusCode = 400;
                 res.setHeader('Content-Type', 'application/json');
                 res.end(JSON.stringify({ success: false, message: 'Chưa cấu hình Resend API Key.' }));
                 return;
               }
 
+              const cleanApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
+
               const recipientList = Array.isArray(to) ? to : [to];
 
               const response = await fetch('https://api.resend.com/emails', {
                 method: 'POST',
                 headers: {
-                  'Authorization': `Bearer ${resendApiKey.trim()}`,
+                  'Authorization': `Bearer ${cleanApiKey}`,
                   'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({

@@ -19,10 +19,17 @@ export default async function handler(req, res) {
 
   try {
     const { apiKey, from, to, subject, html } = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
-    const resendApiKey = apiKey || process.env.VITE_RESEND_API_KEY || process.env.RESEND_API_KEY;
+    const rawApiKey = apiKey || process.env.VITE_RESEND_API_KEY || process.env.RESEND_API_KEY;
 
-    if (!resendApiKey || resendApiKey.trim().length < 5) {
+    if (!rawApiKey) {
       return res.status(400).json({ success: false, message: 'Chưa cung cấp Resend API Key hợp lệ.' });
+    }
+
+    // Clean whitespace, quotes, or accidental newlines
+    const cleanApiKey = rawApiKey.trim().replace(/^["']|["']$/g, '');
+
+    if (!cleanApiKey || cleanApiKey.length < 5) {
+      return res.status(400).json({ success: false, message: 'Resend API Key không hợp lệ.' });
     }
 
     const recipientList = Array.isArray(to) ? to : [to];
@@ -30,7 +37,7 @@ export default async function handler(req, res) {
     const response = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${resendApiKey.trim()}`,
+        'Authorization': `Bearer ${cleanApiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
