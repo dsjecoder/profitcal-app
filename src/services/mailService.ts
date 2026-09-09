@@ -195,11 +195,11 @@ export async function sendOtpEmail(params: {
       'Content-Type': 'application/json',
     };
 
-    // List of CORS proxy fallbacks for browser SPA execution
+    // List of reliable CORS proxy fallbacks for browser SPA execution
     const proxyUrls = [
-      'https://thingproxy.freeboard.io/fetch/https://api.resend.com/emails',
-      `https://corsproxy.io/?${encodeURIComponent('https://api.resend.com/emails')}`,
-      `https://api.allorigins.win/raw?url=${encodeURIComponent('https://api.resend.com/emails')}`,
+      'https://corsproxy.io/?https://api.resend.com/emails',
+      'https://api.codetabs.com/v1/proxy?quest=https://api.resend.com/emails',
+      'https://cors.eu.org/https://api.resend.com/emails',
       'https://api.resend.com/emails',
     ];
 
