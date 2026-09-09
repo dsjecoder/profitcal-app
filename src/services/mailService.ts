@@ -142,7 +142,10 @@ export async function sendOtpEmail(params: {
   const apiKey = (import.meta as any).env?.VITE_RESEND_API_KEY || emailConfig.resendApiKey;
   const subject = '[Tagki] Mã xác thực tài khoản của bạn';
   const htmlBody = buildOtpEmailHtml(params.recipientName, params.otpCode, params.type === 'OTP_REGISTER');
-  const sender = `${emailConfig.senderName || 'Tagki System'} <${emailConfig.senderEmail || 'onboarding@resend.dev'}>`;
+  
+  // Format sender properly for Resend API: "Tagki System <noreply@profitcal.tagki.com>"
+  const rawFrom = emailConfig.senderEmail && emailConfig.senderEmail.includes('@') ? emailConfig.senderEmail : 'noreply@profitcal.tagki.com';
+  const senderFormatted = rawFrom.includes('<') ? rawFrom : `${emailConfig.senderName || 'Tagki ProfitCal System'} <${rawFrom}>`;
 
   // 1. Try EmailJS API if configured (Native CORS support for browser)
   if (emailConfig.emailjsServiceId && emailConfig.emailjsTemplateId && emailConfig.emailjsPublicKey) {
@@ -168,7 +171,7 @@ export async function sendOtpEmail(params: {
         logSentEmail({
           recipient: params.recipientEmail,
           subject: subject,
-          sender: sender,
+          sender: senderFormatted,
           status: 'DELIVERED',
           type: params.type,
         });
@@ -178,19 +181,17 @@ export async function sendOtpEmail(params: {
   }
 
   // 2. Try Resend API if API Key is configured
-  if (apiKey && apiKey.startsWith('re_') && !apiKey.includes('placeholder') && !apiKey.includes('live_api_key')) {
+  if (apiKey && apiKey.trim().length > 5 && !apiKey.includes('placeholder') && !apiKey.includes('live_api_key')) {
     try {
-      let fromEmail = emailConfig.senderEmail && emailConfig.senderEmail.includes('@') ? emailConfig.senderEmail : 'onboarding@resend.dev';
-      
       const payload = JSON.stringify({
-        from: fromEmail,
+        from: senderFormatted,
         to: [params.recipientEmail],
         subject: subject,
         html: htmlBody,
       });
 
       const headers = {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${apiKey.trim()}`,
         'Content-Type': 'application/json',
       };
 
@@ -218,29 +219,36 @@ export async function sendOtpEmail(params: {
         logSentEmail({
           recipient: params.recipientEmail,
           subject: subject,
-          sender: sender,
+          sender: senderFormatted,
           status: 'DELIVERED',
           type: params.type,
         });
         return { success: true, message: '🎉 Mã OTP đã được gửi thành công tới hòm thư Email thực tế của bạn!' };
       } else {
+        const errBody = res ? await res.text().catch(() => '') : '';
+        let errDetail = errBody;
+        try {
+          const parsed = JSON.parse(errBody);
+          errDetail = parsed.message || parsed.name || errBody;
+        } catch (e) {}
+
         logSentEmail({
           recipient: params.recipientEmail,
           subject: subject,
-          sender: sender,
+          sender: senderFormatted,
           status: 'FAILED',
           type: params.type,
         });
         return {
           success: false,
-          message: 'Gửi Email thất bại. Hãy đảm bảo API Key Resend.com là chính xác và tài khoản Resend đã được kích hoạt.',
+          message: `Lỗi Server Email Resend API (${res ? res.status : 'Fetch Failed'}): ${errDetail || 'Vui lòng kiểm tra API Key và Tên miền người gửi'}.`,
         };
       }
     } catch (err: any) {
       logSentEmail({
         recipient: params.recipientEmail,
         subject: subject,
-        sender: sender,
+        sender: senderFormatted,
         status: 'FAILED',
         type: params.type,
       });
@@ -251,17 +259,17 @@ export async function sendOtpEmail(params: {
     }
   }
 
-  // 3. Demo / Simulation Mode when API Key is empty
+  // 3. Warning Mode when API Key is empty
   logSentEmail({
     recipient: params.recipientEmail,
     subject: subject,
-    sender: sender,
+    sender: senderFormatted,
     status: 'QUEUED',
     type: params.type,
   });
 
   return {
-    success: true,
-    message: 'Mã OTP đã được khởi tạo. (Để gửi email thực tế vào Gmail cá nhân, vui lòng nhập Resend API Key hợp lệ trong Admin Portal).',
+    success: false,
+    message: 'Chưa cấu hình Resend API Key! Vui lòng truy cập Admin Portal (/admin -> Cấu hình Email Server) nhập API Key của Resend để kích hoạt gửi Email thực tế.',
   };
 }

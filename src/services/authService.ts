@@ -175,16 +175,23 @@ export async function requestRegisterOtp(params: {
   savePendingOtps(otps);
 
   // Send HTML Email to recipient inbox (NEVER return rawOtp in result)
-  await sendOtpEmail({
+  const sendRes = await sendOtpEmail({
     recipientEmail: cleanEmail,
     recipientName: params.name,
     otpCode: rawOtp,
     type: 'OTP_REGISTER',
   });
 
+  if (!sendRes.success) {
+    return {
+      success: false,
+      message: sendRes.message,
+    };
+  }
+
   return {
     success: true,
-    message: 'Mã OTP xác thực 6 số đã được gửi tới email của bạn. Vui lòng kiểm tra Hòm thư!',
+    message: sendRes.message || 'Mã OTP xác thực 6 số đã được gửi tới email của bạn. Vui lòng kiểm tra Hòm thư!',
   };
 }
 
@@ -226,16 +233,23 @@ export async function requestLogin2faOtp(params: {
   savePendingOtps(otps);
 
   // Send HTML Email to recipient inbox
-  await sendOtpEmail({
+  const sendRes = await sendOtpEmail({
     recipientEmail: cleanEmail,
     recipientName: user ? user.name : cleanEmail,
     otpCode: rawOtp,
     type: 'OTP_LOGIN_2FA',
   });
 
+  if (!sendRes.success) {
+    return {
+      success: false,
+      message: sendRes.message,
+    };
+  }
+
   return {
     success: true,
-    message: 'Mật khẩu chính xác. Mã OTP 2FA đã được gửi tới email của bạn để hoàn tất đăng nhập.',
+    message: sendRes.message || 'Mật khẩu chính xác. Mã OTP 2FA đã được gửi tới email của bạn để hoàn tất đăng nhập.',
   };
 }
 

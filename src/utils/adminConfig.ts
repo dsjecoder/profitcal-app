@@ -110,7 +110,13 @@ export function saveSocialContactsConfig(config: SocialContactsConfig): void {
 export function getEmailServerConfig(): EmailServerConfig {
   try {
     const raw = localStorage.getItem(EMAIL_CONFIG_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (!parsed.senderEmail || parsed.senderEmail === 'onboarding@resend.dev' || parsed.senderEmail.includes('noreply@profitcal.com')) {
+        parsed.senderEmail = 'noreply@profitcal.tagki.com';
+      }
+      return parsed;
+    }
   } catch (e) {}
 
   return {
@@ -119,7 +125,7 @@ export function getEmailServerConfig(): EmailServerConfig {
     smtpUser: 'resend',
     smtpPass: 're_123456789_tagkiprofitcal',
     senderName: 'Tagki ProfitCal System',
-    senderEmail: 'onboarding@resend.dev',
+    senderEmail: 'noreply@profitcal.tagki.com',
     resendApiKey: '',
     emailjsServiceId: '',
     emailjsTemplateId: '',
