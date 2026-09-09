@@ -15,20 +15,20 @@ export const AdPerformanceTable: React.FC<AdPerformanceTableProps> = ({ orders, 
   const burnerCount = adPerformanceList.filter((item) => item.statusTag === 'burner').length;
 
   return (
-    <div className="bg-navy-900 border border-navy-800 rounded-3xl p-6 shadow-2xl space-y-6 my-8">
+    <div className="bg-white border border-sky-200 rounded-3xl p-6 shadow-2xl space-y-6 my-8">
       
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-navy-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-sky-200 pb-5">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-9 h-9 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-              <Flame className="w-5 h-5 text-amber-400" />
+              <Flame className="w-5 h-5 text-amber-700" />
             </div>
             <h2 className="text-xl font-black text-white tracking-tight">
               {t('ad_title', currentLang)}
             </h2>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 mt-1">
             {t('ad_desc', currentLang)}
           </p>
         </div>
@@ -36,16 +36,16 @@ export const AdPerformanceTable: React.FC<AdPerformanceTableProps> = ({ orders, 
         {/* Badges Overview */}
         <div className="flex items-center gap-2">
           <div className="px-3 py-1.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 font-bold text-xs flex items-center gap-1.5">
-            <AlertOctagon className="w-4 h-4 text-rose-400" />
+            <AlertOctagon className="w-4 h-4 text-rose-700" />
             <span>{burnerCount} {currentLang === 'en' ? 'Burner SKUs' : 'SKU Đốt Tiền'}</span>
           </div>
         </div>
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+      <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
         <table className="w-full text-left text-xs">
-          <thead className="bg-navy-900 text-slate-400 font-bold uppercase border-b border-navy-800">
+          <thead className="bg-white text-slate-600 font-bold uppercase border-b border-sky-200">
             <tr>
               <th className="p-3">SKU / {currentLang === 'en' ? 'Product' : 'Sản Phẩm'}</th>
               <th className="p-3 text-right">{currentLang === 'en' ? 'Revenue' : 'Doanh Thu'}</th>
@@ -57,22 +57,22 @@ export const AdPerformanceTable: React.FC<AdPerformanceTableProps> = ({ orders, 
           </thead>
           <tbody className="divide-y divide-navy-800/60 font-medium">
             {adPerformanceList.map((item) => (
-              <tr key={item.sku} className={`hover:bg-navy-900/60 transition-colors ${item.statusTag === 'burner' ? 'bg-rose-950/20' : ''}`}>
-                <td className="p-3 font-mono font-bold text-slate-200">
+              <tr key={item.sku} className={`hover:bg-white/60 transition-colors ${item.statusTag === 'burner' ? 'bg-rose-950/20' : ''}`}>
+                <td className="p-3 font-mono font-bold text-slate-800">
                   {item.sku}
-                  <span className="font-sans font-normal text-slate-400 block text-[11px] truncate max-w-xs">{item.productName}</span>
+                  <span className="font-sans font-normal text-slate-600 block text-[11px] truncate max-w-xs">{item.productName}</span>
                 </td>
                 <td className="p-3 text-right font-mono">{formatVND(item.totalRevenue)}</td>
-                <td className="p-3 text-right font-mono text-amber-400">{formatVND(item.adSpend)}</td>
+                <td className="p-3 text-right font-mono text-amber-700">{formatVND(item.adSpend)}</td>
                 <td className="p-3 text-right font-mono font-bold text-indigo-300">{item.roas}x</td>
-                <td className="p-3 text-right font-mono font-bold text-rose-400">{item.cirPct}%</td>
+                <td className="p-3 text-right font-mono font-bold text-rose-700">{item.cirPct}%</td>
                 <td className="p-3 text-center">
                   {item.statusTag === 'burner' ? (
-                    <span className="px-2.5 py-1 bg-rose-500/20 text-rose-400 rounded-lg font-bold border border-rose-500/30">
+                    <span className="px-2.5 py-1 bg-rose-500/20 text-rose-700 rounded-lg font-bold border border-rose-500/30">
                       {t('ad_burner_badge', currentLang)}
                     </span>
                   ) : (
-                    <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-400 rounded-lg font-bold border border-emerald-500/30">
+                    <span className="px-2.5 py-1 bg-emerald-500/20 text-emerald-700 rounded-lg font-bold border border-emerald-500/30">
                       {t('ad_star_badge', currentLang)}
                     </span>
                   )}

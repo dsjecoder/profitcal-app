@@ -57,7 +57,7 @@ export const CogsModal: React.FC<CogsModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-50/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden">
         
         {/* Header */}
@@ -129,7 +129,7 @@ export const CogsModal: React.FC<CogsModalProps> = ({
                     placeholder="0"
                     className="w-36 bg-white border border-sky-300 rounded-xl px-3 py-2 text-right font-mono font-extrabold text-sky-700 focus:outline-none focus:border-sky-500 text-sm shadow-sm"
                   />
-                  <span className="absolute right-2 top-2.5 text-xs text-slate-400 font-mono pointer-events-none">đ</span>
+                  <span className="absolute right-2 top-2.5 text-xs text-slate-600 font-mono pointer-events-none">đ</span>
                 </div>
               </div>
             </div>

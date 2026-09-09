@@ -152,7 +152,7 @@ export const ApiIntegrationModal: React.FC<ApiIntegrationModalProps> = ({ onClos
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-50/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl relative overflow-hidden text-slate-800 text-xs">
         
         {/* NON-BLOCKING TOAST */}

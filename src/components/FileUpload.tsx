@@ -115,7 +115,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
               onClick={() => onPlatformChange('tiktok')}
               className={`flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-extrabold text-xs sm:text-sm transition-all ${
                 platform === 'tiktok'
-                  ? 'bg-slate-900 text-white shadow-md'
+                  ? 'bg-white text-white shadow-md'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-white'
               }`}
             >

@@ -119,7 +119,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {isMobileOpen && (
         <div
           onClick={() => setIsMobileOpen(false)}
-          className="lg:hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 animate-fade-in"
+          className="lg:hidden fixed inset-0 bg-sky-50/60 backdrop-blur-sm z-40 animate-fade-in"
         />
       )}
 
@@ -161,7 +161,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Fixed Left Navigation Items (4 Main Tabs) */}
         <div className="p-3 space-y-1.5 flex-1 overflow-y-auto">
           {!isCollapsed && (
-            <div className="px-3 pb-2 text-xs font-bold text-slate-400 uppercase tracking-wider">
+            <div className="px-3 pb-2 text-xs font-bold text-slate-600 uppercase tracking-wider">
               Danh mục điều hướng
             </div>
           )}
@@ -276,7 +276,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             {user.isLoggedIn && (
               <button
                 onClick={onLogout}
-                className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg hover:bg-rose-50 transition-colors"
+                className="p-1.5 text-slate-600 hover:text-rose-500 rounded-lg hover:bg-rose-50 transition-colors"
                 title="Đăng xuất"
               >
                 <LogOut className="w-4 h-4" />

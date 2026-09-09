@@ -121,7 +121,7 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-50/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden relative">
         
         {/* Header */}
@@ -275,7 +275,7 @@ export const ManualCorrectionModal: React.FC<ManualCorrectionModalProps> = ({
                     value={customReason}
                     onChange={(e) => setCustomReason(e.target.value)}
                     placeholder="Nhập chi tiết biên bản kiểm kê hoặc lý do giải trình..."
-                    className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-sky-500 shadow-sm"
+                    className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-slate-900 text-xs placeholder:text-slate-600 focus:outline-none focus:border-sky-500 shadow-sm"
                   />
                 )}
               </div>

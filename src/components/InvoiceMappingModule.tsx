@@ -207,22 +207,22 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
   };
 
   return (
-    <div className="space-y-4 w-full max-w-7xl mx-auto animate-fade-in text-slate-200 font-sans">
+    <div className="space-y-4 w-full max-w-7xl mx-auto animate-fade-in text-slate-800 font-sans">
       
       {/* 1. CONTROL CENTER HEADER */}
-      <div className="bg-navy-900 border border-navy-800 px-5 py-3.5 rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-3">
+      <div className="bg-white border border-sky-200 px-5 py-3.5 rounded-2xl shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 font-bold">
+          <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-sky-700 font-bold">
             <FileText className="w-5 h-5" />
           </div>
           <div>
             <h1 className="text-base lg:text-lg font-black text-white tracking-tight uppercase flex items-center gap-2">
               <span>ÁNH XẠ HÓA ĐƠN GTGT & TỜ KHAI NHẬP KHẨU</span>
-              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">
+              <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded bg-cyan-500/20 text-sky-700 border border-cyan-500/30">
                 PRO 2026
               </span>
             </h1>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-600">
               Công cụ đối soát đa tín hiệu (Multi-Signal Mapping) hóa đơn GTGT bán hàng với Tờ khai Hải quan & Doanh thu sàn.
             </p>
           </div>
@@ -243,24 +243,24 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
       </div>
 
       {/* 2. DUAL INPUT FILE SOURCE PANEL (COMPACT DROPZONE) */}
-      <div className="bg-navy-900 border border-navy-800 rounded-2xl p-4 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
         
         {/* Dropzone 1: Hóa đơn bán hàng PDF/Excel */}
-        <div className="p-3.5 rounded-xl bg-navy-950/70 border border-navy-800/80 space-y-2">
+        <div className="p-3.5 rounded-xl bg-white/70 border border-sky-200/80 space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-cyan-400" />
+              <FileText className="w-3.5 h-3.5 text-sky-700" />
               <span>1. Hóa đơn bán hàng GTGT (PDF / Excel / XML)</span>
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">Softdreams / EasyInvoice</span>
+            <span className="text-[10px] text-slate-600 font-mono">Softdreams / EasyInvoice</span>
           </div>
 
-          <div className="border border-dashed border-navy-700 hover:border-navy-600 rounded-xl p-2.5 bg-navy-900/60 flex items-center justify-between gap-2">
-            <span className="text-slate-300 truncate font-mono text-[11px]">{invoiceFileName}</span>
+          <div className="border border-dashed border-sky-200 hover:border-sky-300 rounded-xl p-2.5 bg-white/60 flex items-center justify-between gap-2">
+            <span className="text-slate-700 truncate font-mono text-[11px]">{invoiceFileName}</span>
             <button
               type="button"
               onClick={() => alert('Chọn file Hóa đơn PDF / Excel mới')}
-              className="px-2.5 py-1 rounded bg-navy-800 hover:bg-navy-700 text-slate-200 text-[11px] font-bold shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors"
             >
               Đổi file HĐ
             </button>
@@ -268,21 +268,21 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         </div>
 
         {/* Dropzone 2: Tờ khai hải quan nhập khẩu Excel VNACCS */}
-        <div className="p-3.5 rounded-xl bg-navy-950/70 border border-navy-800/80 space-y-2">
+        <div className="p-3.5 rounded-xl bg-white/70 border border-sky-200/80 space-y-2">
           <div className="flex items-center justify-between">
             <span className="font-bold text-white uppercase tracking-wider text-[11px] flex items-center gap-1.5">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-cyan-400" />
+              <FileSpreadsheet className="w-3.5 h-3.5 text-sky-700" />
               <span>2. Tờ khai hải quan nhập khẩu (Excel VNACCS / Ví Sàn)</span>
             </span>
-            <span className="text-[10px] text-slate-400 font-mono">TKN / HANG</span>
+            <span className="text-[10px] text-slate-600 font-mono">TKN / HANG</span>
           </div>
 
-          <div className="border border-dashed border-navy-700 hover:border-navy-600 rounded-xl p-2.5 bg-navy-900/60 flex items-center justify-between gap-2">
-            <span className="text-slate-300 truncate font-mono text-[11px]">{declarationFileName}</span>
+          <div className="border border-dashed border-sky-200 hover:border-sky-300 rounded-xl p-2.5 bg-white/60 flex items-center justify-between gap-2">
+            <span className="text-slate-700 truncate font-mono text-[11px]">{declarationFileName}</span>
             <button
               type="button"
               onClick={() => alert('Chọn file Tờ khai Excel mới')}
-              className="px-2.5 py-1 rounded bg-navy-800 hover:bg-navy-700 text-slate-200 text-[11px] font-bold shrink-0 transition-colors"
+              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors"
             >
               Đổi file Tờ khai
             </button>
@@ -294,8 +294,8 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
       {/* 3. FINANCIAL & MATCHING KPI STRIP */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 font-mono">
         
-        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block font-sans">
+        <div className="p-2.5 rounded-xl bg-white border border-sky-200">
+          <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block font-sans">
             TỔNG DÒNG HÀNG
           </span>
           <span className="text-base font-bold text-white block mt-0.5">
@@ -303,44 +303,44 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
-          <span className="text-[10px] text-emerald-400 font-bold uppercase tracking-wider block font-sans">
+        <div className="p-2.5 rounded-xl bg-white border border-sky-200">
+          <span className="text-[10px] text-emerald-700 font-bold uppercase tracking-wider block font-sans">
             KHỚP 100% (🟢)
           </span>
-          <span className="text-base font-bold text-emerald-400 block mt-0.5">
+          <span className="text-base font-bold text-emerald-700 block mt-0.5">
             {summaryStats.matchedCount} dòng
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
-          <span className="text-[10px] text-amber-400 font-bold uppercase tracking-wider block font-sans">
+        <div className="p-2.5 rounded-xl bg-white border border-sky-200">
+          <span className="text-[10px] text-amber-700 font-bold uppercase tracking-wider block font-sans">
             GỢI Ý REVIEW (🟡)
           </span>
-          <span className="text-base font-bold text-amber-400 block mt-0.5">
+          <span className="text-base font-bold text-amber-700 block mt-0.5">
             {summaryStats.suggestedCount} dòng
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
-          <span className="text-[10px] text-rose-400 font-bold uppercase tracking-wider block font-sans">
+        <div className="p-2.5 rounded-xl bg-white border border-sky-200">
+          <span className="text-[10px] text-rose-700 font-bold uppercase tracking-wider block font-sans">
             MÂU THUẪN (⚠️)
           </span>
-          <span className="text-base font-bold text-rose-400 block mt-0.5">
+          <span className="text-base font-bold text-rose-700 block mt-0.5">
             {summaryStats.conflictCount} dòng
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-navy-900 border border-navy-800">
-          <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block font-sans">
+        <div className="p-2.5 rounded-xl bg-white border border-sky-200">
+          <span className="text-[10px] text-slate-600 font-bold uppercase tracking-wider block font-sans">
             TỔNG TIỀN HÓA ĐƠN
           </span>
-          <span className="text-sm font-bold text-slate-100 block truncate mt-0.5">
+          <span className="text-sm font-bold text-slate-900 block truncate mt-0.5">
             {formatVND(summaryStats.totalRevenue)}
           </span>
         </div>
 
-        <div className="p-2.5 rounded-xl bg-navy-900 border border-cyan-500/40 text-cyan-400">
-          <span className="text-[10px] font-bold uppercase tracking-wider block font-sans text-slate-300">
+        <div className="p-2.5 rounded-xl bg-white border border-cyan-500/40 text-sky-700">
+          <span className="text-[10px] font-bold uppercase tracking-wider block font-sans text-slate-700">
             TỔNG THUẾ GTGT
           </span>
           <span className="text-sm font-bold block truncate mt-0.5">
@@ -351,49 +351,49 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
       </div>
 
       {/* 4. INVOICE MAPPING DATA GRID */}
-      <div className="bg-navy-900 border border-navy-800 rounded-2xl p-4 shadow-xl space-y-3">
+      <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-xl space-y-3">
         
         {/* Toolbar: Search + Filter Tabs */}
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
           
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative min-w-[220px]">
-              <Search className="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2 pointer-events-none" />
+              <Search className="w-3.5 h-3.5 text-slate-600 absolute left-2.5 top-2 pointer-events-none" />
               <input
                 type="text"
                 placeholder="Tìm tên hàng, quy cách, mã tờ khai..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-950 border border-slate-800 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-slate-600"
+                className="w-full bg-white border border-sky-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-slate-600"
               />
             </div>
 
-            <div className="flex items-center gap-1 bg-slate-950 p-0.5 rounded-lg border border-slate-800 font-medium">
+            <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-sky-200 font-medium">
               <button
                 type="button"
                 onClick={() => setStatusFilter('all')}
-                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'all' ? 'bg-slate-800 text-white font-bold' : 'text-slate-400 hover:text-slate-200'}`}
+                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'all' ? 'bg-sky-50 text-white font-bold' : 'text-slate-600 hover:text-slate-800'}`}
               >
                 Tất cả ({invoiceItems.length})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter('matched')}
-                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'matched' ? 'bg-emerald-500/20 text-emerald-400 font-bold' : 'text-slate-400 hover:text-emerald-400'}`}
+                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'matched' ? 'bg-emerald-500/20 text-emerald-700 font-bold' : 'text-slate-600 hover:text-emerald-700'}`}
               >
                 Khớp 100% ({summaryStats.matchedCount})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter('suggested')}
-                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'suggested' ? 'bg-amber-500/20 text-amber-400 font-bold' : 'text-slate-400 hover:text-amber-400'}`}
+                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'suggested' ? 'bg-amber-500/20 text-amber-700 font-bold' : 'text-slate-600 hover:text-amber-700'}`}
               >
                 Gợi ý ({summaryStats.suggestedCount})
               </button>
               <button
                 type="button"
                 onClick={() => setStatusFilter('conflict')}
-                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'conflict' ? 'bg-rose-500/20 text-rose-400 font-bold' : 'text-slate-400 hover:text-rose-400'}`}
+                className={`px-2.5 py-1 rounded transition-all ${statusFilter === 'conflict' ? 'bg-rose-500/20 text-rose-700 font-bold' : 'text-slate-600 hover:text-rose-700'}`}
               >
                 Mâu thuẫn ({summaryStats.conflictCount})
               </button>
@@ -403,19 +403,19 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           <button
             type="button"
             onClick={() => alert('Xuất báo cáo kiểm toán Ánh xạ hóa đơn 32 cột Excel')}
-            className="px-3 py-1.5 rounded-lg bg-slate-950 hover:bg-slate-800 text-slate-200 border border-slate-800 font-medium text-xs flex items-center gap-1.5 transition-colors self-end sm:self-auto"
+            className="px-3 py-1.5 rounded-lg bg-white hover:bg-sky-50 text-slate-800 border border-sky-200 font-medium text-xs flex items-center gap-1.5 transition-colors self-end sm:self-auto"
           >
-            <Download className="w-3.5 h-3.5 text-slate-400" />
+            <Download className="w-3.5 h-3.5 text-slate-600" />
             <span>Xuất Excel 32 Cột</span>
           </button>
 
         </div>
 
         {/* Data Table */}
-        <div className="border border-slate-800 rounded-xl overflow-hidden bg-slate-950/70">
+        <div className="border border-sky-200 rounded-xl overflow-hidden bg-sky-50/70">
           <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
             <table className="w-full text-left text-xs font-mono border-collapse">
-              <thead className="bg-slate-900 text-slate-400 uppercase text-[10px] font-bold tracking-wider sticky top-0 z-10 border-b border-slate-800">
+              <thead className="bg-white text-slate-600 uppercase text-[10px] font-bold tracking-wider sticky top-0 z-10 border-b border-sky-200">
                 <tr>
                   <th className="py-2.5 px-3 font-sans">STT & Tên Hàng Hóa</th>
                   <th className="py-2.5 px-3 font-sans">Quy Cách & ĐVT</th>
@@ -436,7 +436,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
                     <React.Fragment key={line.id}>
                       <tr
                         onClick={() => setExpandedLineId(isExpanded ? null : line.id)}
-                        className="hover:bg-slate-800/50 cursor-pointer transition-colors"
+                        className="hover:bg-sky-50/50 cursor-pointer transition-colors"
                       >
                         <td className="py-2.5 px-3 max-w-[240px]">
                           <div className="flex items-center gap-1.5">
@@ -453,29 +453,29 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
                         </td>
 
                         <td className="py-2.5 px-3">
-                          <span className="text-slate-300 block text-[11px] font-sans">{line.spec || '—'}</span>
+                          <span className="text-slate-700 block text-[11px] font-sans">{line.spec || '—'}</span>
                           <span className="text-[10px] text-slate-500 font-mono">ĐVT: {line.unit}</span>
                         </td>
 
-                        <td className="py-2.5 px-3 text-right font-bold text-slate-200">
+                        <td className="py-2.5 px-3 text-right font-bold text-slate-800">
                           {line.quantity.toLocaleString('vi-VN')}
                         </td>
 
-                        <td className="py-2.5 px-3 text-right text-slate-300">
+                        <td className="py-2.5 px-3 text-right text-slate-700">
                           {formatVND(line.unitPrice)}
                         </td>
 
-                        <td className="py-2.5 px-3 text-right font-bold text-slate-100">
+                        <td className="py-2.5 px-3 text-right font-bold text-slate-900">
                           {formatVND(line.totalAmount)}
                         </td>
 
-                        <td className="py-2.5 px-3 text-right text-emerald-400 font-bold">
+                        <td className="py-2.5 px-3 text-right text-emerald-700 font-bold">
                           {formatVND(line.taxAmount || 0)} ({line.taxRate}%)
                         </td>
 
                         <td className="py-2.5 px-3 text-center">
                           {line.matchScore !== undefined ? (
-                            <span className={`font-bold text-xs ${line.matchScore >= 90 ? 'text-emerald-400' : line.matchScore >= 75 ? 'text-amber-400' : 'text-rose-400'}`}>
+                            <span className={`font-bold text-xs ${line.matchScore >= 90 ? 'text-emerald-700' : line.matchScore >= 75 ? 'text-amber-700' : 'text-rose-700'}`}>
                               {line.matchScore.toFixed(1)}%
                             </span>
                           ) : (
@@ -485,22 +485,22 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
                         <td className="py-2.5 px-3 text-center whitespace-nowrap">
                           {line.matchStatus === 'MATCHED' && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-emerald-500/15 text-emerald-700 border border-emerald-500/30">
                               🟢 Khớp 100%
                             </span>
                           )}
                           {line.matchStatus === 'SUGGESTED' && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-amber-500/20 text-amber-700 border border-amber-500/30">
                               🟡 Gợi ý
                             </span>
                           )}
                           {line.matchStatus === 'CONFLICT' && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-rose-500/20 text-rose-400 border border-rose-500/40">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-rose-500/20 text-rose-700 border border-rose-500/40">
                               ⚠️ Mâu thuẫn
                             </span>
                           )}
                           {line.matchStatus === 'UNMATCHED' && (
-                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-slate-800 text-slate-400 border border-slate-700">
+                            <span className="px-2 py-0.5 rounded text-[10px] font-sans font-semibold bg-sky-50 text-slate-600 border border-sky-200">
                               🔴 Chưa match
                             </span>
                           )}
@@ -509,14 +509,14 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
                       {/* Expandable Breakdown Row */}
                       {isExpanded && (
-                        <tr className="bg-slate-900/90 border-y border-slate-800">
+                        <tr className="bg-sky-50/60 border-y border-sky-200">
                           <td colSpan={8} className="p-3 pl-8 text-xs font-sans">
-                            <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1.5">
-                              <div className="flex items-center justify-between text-[11px] font-mono border-b border-slate-800 pb-1">
-                                <span className="text-cyan-400 font-bold">BẰNG CHỨNG ĐỐI CHIẾU THUẬT TOÁN MULTI-SIGNAL:</span>
-                                <span className="text-slate-400">Mã Tờ Khai: {line.matchedDeclarationId || 'Chưa ghép'}</span>
+                            <div className="bg-white p-3 rounded-xl border border-sky-200 space-y-1.5">
+                              <div className="flex items-center justify-between text-[11px] font-mono border-b border-sky-200 pb-1">
+                                <span className="text-sky-700 font-bold">BẰNG CHỨNG ĐỐI CHIẾU THUẬT TOÁN MULTI-SIGNAL:</span>
+                                <span className="text-slate-600">Mã Tờ Khai: {line.matchedDeclarationId || 'Chưa ghép'}</span>
                               </div>
-                              <p className="text-slate-300 text-xs leading-relaxed font-mono">
+                              <p className="text-slate-700 text-xs leading-relaxed font-mono">
                                 {line.matchReason || 'Chưa có thông tin đối soát.'}
                               </p>
                             </div>

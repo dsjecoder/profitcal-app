@@ -120,10 +120,10 @@ export const DataContextBar: React.FC<DataContextBarProps> = ({
                 </span>
               )}
 
-              <span className="text-slate-400 hidden sm:inline">•</span>
+              <span className="text-slate-600 hidden sm:inline">•</span>
 
               <span className="flex items-center gap-1 text-slate-500 font-mono">
-                <Clock className="w-3 h-3 text-slate-400" />
+                <Clock className="w-3 h-3 text-slate-600" />
                 <span>
                   {dataset.lastSyncedAt
                     ? new Date(dataset.lastSyncedAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
@@ -166,7 +166,7 @@ export const DataContextBar: React.FC<DataContextBarProps> = ({
               type="button"
               onClick={onSyncClick}
               disabled={isSyncing}
-              className="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 disabled:text-slate-400 text-white font-extrabold text-xs shadow-md transition-colors flex items-center gap-1.5"
+              className="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 disabled:text-slate-600 text-white font-extrabold text-xs shadow-md transition-colors flex items-center gap-1.5"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
               <span>{isSyncing ? 'Đang đồng bộ...' : 'Đồng bộ ngay'}</span>

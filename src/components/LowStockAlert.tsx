@@ -194,29 +194,29 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
       case 'REBUILD_HISTORICAL_COGS':
         return { label: 'Tái tính giá vốn', color: 'bg-orange-500/20 text-orange-300 border-orange-500/30' };
       case 'ADJUSTMENT':
-        return { label: 'Bù trừ kho', color: 'bg-slate-800 text-slate-300 border-slate-700' };
+        return { label: 'Bù trừ kho', color: 'bg-sky-50 text-slate-700 border-sky-200' };
       case 'COGS_UPDATE':
-        return { label: 'Đổi giá vốn', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30' };
+        return { label: 'Đổi giá vốn', color: 'bg-cyan-500/20 text-sky-700 border-cyan-500/30' };
       default:
-        return { label: actionType, color: 'bg-slate-800 text-slate-300 border-slate-700' };
+        return { label: actionType, color: 'bg-sky-50 text-slate-700 border-sky-200' };
     }
   };
 
   return (
-    <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6 my-8 w-full animate-fade-in">
+    <div className="bg-white border border-sky-200 rounded-3xl p-6 lg:p-8 shadow-2xl space-y-6 my-8 w-full animate-fade-in">
       
       {/* 1. TOP-LEVEL HEADER & ACTION BAR */}
-      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-slate-800/80 pb-6">
+      <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 border-b border-sky-200 pb-6">
         <div>
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700">
               <Package className="w-4 h-4" />
             </div>
             <h2 className="text-2xl font-bold text-white tracking-tight">
               KHO HÀNG
             </h2>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 mt-1">
             Quản lý tồn kho, giá vốn và quy cách mã hàng tập trung cho gian hàng Shopee & TikTok Shop.
           </p>
         </div>
@@ -238,9 +238,9 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           <button
             type="button"
             onClick={() => setShowReturnModal(true)}
-            className="px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors flex items-center gap-1.5"
+            className="px-3.5 py-2.5 rounded-xl bg-sky-50 hover:bg-slate-100 text-slate-800 border border-sky-200 font-medium text-xs transition-colors flex items-center gap-1.5"
           >
-            <RotateCcw className="w-3.5 h-3.5 text-amber-400" />
+            <RotateCcw className="w-3.5 h-3.5 text-amber-700" />
             <span>Xử lý hàng hoàn</span>
           </button>
 
@@ -249,16 +249,16 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             <button
               type="button"
               onClick={() => setShowAdvancedMenu(!showAdvancedMenu)}
-              className="px-3.5 py-2.5 rounded-xl bg-slate-950 hover:bg-slate-800 text-slate-300 border border-slate-800 hover:border-slate-700 font-medium text-xs transition-all flex items-center gap-1.5"
+              className="px-3.5 py-2.5 rounded-xl bg-white hover:bg-sky-50 text-slate-700 border border-sky-200 hover:border-sky-200 font-medium text-xs transition-all flex items-center gap-1.5"
             >
-              <Settings className="w-3.5 h-3.5 text-slate-400" />
+              <Settings className="w-3.5 h-3.5 text-slate-600" />
               <span>Công cụ nâng cao</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform ${showAdvancedMenu ? 'rotate-180' : ''}`} />
+              <ChevronDown className={`w-3.5 h-3.5 text-slate-600 transition-transform ${showAdvancedMenu ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Dropdown Menu */}
             {showAdvancedMenu && (
-              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-slate-950 border border-slate-800 p-2 shadow-2xl z-50 animate-fade-in space-y-1">
+              <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-white border border-sky-200 p-2 shadow-2xl z-50 animate-fade-in space-y-1">
                 <button
                   type="button"
                   onClick={() => {
@@ -267,7 +267,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                   }}
                   className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-amber-300 hover:bg-amber-500/10 flex items-center gap-2 transition-colors"
                 >
-                  <RefreshCw className="w-4 h-4 text-amber-400 shrink-0" />
+                  <RefreshCw className="w-4 h-4 text-amber-700 shrink-0" />
                   <div>
                     <div>Tái tính giá vốn đơn cũ</div>
                     <div className="text-[10px] text-slate-500 font-normal">Chạy lại COGS lịch sử theo SKU</div>
@@ -280,9 +280,9 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                     setActiveTab('logs');
                     setShowAdvancedMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-900 flex items-center gap-2 transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-white flex items-center gap-2 transition-colors"
                 >
-                  <History className="w-4 h-4 text-slate-400 shrink-0" />
+                  <History className="w-4 h-4 text-slate-600 shrink-0" />
                   <div>
                     <div>Nhật ký kho</div>
                     <div className="text-[10px] text-slate-500 font-normal">Xem lịch sử biến động kho & giá vốn</div>
@@ -295,9 +295,9 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                     setShowConfigDrawer(!showConfigDrawer);
                     setShowAdvancedMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-900 flex items-center gap-2 transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-white flex items-center gap-2 transition-colors"
                 >
-                  <Send className="w-4 h-4 text-slate-400 shrink-0" />
+                  <Send className="w-4 h-4 text-slate-600 shrink-0" />
                   <div>
                     <div>Cấu hình Telegram Bot</div>
                     <div className="text-[10px] text-slate-500 font-normal">Nhận thông báo khi sắp hết hàng</div>
@@ -310,9 +310,9 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                     handlePlaySound();
                     setShowAdvancedMenu(false);
                   }}
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:bg-slate-900 flex items-center gap-2 transition-colors"
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 hover:bg-white flex items-center gap-2 transition-colors"
                 >
-                  <Volume2 className="w-4 h-4 text-slate-400 shrink-0" />
+                  <Volume2 className="w-4 h-4 text-slate-600 shrink-0" />
                   <div>
                     <div>Kiểm tra chuông cảnh báo</div>
                     <div className="text-[10px] text-slate-500 font-normal">Phát thử âm thanh còi báo tồn</div>
@@ -334,9 +334,9 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             setStatusFilter('all');
             setActiveTab('catalog');
           }}
-          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-slate-700 cursor-pointer transition-all space-y-1"
+          className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200 hover:border-sky-200 cursor-pointer transition-all space-y-1"
         >
-          <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block font-sans">
+          <span className="text-xs font-bold text-slate-600 uppercase tracking-wider block font-sans">
             Tổng mã hàng
           </span>
           <div className="text-2xl font-bold font-mono text-white">
@@ -350,12 +350,12 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             setStatusFilter('instock');
             setActiveTab('catalog');
           }}
-          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-emerald-500/40 cursor-pointer transition-all space-y-1"
+          className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200 hover:border-emerald-500/40 cursor-pointer transition-all space-y-1"
         >
-          <span className="text-xs font-bold text-emerald-400 uppercase tracking-wider block font-sans">
+          <span className="text-xs font-bold text-emerald-700 uppercase tracking-wider block font-sans">
             🟢 Đang có hàng
           </span>
-          <div className="text-2xl font-bold font-mono text-emerald-400">
+          <div className="text-2xl font-bold font-mono text-emerald-700">
             {inStockCount} <span className="text-xs font-normal text-slate-500">mã</span>
           </div>
         </div>
@@ -366,12 +366,12 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             setStatusFilter('lowstock');
             setActiveTab('catalog');
           }}
-          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-amber-500/40 cursor-pointer transition-all space-y-1"
+          className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200 hover:border-amber-500/40 cursor-pointer transition-all space-y-1"
         >
-          <span className="text-xs font-bold text-amber-400 uppercase tracking-wider block font-sans">
+          <span className="text-xs font-bold text-amber-700 uppercase tracking-wider block font-sans">
             ⚠ Sắp hết
           </span>
-          <div className="text-2xl font-bold font-mono text-amber-400">
+          <div className="text-2xl font-bold font-mono text-amber-700">
             {lowStockCount} <span className="text-xs font-normal text-slate-500">mã</span>
           </div>
         </div>
@@ -382,12 +382,12 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             setStatusFilter('outofstock');
             setActiveTab('catalog');
           }}
-          className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800 hover:border-rose-500/40 cursor-pointer transition-all space-y-1"
+          className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200 hover:border-rose-500/40 cursor-pointer transition-all space-y-1"
         >
-          <span className="text-xs font-bold text-rose-400 uppercase tracking-wider block font-sans">
+          <span className="text-xs font-bold text-rose-700 uppercase tracking-wider block font-sans">
             🔴 Hết hàng
           </span>
-          <div className="text-2xl font-bold font-mono text-rose-400">
+          <div className="text-2xl font-bold font-mono text-rose-700">
             {outOfStockCount} <span className="text-xs font-normal text-slate-500">mã</span>
           </div>
         </div>
@@ -396,16 +396,16 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
 
       {/* Telegram Configuration Drawer (Collapsible) */}
       {showConfigDrawer && (
-        <div className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4 animate-fade-in">
+        <div className="p-5 rounded-2xl bg-white border border-sky-200 space-y-4 animate-fade-in">
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-bold text-white flex items-center gap-2 uppercase tracking-wider">
-              <Send className="w-4 h-4 text-cyan-400" />
+              <Send className="w-4 h-4 text-sky-700" />
               <span>Cấu hình thông báo Telegram Bot khi sắp hết hàng</span>
             </h3>
             <button
               type="button"
               onClick={() => setShowConfigDrawer(false)}
-              className="text-xs text-slate-400 hover:text-white"
+              className="text-xs text-slate-600 hover:text-white"
             >
               Đóng
             </button>
@@ -413,24 +413,24 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
 
           <form onSubmit={handleSaveTelegram} className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
             <div>
-              <label className="text-slate-400 block mb-1">Telegram Bot Token:</label>
+              <label className="text-slate-600 block mb-1">Telegram Bot Token:</label>
               <input
                 type="text"
                 placeholder="VD: 123456789:ABCdefGHIjkl..."
                 value={telegramConfig.botToken}
                 onChange={(e) => setTelegramConfig({ ...telegramConfig, botToken: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono focus:outline-none focus:border-slate-500"
+                className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono focus:outline-none focus:border-slate-500"
               />
             </div>
 
             <div>
-              <label className="text-slate-400 block mb-1">Telegram Chat ID:</label>
+              <label className="text-slate-600 block mb-1">Telegram Chat ID:</label>
               <input
                 type="text"
                 placeholder="VD: -100123456789"
                 value={telegramConfig.chatId}
                 onChange={(e) => setTelegramConfig({ ...telegramConfig, chatId: e.target.value })}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono focus:outline-none focus:border-slate-500"
+                className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono focus:outline-none focus:border-slate-500"
               />
             </div>
 
@@ -447,15 +447,15 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
       )}
 
       {/* 3. SUB-VIEWS TAB SWITCHER */}
-      <div className="flex items-center gap-2 border-b border-slate-800 pb-3 text-xs font-semibold">
+      <div className="flex items-center gap-2 border-b border-sky-200 pb-3 text-xs font-semibold">
         
         {/* Tab 1: Danh mục hàng hóa */}
         <button
           onClick={() => setActiveTab('catalog')}
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'catalog'
-              ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
+              : 'text-slate-600 hover:text-white'
           }`}
         >
           <Package className="w-4 h-4" />
@@ -467,8 +467,8 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           onClick={() => setActiveTab('mapping')}
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'mapping'
-              ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
+              : 'text-slate-600 hover:text-white'
           }`}
         >
           <ArrowRightLeft className="w-4 h-4" />
@@ -480,8 +480,8 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           onClick={() => setActiveTab('import')}
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'import'
-              ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
+              : 'text-slate-600 hover:text-white'
           }`}
         >
           <Plus className="w-4 h-4" />
@@ -493,8 +493,8 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           onClick={() => setActiveTab('logs')}
           className={`px-4 py-2 rounded-xl transition-all flex items-center gap-2 ${
             activeTab === 'logs'
-              ? 'bg-slate-800 text-emerald-400 border border-slate-700 shadow-sm'
-              : 'text-slate-400 hover:text-white'
+              ? 'bg-sky-50 text-emerald-700 border border-sky-200 shadow-sm'
+              : 'text-slate-600 hover:text-white'
           }`}
         >
           <History className="w-4 h-4" />
@@ -509,7 +509,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
         <div className="space-y-4 animate-fade-in">
           
           {/* Search & Filter Toolbar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-slate-950/60 p-3 rounded-2xl border border-slate-800">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-sky-50/70 p-3 rounded-2xl border border-sky-200">
             <div className="relative flex-1">
               <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500" />
               <input
@@ -517,17 +517,17 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                 placeholder="Tìm theo mã hàng hoặc tên sản phẩm..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-slate-500"
+                className="w-full bg-white border border-sky-200 rounded-xl pl-9 pr-3 py-1.5 text-xs text-slate-800 placeholder-slate-500 focus:outline-none focus:border-slate-500"
               />
             </div>
 
             {/* Status Filter */}
             <div className="flex items-center gap-2">
-              <Filter className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <Filter className="w-3.5 h-3.5 text-slate-600 shrink-0" />
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value as any)}
-                className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-1.5 text-xs text-slate-200 font-medium"
+                className="bg-white border border-sky-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 font-medium"
               >
                 <option value="all">Tất cả trạng thái ({totalSkus})</option>
                 <option value="instock">🟢 Đang có hàng ({inStockCount})</option>
@@ -539,12 +539,12 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
 
           {/* Empty State */}
           {filteredMasterList.length === 0 && (
-            <div className="bg-slate-950/80 border border-slate-800 rounded-3xl p-10 text-center space-y-3">
-              <div className="w-12 h-12 rounded-2xl bg-slate-800 text-slate-400 flex items-center justify-center mx-auto">
+            <div className="bg-sky-50/70 border border-sky-200 rounded-3xl p-10 text-center space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-sky-50 text-slate-600 flex items-center justify-center mx-auto">
                 <Package className="w-6 h-6" />
               </div>
               <h3 className="text-sm font-bold text-white">Không tìm thấy hàng hóa phù hợp</h3>
-              <p className="text-xs text-slate-400 max-w-sm mx-auto">
+              <p className="text-xs text-slate-600 max-w-sm mx-auto">
                 {masterList.length === 0
                   ? 'Chưa có hàng hóa nào trong kho. Hãy thêm mã hàng đầu tiên bằng cách nhập kho.'
                   : 'Không có sản phẩm nào khớp với bộ lọc tìm kiếm hiện tại.'}
@@ -570,12 +570,12 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               return (
                 <div
                   key={item.id}
-                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between bg-slate-950 ${
+                  className={`p-4 rounded-2xl border transition-all flex flex-col justify-between bg-white ${
                     isOut
                       ? 'border-rose-500/40 bg-rose-950/10'
                       : isLow
                       ? 'border-amber-500/40 bg-amber-950/10'
-                      : 'border-slate-800'
+                      : 'border-sky-200'
                   }`}
                 >
                   <div>
@@ -585,17 +585,17 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                         {item.productName}
                       </h4>
                       <div className="flex items-center justify-between text-xs">
-                        <span className="font-mono text-slate-400">Mã hàng: <strong>{item.masterSku}</strong></span>
+                        <span className="font-mono text-slate-600">Mã hàng: <strong>{item.masterSku}</strong></span>
                         {isOut ? (
-                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/20 text-rose-400 border border-rose-500/30">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-500/20 text-rose-700 border border-rose-500/30">
                             🔴 Hết hàng
                           </span>
                         ) : isLow ? (
-                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-500/20 text-amber-700 border border-amber-500/30">
                             ⚠ Sắp hết
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
                             🟢 Còn hàng
                           </span>
                         )}
@@ -605,30 +605,30 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                     {/* Unit Conversion & Batch Badges */}
                     <div className="mt-2.5 flex flex-wrap gap-1.5">
                       {item.conversionRule && (
-                        <span className="px-2 py-0.5 rounded-lg text-[10px] bg-cyan-500/15 text-cyan-300 border border-cyan-500/30 font-mono">
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] bg-cyan-500/15 text-sky-700 border border-cyan-500/30 font-mono">
                           1 {item.conversionRule.packUnit} = {item.conversionRule.multiplier} {item.conversionRule.baseUnit}
                         </span>
                       )}
                       {item.batches && item.batches.length > 0 && (
-                        <span className="px-2 py-0.5 rounded-lg text-[10px] bg-slate-800 text-slate-400 border border-slate-700 font-mono">
+                        <span className="px-2 py-0.5 rounded-lg text-[10px] bg-sky-50 text-slate-600 border border-sky-200 font-mono">
                           {item.batches.length} Lô nhập
                         </span>
                       )}
                     </div>
 
                     {/* Primary Metrics Grid */}
-                    <div className="mt-3 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2 text-xs">
+                    <div className="mt-3 pt-3 border-t border-sky-200 grid grid-cols-2 gap-2 text-xs">
                       <div>
-                        <span className="text-slate-400 block">Tồn khả dụng:</span>
+                        <span className="text-slate-600 block">Tồn khả dụng:</span>
                         <span className={`text-xl font-bold font-mono ${
-                          isOut ? 'text-rose-400' : isLow ? 'text-amber-400' : 'text-slate-100'
+                          isOut ? 'text-rose-700' : isLow ? 'text-amber-700' : 'text-slate-900'
                         }`}>
-                          {item.availableStock.toLocaleString('vi-VN')} <span className="text-xs font-normal text-slate-400">{item.unit}</span>
+                          {item.availableStock.toLocaleString('vi-VN')} <span className="text-xs font-normal text-slate-600">{item.unit}</span>
                         </span>
                       </div>
                       <div>
-                        <span className="text-slate-400 block">Giá vốn hiện tại:</span>
-                        <span className="text-base font-bold font-mono text-emerald-400">
+                        <span className="text-slate-600 block">Giá vốn hiện tại:</span>
+                        <span className="text-base font-bold font-mono text-emerald-700">
                           {item.cogsPrice.toLocaleString('vi-VN')} đ
                         </span>
                       </div>
@@ -643,13 +643,13 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                   </div>
 
                   {/* Card Action Buttons: Quy cách & Điều chỉnh */}
-                  <div className="mt-4 pt-3 border-t border-slate-800/80 grid grid-cols-2 gap-2">
+                  <div className="mt-4 pt-3 border-t border-sky-200 grid grid-cols-2 gap-2">
                     <button
                       type="button"
                       onClick={() => setSelectedConversionSku(item)}
-                      className="py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-slate-300 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
+                      className="py-1.5 px-2 rounded-xl bg-white hover:bg-sky-50 border border-sky-200 hover:border-sky-200 text-slate-700 text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-colors"
                     >
-                      <Scale className="w-3.5 h-3.5 text-cyan-400" />
+                      <Scale className="w-3.5 h-3.5 text-sky-700" />
                       <span>Quy cách</span>
                     </button>
 
@@ -658,7 +658,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                       onClick={() => setSelectedCorrectionSku(item)}
                       className="py-1.5 px-2 rounded-xl bg-amber-500/10 hover:bg-amber-500/20 border border-amber-500/30 text-amber-300 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-colors"
                     >
-                      <Sliders className="w-3.5 h-3.5 text-amber-400" />
+                      <Sliders className="w-3.5 h-3.5 text-amber-700" />
                       <span>Điều chỉnh</span>
                     </button>
                   </div>
@@ -676,23 +676,23 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
         <div className="space-y-6 animate-fade-in">
           
           {/* Explanatory Header */}
-          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+          <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200">
             <h3 className="text-sm font-bold text-white">Ánh xạ mã bán trên sàn với mã hàng trong kho</h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               Cho ProfitCal biết khi khách mua 1 mã Combo trên sàn (Shopee / TikTok), hệ thống sẽ trừ bao nhiêu đơn vị của mã hàng nào trong kho.
             </p>
           </div>
 
-          <form onSubmit={handleAddMapping} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-4">
-            <h4 className="text-xs font-bold text-emerald-400 uppercase tracking-wider">+ Thêm ánh xạ mã hàng mới</h4>
+          <form onSubmit={handleAddMapping} className="p-5 rounded-2xl bg-white border border-sky-200 space-y-4">
+            <h4 className="text-xs font-bold text-emerald-700 uppercase tracking-wider">+ Thêm ánh xạ mã hàng mới</h4>
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Sàn thương mại:</label>
+                <label className="text-slate-600 block mb-1">Sàn thương mại:</label>
                 <select
                   value={newPlatform}
                   onChange={(e) => setNewPlatform(e.target.value as 'shopee' | 'tiktok')}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200"
+                  className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800"
                 >
                   <option value="shopee">Shopee</option>
                   <option value="tiktok">TikTok Shop</option>
@@ -700,22 +700,22 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Mã bán trên sàn (Platform SKU):</label>
+                <label className="text-slate-600 block mb-1">Mã bán trên sàn (Platform SKU):</label>
                 <input
                   type="text"
                   placeholder="VD: COMBO-3-LON"
                   value={newPlatformSku}
                   onChange={(e) => setNewPlatformSku(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                  className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Mã hàng trong kho (Master SKU):</label>
+                <label className="text-slate-600 block mb-1">Mã hàng trong kho (Master SKU):</label>
                 <select
                   value={newMasterSku}
                   onChange={(e) => setNewMasterSku(e.target.value)}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                  className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                 >
                   <option value="">-- Chọn mã hàng trong kho --</option>
                   {masterList.map((m) => (
@@ -727,13 +727,13 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Số lượng quy đổi (1 đơn = N kho):</label>
+                <label className="text-slate-600 block mb-1">Số lượng quy đổi (1 đơn = N kho):</label>
                 <input
                   type="number"
                   min="1"
                   value={newMultiplier}
                   onChange={(e) => setNewMultiplier(Number(e.target.value))}
-                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                  className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                 />
               </div>
             </div>
@@ -747,9 +747,9 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
           </form>
 
           {/* Mappings List Table */}
-          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950 text-xs">
+          <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white text-xs">
             <table className="w-full text-left">
-              <thead className="bg-slate-900 text-slate-400 font-mono border-b border-slate-800">
+              <thead className="bg-white text-slate-600 font-mono border-b border-sky-200">
                 <tr>
                   <th className="p-3">Sàn</th>
                   <th className="p-3">Mã bán trên sàn</th>
@@ -766,11 +766,11 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                   </tr>
                 ) : (
                   mappings.map((map) => (
-                    <tr key={map.id} className="hover:bg-slate-900/50">
-                      <td className="p-3 uppercase font-semibold text-emerald-400">{map.platform}</td>
+                    <tr key={map.id} className="hover:bg-sky-50/60">
+                      <td className="p-3 uppercase font-semibold text-emerald-700">{map.platform}</td>
                       <td className="p-3 text-white font-bold">{map.platformSku}</td>
-                      <td className="p-3 text-slate-300">{map.masterSku}</td>
-                      <td className="p-3 text-amber-400 font-bold">1 đơn = {map.multiplier} đơn vị kho</td>
+                      <td className="p-3 text-slate-700">{map.masterSku}</td>
+                      <td className="p-3 text-amber-700 font-bold">1 đơn = {map.multiplier} đơn vị kho</td>
                     </tr>
                   ))
                 )}
@@ -784,13 +784,13 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
       {/* TAB 3: NHẬP HÀNG & GIÁ VỐN (BATCH IMPORT & WEIGHTED AVERAGE COGS)        */}
       {/* ========================================================================= */}
       {activeTab === 'import' && (
-        <div className="p-6 rounded-2xl bg-slate-950 border border-slate-800 space-y-5 animate-fade-in max-w-2xl">
+        <div className="p-6 rounded-2xl bg-white border border-sky-200 space-y-5 animate-fade-in max-w-2xl">
           <div>
             <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Plus className="w-5 h-5 text-emerald-400" />
+              <Plus className="w-5 h-5 text-emerald-700" />
               <span>Nhập hàng & Tính giá vốn bình quân gia quyền</span>
             </h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               Hệ thống tự động tính toán lại giá vốn trung bình dựa trên số lượng và giá nhập của lô hàng mới.
             </p>
           </div>
@@ -799,11 +799,11 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
             
             {/* Step 1: Chọn mã hàng */}
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">1. Chọn mã hàng trong kho:</label>
+              <label className="text-slate-700 font-semibold block mb-1">1. Chọn mã hàng trong kho:</label>
               <select
                 value={selectedMasterSku}
                 onChange={(e) => setSelectedMasterSku(e.target.value)}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2.5 text-slate-200 font-mono"
+                className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2.5 text-slate-800 font-mono"
               >
                 <option value="">-- Chọn mã hàng cần nhập --</option>
                 {masterList.map((m) => (
@@ -816,33 +816,33 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
 
             {/* Step 2: Số lượng nhập */}
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">2. Số lượng nhập thêm:</label>
+              <label className="text-slate-700 font-semibold block mb-1">2. Số lượng nhập thêm:</label>
               <input
                 type="number"
                 min="1"
                 value={importQty}
                 onChange={(e) => setImportQty(Number(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
               />
             </div>
 
             {/* Step 3: Đơn giá nhập kho */}
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">3. Đơn giá nhập kho (VND / đơn vị):</label>
+              <label className="text-slate-700 font-semibold block mb-1">3. Đơn giá nhập kho (VND / đơn vị):</label>
               <input
                 type="number"
                 min="0"
                 value={importPrice}
                 onChange={(e) => setImportPrice(Number(e.target.value))}
-                className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
               />
             </div>
 
             {/* Step 4: Phương thức cập nhật */}
             <div>
-              <label className="text-slate-300 font-semibold block mb-1">4. Phương thức nhập kho:</label>
+              <label className="text-slate-700 font-semibold block mb-1">4. Phương thức nhập kho:</label>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer text-slate-200 hover:border-slate-700">
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-white border border-sky-200 cursor-pointer text-slate-800 hover:border-sky-200">
                   <input
                     type="radio"
                     name="mode"
@@ -852,11 +852,11 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                   />
                   <div>
                     <div className="font-bold text-xs text-white">Nhập thêm (Khuyên dùng)</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">Cộng dồn số lượng và tự động tính lại giá vốn bình quân gia quyền.</div>
+                    <div className="text-[11px] text-slate-600 mt-0.5">Cộng dồn số lượng và tự động tính lại giá vốn bình quân gia quyền.</div>
                   </div>
                 </label>
 
-                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-slate-900 border border-slate-800 cursor-pointer text-slate-200 hover:border-slate-700">
+                <label className="flex items-start gap-2.5 p-3 rounded-xl bg-white border border-sky-200 cursor-pointer text-slate-800 hover:border-sky-200">
                   <input
                     type="radio"
                     name="mode"
@@ -866,14 +866,14 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                   />
                   <div>
                     <div className="font-bold text-xs text-rose-300">Kiểm kê ghi đè</div>
-                    <div className="text-[11px] text-slate-400 mt-0.5">Thay thế toàn bộ số tồn kho bằng số lượng nhập mới.</div>
+                    <div className="text-[11px] text-slate-600 mt-0.5">Thay thế toàn bộ số tồn kho bằng số lượng nhập mới.</div>
                   </div>
                 </label>
               </div>
             </div>
 
             {showConfirmOverwrite && importMode === 'OVERWRITE' && (
-              <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-400 flex items-start gap-2">
+              <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-rose-700 flex items-start gap-2">
                 <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
                 <span>Cảnh báo: Bạn đang chọn chế độ Kiểm kho ghi đè. Toàn bộ số lượng tồn kho cũ sẽ bị thay thế bằng số mới. Bấm nút bên dưới lần nữa để xác nhận.</span>
               </div>
@@ -895,16 +895,16 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
       {/* ========================================================================= */}
       {activeTab === 'logs' && (
         <div className="space-y-4 animate-fade-in text-xs">
-          <div className="p-4 rounded-2xl bg-slate-950/80 border border-slate-800">
+          <div className="p-4 rounded-2xl bg-sky-50/70 border border-sky-200">
             <h3 className="text-sm font-bold text-white">Nhật ký kho & kiểm toán biến động</h3>
-            <p className="text-xs text-slate-400 mt-1">
+            <p className="text-xs text-slate-600 mt-1">
               Truy nguyên toàn bộ lịch sử xuất bán, nhập kho, hàng hoàn, điều chỉnh ngoại lệ và tái tính giá vốn.
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950">
+          <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
             <table className="w-full text-left">
-              <thead className="bg-slate-900 text-slate-400 font-mono border-b border-slate-800">
+              <thead className="bg-white text-slate-600 font-mono border-b border-sky-200">
                 <tr>
                   <th className="p-3">Thời gian</th>
                   <th className="p-3">Hành động</th>
@@ -926,22 +926,22 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                   auditLogs.map((log) => {
                     const act = formatAuditAction(log.actionType);
                     return (
-                      <tr key={log.id} className="hover:bg-slate-900/50">
-                        <td className="p-3 text-slate-400 text-[11px]">{new Date(log.timestamp).toLocaleString('vi-VN')}</td>
+                      <tr key={log.id} className="hover:bg-sky-50/60">
+                        <td className="p-3 text-slate-600 text-[11px]">{new Date(log.timestamp).toLocaleString('vi-VN')}</td>
                         <td className="p-3 font-semibold">
                           <span className={`px-2 py-0.5 rounded text-[10px] border font-sans font-bold ${act.color}`}>
                             {act.label}
                           </span>
                         </td>
                         <td className="p-3 text-white font-bold">{log.masterSku}</td>
-                        <td className={`p-3 font-bold ${log.qtyChange > 0 ? 'text-emerald-400' : log.qtyChange < 0 ? 'text-rose-400' : 'text-slate-400'}`}>
+                        <td className={`p-3 font-bold ${log.qtyChange > 0 ? 'text-emerald-700' : log.qtyChange < 0 ? 'text-rose-700' : 'text-slate-600'}`}>
                           {log.qtyChange > 0 ? `+${log.qtyChange}` : log.qtyChange}
                         </td>
-                        <td className="p-3 text-slate-300">
+                        <td className="p-3 text-slate-700">
                           {log.oldValue.toLocaleString('vi-VN')} $\rightarrow$ {log.newValue.toLocaleString('vi-VN')}
                         </td>
-                        <td className="p-3 text-slate-400 font-sans">{log.actor}</td>
-                        <td className="p-3 text-slate-400 text-[11px] max-w-xs truncate font-sans" title={log.reason || log.relatedOrder}>
+                        <td className="p-3 text-slate-600 font-sans">{log.actor}</td>
+                        <td className="p-3 text-slate-600 text-[11px] max-w-xs truncate font-sans" title={log.reason || log.relatedOrder}>
                           {log.reason || log.relatedOrder || '-'}
                         </td>
                       </tr>
@@ -960,20 +960,20 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
 
       {/* 1. Returned Goods Modal */}
       {showReturnModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-50/70 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white border border-sky-200 rounded-3xl p-6 w-full max-w-md space-y-4 shadow-2xl">
             <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <RotateCcw className="w-5 h-5 text-amber-400" />
+              <RotateCcw className="w-5 h-5 text-amber-700" />
               <span>Xử lý hàng hoàn trả</span>
             </h3>
 
             <div className="space-y-3 text-xs">
               <div>
-                <label className="text-slate-400 block mb-1">Mã hàng trong kho nhận lại:</label>
+                <label className="text-slate-600 block mb-1">Mã hàng trong kho nhận lại:</label>
                 <select
                   value={returnSku}
                   onChange={(e) => setReturnSku(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                  className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                 >
                   <option value="">-- Chọn mã hàng --</option>
                   {masterList.map((m) => (
@@ -983,20 +983,20 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Số lượng hàng hoàn:</label>
+                <label className="text-slate-600 block mb-1">Số lượng hàng hoàn:</label>
                 <input
                   type="number"
                   min="1"
                   value={returnQty}
                   onChange={(e) => setReturnQty(Number(e.target.value))}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                  className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                 />
               </div>
 
               <div>
-                <label className="text-slate-400 block mb-1">Tình trạng phân loại:</label>
+                <label className="text-slate-600 block mb-1">Tình trạng phân loại:</label>
                 <div className="flex flex-col gap-2 pt-1">
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-slate-200">
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-sky-200 cursor-pointer text-slate-800">
                     <input
                       type="radio"
                       name="damaged"
@@ -1005,12 +1005,12 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                       className="accent-emerald-500"
                     />
                     <div>
-                      <span className="font-bold text-emerald-400">[ Tái nhập kho ]</span>
-                      <span className="text-slate-400 text-[11px] ml-1.5">(Hàng nguyên vẹn, tăng lại tồn bán)</span>
+                      <span className="font-bold text-emerald-700">[ Tái nhập kho ]</span>
+                      <span className="text-slate-600 text-[11px] ml-1.5">(Hàng nguyên vẹn, tăng lại tồn bán)</span>
                     </div>
                   </label>
 
-                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-950 border border-slate-800 cursor-pointer text-slate-200">
+                  <label className="flex items-center gap-2.5 p-2.5 rounded-xl bg-white border border-sky-200 cursor-pointer text-slate-800">
                     <input
                       type="radio"
                       name="damaged"
@@ -1019,8 +1019,8 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
                       className="accent-rose-500"
                     />
                     <div>
-                      <span className="font-bold text-rose-400">[ Báo phế / Hàng hỏng ]</span>
-                      <span className="text-slate-400 text-[11px] ml-1.5">(Ghi nhận tổn thất, không tăng tồn bán)</span>
+                      <span className="font-bold text-rose-700">[ Báo phế / Hàng hỏng ]</span>
+                      <span className="text-slate-600 text-[11px] ml-1.5">(Ghi nhận tổn thất, không tăng tồn bán)</span>
                     </div>
                   </label>
                 </div>
@@ -1038,7 +1038,7 @@ export const LowStockAlert: React.FC<LowStockAlertProps> = ({
               <button
                 type="button"
                 onClick={() => setShowReturnModal(false)}
-                className="py-2.5 px-4 rounded-xl bg-slate-800 text-slate-300 font-medium text-xs hover:bg-slate-700 transition-colors"
+                className="py-2.5 px-4 rounded-xl bg-sky-50 text-slate-700 font-medium text-xs hover:bg-slate-100 transition-colors"
               >
                 Hủy
               </button>

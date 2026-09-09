@@ -43,20 +43,20 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
   const displayedOrders = getCurrentOrders();
 
   return (
-    <div className="bg-navy-900 border border-navy-800 rounded-3xl p-6 shadow-2xl space-y-6 my-8">
+    <div className="bg-white border border-sky-200 rounded-3xl p-6 shadow-2xl space-y-6 my-8">
       
       {/* Module Title */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-navy-800 pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-sky-200 pb-5">
         <div>
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center">
-              <ShieldAlert className="w-4 h-4 text-rose-400" />
+              <ShieldAlert className="w-4 h-4 text-rose-700" />
             </div>
             <h2 className="text-xl font-black text-white tracking-tight">
               Mô-Đun Tự Động Soi Đơn Thất Thoát & Phí Sai
             </h2>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-slate-600 mt-1">
             Hệ thống tự động phát hiện các đơn bị thu phí quá mức, bị âm ví khi hoàn đơn, hoặc bán bị lỗ.
           </p>
         </div>
@@ -66,7 +66,7 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
           onClick={onExportExcel}
           className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 text-rose-300 font-bold text-xs transition-all"
         >
-          <FileSpreadsheet className="w-4 h-4 text-rose-400" />
+          <FileSpreadsheet className="w-4 h-4 text-rose-700" />
           <span>Tải Báo Cáo Đơn Cảnh Báo Excel</span>
         </button>
       </div>
@@ -80,19 +80,19 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
           className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden ${
             activeTab === 'highFee'
               ? 'bg-gradient-to-br from-amber-950/60 to-navy-950 border-amber-500/50 shadow-lg shadow-amber-950/50'
-              : 'bg-navy-950/60 hover:bg-navy-950 border-navy-800'
+              : 'bg-white/60 hover:bg-white border-sky-200'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-              <AlertTriangle className="w-4 h-4 text-amber-400" /> 1. Phí Sàn Cao (&gt;{feeThreshold}%)
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <AlertTriangle className="w-4 h-4 text-amber-700" /> 1. Phí Sàn Cao (&gt;{feeThreshold}%)
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-400 font-mono text-xs font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 font-mono text-xs font-bold">
               {highFeeOrders.length} đơn
             </span>
           </div>
           <div className="mt-2 text-sm font-black text-white">
-            Vượt ngưỡng: <span className="text-amber-400 font-mono">+{formatVND(summary.highFeeTotalExcess)}</span>
+            Vượt ngưỡng: <span className="text-amber-700 font-mono">+{formatVND(summary.highFeeTotalExcess)}</span>
           </div>
         </button>
 
@@ -102,19 +102,19 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
           className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden ${
             activeTab === 'refund'
               ? 'bg-gradient-to-br from-rose-950/60 to-navy-950 border-rose-500/50 shadow-lg shadow-rose-950/50'
-              : 'bg-navy-950/60 hover:bg-navy-950 border-navy-800'
+              : 'bg-white/60 hover:bg-white border-sky-200'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-              <RotateCcw className="w-4 h-4 text-rose-400" /> 2. Đơn Hoàn/Hủy Trừ Phí Sai
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+              <RotateCcw className="w-4 h-4 text-rose-700" /> 2. Đơn Hoàn/Hủy Trừ Phí Sai
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-400 font-mono text-xs font-bold">
+            <span className="px-2 py-0.5 rounded-full bg-rose-500/20 text-rose-700 font-mono text-xs font-bold">
               {refundOrders.length} đơn
             </span>
           </div>
           <div className="mt-2 text-sm font-black text-white">
-            Tổng thiệt hại: <span className="text-rose-400 font-mono">-{formatVND(summary.refundAnomalyTotalLoss)}</span>
+            Tổng thiệt hại: <span className="text-rose-700 font-mono">-{formatVND(summary.refundAnomalyTotalLoss)}</span>
           </div>
         </button>
 
@@ -124,11 +124,11 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
           className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden ${
             activeTab === 'negative'
               ? 'bg-gradient-to-br from-red-950/60 to-navy-950 border-red-500/50 shadow-lg shadow-red-950/50'
-              : 'bg-navy-950/60 hover:bg-navy-950 border-navy-800'
+              : 'bg-white/60 hover:bg-white border-sky-200'
           }`}
         >
           <div className="flex items-center justify-between">
-            <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+            <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
               <TrendingDown className="w-4 h-4 text-red-400" /> 3. Đơn Hàng Bị Lỗ
             </span>
             <span className="px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 font-mono text-xs font-bold">
@@ -151,18 +151,18 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
             placeholder="Tìm theo Mã đơn hàng, Mã SKU, Tên sản phẩm..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-navy-950 border border-navy-800 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+            className="w-full bg-white border border-sky-200 rounded-xl pl-9 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
           />
         </div>
-        <span className="text-xs text-slate-400 font-mono hidden sm:inline">
+        <span className="text-xs text-slate-600 font-mono hidden sm:inline">
           Hiển thị <strong>{displayedOrders.length}</strong> kết quả
         </span>
       </div>
 
       {/* Data Table */}
-      <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+      <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
         <table className="w-full text-left text-xs">
-          <thead className="bg-navy-900 border-b border-navy-800 text-slate-400 uppercase tracking-wider font-bold">
+          <thead className="bg-white border-b border-sky-200 text-slate-600 uppercase tracking-wider font-bold">
             <tr>
               <th className="py-3.5 px-4">Mã Đơn / Ngày</th>
               <th className="py-3.5 px-4">Sản Phẩm & SKU</th>
@@ -180,37 +180,37 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
                 <tr
                   key={order.id}
                   onClick={() => setSelectedOrder(order)}
-                  className="hover:bg-navy-900/60 cursor-pointer transition-colors"
+                  className="hover:bg-white/60 cursor-pointer transition-colors"
                 >
                   {/* Order ID & Date */}
                   <td className="py-3.5 px-4">
-                    <div className="font-mono font-bold text-slate-200">{order.orderId}</div>
+                    <div className="font-mono font-bold text-slate-800">{order.orderId}</div>
                     <div className="text-[10px] text-slate-500">{order.orderDate}</div>
                   </td>
 
                   {/* Product Name & SKU */}
                   <td className="py-3.5 px-4 max-w-xs">
-                    <div className="text-slate-200 line-clamp-1 font-semibold">{order.productName}</div>
-                    <div className="text-[10px] text-emerald-400 font-mono">SKU: {order.sku} (x{order.quantity})</div>
+                    <div className="text-slate-800 line-clamp-1 font-semibold">{order.productName}</div>
+                    <div className="text-[10px] text-emerald-700 font-mono">SKU: {order.sku} (x{order.quantity})</div>
                   </td>
 
                   {/* Gross Revenue */}
-                  <td className="py-3.5 px-4 text-right font-mono text-slate-300">
+                  <td className="py-3.5 px-4 text-right font-mono text-slate-700">
                     {formatVND(order.grossRevenue)}
                   </td>
 
                   {/* Net Settlement */}
                   <td className={`py-3.5 px-4 text-right font-mono font-bold ${
-                    order.netSettlement < 0 ? 'text-rose-400' : 'text-slate-200'
+                    order.netSettlement < 0 ? 'text-rose-700' : 'text-slate-800'
                   }`}>
                     {formatVND(order.netSettlement)}
                   </td>
 
                   {/* Platform Fees & Ratio */}
                   <td className="py-3.5 px-4 text-right">
-                    <div className="font-mono font-bold text-rose-400">{formatVND(order.totalFees)}</div>
+                    <div className="font-mono font-bold text-rose-700">{formatVND(order.totalFees)}</div>
                     <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
-                      order.feeRatio > feeThreshold ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-800 text-slate-400'
+                      order.feeRatio > feeThreshold ? 'bg-rose-500/20 text-rose-700' : 'bg-sky-50 text-slate-600'
                     }`}>
                       {formatPercent(order.feeRatio)}
                     </span>
@@ -223,15 +223,15 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
 
                   {/* Net Profit */}
                   <td className={`py-3.5 px-4 text-right font-mono font-black text-sm ${
-                    order.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'
+                    order.netProfit >= 0 ? 'text-emerald-700' : 'text-red-400'
                   }`}>
                     {formatVND(order.netProfit)}
                   </td>
 
                   {/* Anomaly Badge */}
                   <td className="py-3.5 px-4 text-center">
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-navy-900 border border-navy-700 text-[11px] text-amber-300 font-semibold max-w-[180px] truncate" title={order.anomalyReason}>
-                      <AlertCircle className="w-3 h-3 text-amber-400 shrink-0" />
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white border border-sky-200 text-[11px] text-amber-300 font-semibold max-w-[180px] truncate" title={order.anomalyReason}>
+                      <AlertCircle className="w-3 h-3 text-amber-700 shrink-0" />
                       <span className="truncate">{order.anomalyReason || 'Cảnh báo'}</span>
                     </span>
                   </td>
@@ -250,16 +250,16 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
 
       {/* Order Detail Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/80 backdrop-blur-md">
-          <div className="bg-navy-900 border border-navy-700 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-navy-800 pb-3">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 backdrop-blur-md">
+          <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-lg p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-sky-200 pb-3">
               <div>
-                <span className="text-xs text-slate-400 uppercase font-bold">Chi Tiết Đơn Hàng</span>
+                <span className="text-xs text-slate-600 uppercase font-bold">Chi Tiết Đơn Hàng</span>
                 <h3 className="text-lg font-mono font-bold text-white">{selectedOrder.orderId}</h3>
               </div>
               <button
                 onClick={() => setSelectedOrder(null)}
-                className="text-slate-400 hover:text-white text-sm font-bold px-2 py-1 bg-navy-950 rounded-lg"
+                className="text-slate-600 hover:text-white text-sm font-bold px-2 py-1 bg-white rounded-lg"
               >
                 ✕
               </button>
@@ -267,36 +267,36 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
 
             <div className="space-y-2 text-xs">
               <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 font-semibold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
                 <span>{selectedOrder.anomalyReason || 'Đơn hàng bị theo dõi bất thường'}</span>
               </div>
 
-              <div className="bg-navy-950 p-4 rounded-xl space-y-2 font-mono">
-                <div className="flex justify-between text-slate-300">
+              <div className="bg-white p-4 rounded-xl space-y-2 font-mono">
+                <div className="flex justify-between text-slate-700">
                   <span>Sản phẩm:</span>
-                  <span className="font-sans text-slate-100 font-bold text-right line-clamp-1">{selectedOrder.productName}</span>
+                  <span className="font-sans text-slate-900 font-bold text-right line-clamp-1">{selectedOrder.productName}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Doanh thu khách trả:</span>
                   <span className="text-white font-bold">{formatVND(selectedOrder.grossRevenue)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Phí cố định sàn:</span>
-                  <span className="text-rose-400">-{formatVND(selectedOrder.fixedFee)}</span>
+                  <span className="text-rose-700">-{formatVND(selectedOrder.fixedFee)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Phí thanh toán:</span>
-                  <span className="text-rose-400">-{formatVND(selectedOrder.paymentFee)}</span>
+                  <span className="text-rose-700">-{formatVND(selectedOrder.paymentFee)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Phí dịch vụ/Xtra:</span>
-                  <span className="text-rose-400">-{formatVND(selectedOrder.serviceFee)}</span>
+                  <span className="text-rose-700">-{formatVND(selectedOrder.serviceFee)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Phí tiếp thị Ads/Affiliate:</span>
-                  <span className="text-rose-400">-{formatVND(selectedOrder.marketingFee)}</span>
+                  <span className="text-rose-700">-{formatVND(selectedOrder.marketingFee)}</span>
                 </div>
-                <div className="pt-2 border-t border-navy-800 flex justify-between font-bold text-indigo-300">
+                <div className="pt-2 border-t border-sky-200 flex justify-between font-bold text-indigo-300">
                   <span>Thực Nhận Ví Sàn:</span>
                   <span>{formatVND(selectedOrder.netSettlement)}</span>
                 </div>
@@ -304,12 +304,12 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
                   <span>Giá vốn (COGS):</span>
                   <span>-{formatVND(selectedOrder.cogs)}</span>
                 </div>
-                <div className="flex justify-between text-slate-400">
+                <div className="flex justify-between text-slate-600">
                   <span>Chi phí đóng gói:</span>
                   <span>-{formatVND(selectedOrder.packagingCost)}</span>
                 </div>
-                <div className={`pt-2 border-t border-navy-800 flex justify-between text-sm font-black ${
-                  selectedOrder.netProfit >= 0 ? 'text-emerald-400' : 'text-red-400'
+                <div className={`pt-2 border-t border-sky-200 flex justify-between text-sm font-black ${
+                  selectedOrder.netProfit >= 0 ? 'text-emerald-700' : 'text-red-400'
                 }`}>
                   <span>LỢI NHUẬN RÒNG ĐƠN:</span>
                   <span>{formatVND(selectedOrder.netProfit)}</span>
@@ -319,7 +319,7 @@ export const AnomalyTables: React.FC<AnomalyTablesProps> = ({
 
             <button
               onClick={() => setSelectedOrder(null)}
-              className="w-full py-2.5 rounded-xl bg-navy-950 hover:bg-navy-800 text-slate-300 font-bold text-xs border border-navy-700"
+              className="w-full py-2.5 rounded-xl bg-white hover:bg-sky-50 text-slate-700 font-bold text-xs border border-sky-200"
             >
               Đóng Cửa Sổ
             </button>

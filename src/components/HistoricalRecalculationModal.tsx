@@ -175,7 +175,7 @@ export const HistoricalRecalculationModal: React.FC<HistoricalRecalculationModal
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-50/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-4xl max-h-[90vh] shadow-2xl overflow-hidden flex flex-col relative">
         
         {/* Header */}
@@ -262,7 +262,7 @@ export const HistoricalRecalculationModal: React.FC<HistoricalRecalculationModal
                     >
                       Chọn tất cả ({filteredMasterSkus.length})
                     </button>
-                    <span className="text-slate-400">•</span>
+                    <span className="text-slate-600">•</span>
                     <button
                       type="button"
                       onClick={handleDeselectAll}
@@ -278,7 +278,7 @@ export const HistoricalRecalculationModal: React.FC<HistoricalRecalculationModal
                   placeholder="Tìm kiếm Master SKU theo mã hoặc tên sản phẩm..."
                   value={skuSearchQuery}
                   onChange={(e) => setSkuSearchQuery(e.target.value)}
-                  className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-slate-900 text-xs placeholder:text-slate-400 focus:outline-none focus:border-sky-500 shadow-sm"
+                  className="w-full px-3 py-2 bg-white border border-sky-300 rounded-xl text-slate-900 text-xs placeholder:text-slate-600 focus:outline-none focus:border-sky-500 shadow-sm"
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">

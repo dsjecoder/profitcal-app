@@ -29,14 +29,14 @@ export const Navbar: React.FC<NavbarProps> = ({
   const proInfo = getRemainingProDays(user.proExpiresAt);
 
   return (
-    <header className="sticky top-0 z-40 bg-navy-950/90 backdrop-blur-md border-b border-navy-800/80">
+    <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-sky-200/80">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
         
         {/* Logo & Brand */}
         <div className="flex items-center space-x-3">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20">
-            <div className="w-full h-full bg-navy-950 rounded-[10px] flex items-center justify-center">
-              <Zap className="w-6 h-6 text-emerald-400 animate-pulse" />
+            <div className="w-full h-full bg-white rounded-[10px] flex items-center justify-center">
+              <Zap className="w-6 h-6 text-emerald-700 animate-pulse" />
             </div>
           </div>
           <div>
@@ -44,12 +44,12 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="font-extrabold text-2xl tracking-tight bg-gradient-to-r from-white via-slate-100 to-emerald-400 bg-clip-text text-transparent">
                 ProfitCal
               </span>
-              <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-emerald-500/10 text-emerald-700 border border-emerald-500/20">
                 v2.0 System
               </span>
             </div>
-            <p className="text-xs text-slate-400 font-mono flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+            <p className="text-xs text-slate-600 font-mono flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
               <span>https://profitcal.tagki.com</span>
             </p>
           </div>
@@ -59,11 +59,11 @@ export const Navbar: React.FC<NavbarProps> = ({
         <div className="flex items-center space-x-3 text-xs">
           
           {/* i18n Switcher Button (VN / EN) */}
-          <div className="bg-navy-900 border border-navy-700 rounded-xl p-1 flex items-center gap-1">
+          <div className="bg-white border border-sky-200 rounded-xl p-1 flex items-center gap-1">
             <button
               onClick={() => onLanguageChange('vi')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                currentLang === 'vi' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                currentLang === 'vi' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-600 hover:text-white'
               }`}
             >
               🇻🇳 VN
@@ -71,7 +71,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               onClick={() => onLanguageChange('en')}
               className={`px-2.5 py-1 rounded-lg font-bold transition-all ${
-                currentLang === 'en' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                currentLang === 'en' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-600 hover:text-white'
               }`}
             >
               🇬🇧 EN
@@ -91,9 +91,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Terms & Privacy */}
           <button
             onClick={onOpenTerms}
-            className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 border border-navy-700 text-slate-300 font-medium"
+            className="hidden sm:flex items-center gap-1 px-3 py-2 rounded-xl bg-white hover:bg-sky-50 border border-sky-200 text-slate-700 font-medium"
           >
-            <FileText className="w-3.5 h-3.5 text-slate-400" />
+            <FileText className="w-3.5 h-3.5 text-slate-600" />
             <span>{currentLang === 'en' ? 'Terms & Policy' : 'Điều Khoản'}</span>
           </button>
 
@@ -102,16 +102,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             {user.isLoggedIn ? (
               <button
                 onClick={() => setShowUserDropdown(!showUserDropdown)}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 border border-emerald-500/40 text-slate-200 transition-all font-medium shadow-sm"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-sky-50 border border-emerald-500/40 text-slate-800 transition-all font-medium shadow-sm"
               >
-                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40 text-emerald-400 font-bold text-xs">
+                <div className="w-7 h-7 rounded-lg bg-emerald-500/20 flex items-center justify-center border border-emerald-500/40 text-emerald-700 font-bold text-xs">
                   {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
                 <span className="hidden sm:inline font-bold text-emerald-300">{user.name}</span>
                 <span className={`text-[10px] px-2 py-0.5 rounded font-bold border uppercase ${
                   user.tier === 'pro'
                     ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
-                    : 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                    : 'bg-emerald-500/10 text-emerald-700 border-emerald-500/20'
                 }`}>
                   {user.tier === 'pro'
                     ? `👑 PRO (${proInfo.daysLeft} ngày)`
@@ -121,10 +121,10 @@ export const Navbar: React.FC<NavbarProps> = ({
             ) : (
               <button
                 onClick={onOpenAuth}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-navy-900 hover:bg-navy-800 border border-navy-700/80 text-slate-200 transition-all font-medium"
+                className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white hover:bg-sky-50 border border-sky-200/80 text-slate-800 transition-all font-medium"
               >
-                <div className="w-7 h-7 rounded-lg bg-navy-800 flex items-center justify-center border border-navy-600">
-                  <User className="w-4 h-4 text-emerald-400" />
+                <div className="w-7 h-7 rounded-lg bg-sky-50 flex items-center justify-center border border-sky-300">
+                  <User className="w-4 h-4 text-emerald-700" />
                 </div>
                 <span className="hidden sm:inline font-semibold">{currentLang === 'en' ? 'Sign In' : 'Đăng Nhập'}</span>
               </button>
@@ -132,22 +132,22 @@ export const Navbar: React.FC<NavbarProps> = ({
 
             {/* Profile Dropdown Menu */}
             {user.isLoggedIn && showUserDropdown && (
-              <div className="absolute right-0 mt-2 w-64 bg-navy-900 border border-navy-700 rounded-2xl shadow-2xl p-2 z-50 text-xs space-y-1 animate-fade-in">
-                <div className="px-3 py-2 border-b border-navy-800 text-left space-y-0.5">
+              <div className="absolute right-0 mt-2 w-64 bg-white border border-sky-200 rounded-2xl shadow-2xl p-2 z-50 text-xs space-y-1 animate-fade-in">
+                <div className="px-3 py-2 border-b border-sky-200 text-left space-y-0.5">
                   <div className="font-bold text-white truncate">{user.name}</div>
-                  <div className="text-[11px] text-slate-400 font-mono truncate">{user.email || 'user@tagki.com'}</div>
+                  <div className="text-[11px] text-slate-600 font-mono truncate">{user.email || 'user@tagki.com'}</div>
                   
                   {user.tier === 'pro' ? (
                     <div className="pt-1 space-y-0.5">
                       <div className="text-[11px] font-bold text-amber-300">
                         👑 Gói PRO Unlimited
                       </div>
-                      <div className="text-[10px] text-emerald-400 font-mono">
+                      <div className="text-[10px] text-emerald-700 font-mono">
                         Hạn dùng: {proInfo.formattedDate} (Còn {proInfo.daysLeft} ngày)
                       </div>
                     </div>
                   ) : (
-                    <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-400 font-bold">
+                    <div className="mt-1 flex items-center gap-1.5 text-[10px] text-emerald-700 font-bold">
                       <span>Gói: FREE</span>
                       <span>• {user.tokens ?? 20} Token</span>
                     </div>
@@ -172,9 +172,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                     setShowUserDropdown(false);
                     if (onLogout) onLogout();
                   }}
-                  className="w-full px-3 py-2 rounded-xl hover:bg-rose-500/20 text-rose-400 font-bold text-left flex items-center gap-2 transition-colors"
+                  className="w-full px-3 py-2 rounded-xl hover:bg-rose-500/20 text-rose-700 font-bold text-left flex items-center gap-2 transition-colors"
                 >
-                  <LogOut className="w-4 h-4 text-rose-400" />
+                  <LogOut className="w-4 h-4 text-rose-700" />
                   <span>{currentLang === 'en' ? 'Sign Out' : '🚪 Đăng Xuất'}</span>
                 </button>
               </div>

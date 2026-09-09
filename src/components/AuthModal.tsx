@@ -107,7 +107,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
       <div className="bg-white text-slate-900 rounded-3xl w-full max-w-md p-8 shadow-2xl relative space-y-6 text-center border border-slate-100">
         
         {/* Close Button */}
-        <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-xl bg-slate-100">
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 text-slate-600 hover:text-slate-600 rounded-xl bg-slate-100">
           <X className="w-4 h-4" />
         </button>
 
@@ -118,7 +118,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
               <button
                 type="button"
                 onClick={() => setShowGooglePicker(false)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
+                className="p-1.5 rounded-lg text-slate-600 hover:text-slate-700 hover:bg-slate-100"
               >
                 <ArrowLeft className="w-4 h-4" />
               </button>
@@ -199,7 +199,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
 
             <div className="relative flex items-center justify-center">
               <div className="border-t border-slate-200 w-full" />
-              <span className="bg-white px-3 text-[11px] text-slate-400 font-bold uppercase tracking-wider">HOẶC</span>
+              <span className="bg-white px-3 text-[11px] text-slate-600 font-bold uppercase tracking-wider">HOẶC</span>
             </div>
 
             {/* Email Forms */}

@@ -11,13 +11,13 @@ export const ContactWidget: React.FC = () => {
       
       {/* Expanded Menu */}
       {isOpen && (
-        <div className="mb-4 bg-navy-900 border border-navy-700 rounded-3xl p-4 shadow-2xl space-y-3 text-xs w-64 animate-fade-in">
-          <div className="flex items-center justify-between border-b border-navy-800 pb-2">
+        <div className="mb-4 bg-white border border-sky-200 rounded-3xl p-4 shadow-2xl space-y-3 text-xs w-64 animate-fade-in">
+          <div className="flex items-center justify-between border-b border-sky-200 pb-2">
             <span className="font-bold text-white flex items-center gap-1.5">
-              <MessageCircle className="w-4 h-4 text-emerald-400" />
+              <MessageCircle className="w-4 h-4 text-emerald-700" />
               <span>Hỗ Trợ Khách Hàng 24/7</span>
             </span>
-            <button onClick={() => setIsOpen(false)} className="text-slate-400 hover:text-white">
+            <button onClick={() => setIsOpen(false)} className="text-slate-600 hover:text-white">
               <X className="w-4 h-4" />
             </button>
           </div>
@@ -28,10 +28,10 @@ export const ContactWidget: React.FC = () => {
               href={socials.zaloLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-navy-950 hover:bg-navy-800 border border-navy-800 text-cyan-300 font-bold transition-all"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-white hover:bg-sky-50 border border-sky-200 text-sky-700 font-bold transition-all"
             >
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-[10px]">
+                <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-sky-700 flex items-center justify-center font-black text-[10px]">
                   Z
                 </div>
                 <span>Chat Trực Tiếp Zalo</span>
@@ -44,7 +44,7 @@ export const ContactWidget: React.FC = () => {
               href={socials.facebookLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-navy-950 hover:bg-navy-800 border border-navy-800 text-blue-300 font-bold transition-all"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-white hover:bg-sky-50 border border-sky-200 text-blue-300 font-bold transition-all"
             >
               <div className="flex items-center gap-2">
                 <div className="w-6 h-6 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center font-black text-[10px]">
@@ -60,10 +60,10 @@ export const ContactWidget: React.FC = () => {
               href={socials.whatsappLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-navy-950 hover:bg-navy-800 border border-navy-800 text-emerald-300 font-bold transition-all"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-white hover:bg-sky-50 border border-sky-200 text-emerald-300 font-bold transition-all"
             >
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black text-[10px]">
+                <div className="w-6 h-6 rounded-lg bg-emerald-500/20 text-emerald-700 flex items-center justify-center font-black text-[10px]">
                   WA
                 </div>
                 <span>WhatsApp Chat</span>
@@ -76,10 +76,10 @@ export const ContactWidget: React.FC = () => {
               href={socials.telegramLink}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-navy-950 hover:bg-navy-800 border border-navy-800 text-cyan-300 font-bold transition-all"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-white hover:bg-sky-50 border border-sky-200 text-sky-700 font-bold transition-all"
             >
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 flex items-center justify-center font-black text-[10px]">
+                <div className="w-6 h-6 rounded-lg bg-cyan-500/20 text-sky-700 flex items-center justify-center font-black text-[10px]">
                   TG
                 </div>
                 <span>Telegram Support</span>

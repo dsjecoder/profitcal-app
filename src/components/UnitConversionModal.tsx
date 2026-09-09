@@ -71,29 +71,29 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/85 backdrop-blur-md animate-fade-in">
-      <div className="bg-slate-900 border border-slate-700 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-50/70 backdrop-blur-md animate-fade-in">
+      <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden relative">
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-950/80">
+        <div className="p-6 border-b border-sky-200 flex items-center justify-between bg-sky-50/70">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-500 to-orange-400 p-0.5 shadow-lg shadow-amber-500/20">
-              <div className="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center">
-                <Scale className="w-5 h-5 text-amber-400" />
+              <div className="w-full h-full bg-white rounded-[14px] flex items-center justify-center">
+                <Scale className="w-5 h-5 text-amber-700" />
               </div>
             </div>
             <div>
               <h3 className="text-base font-black text-white flex items-center gap-2">
                 <span>Thiết Lập Quy Cách Quy Đổi COGS</span>
               </h3>
-              <p className="text-xs text-slate-400 mt-0.5">
-                Master SKU: <span className="text-amber-400 font-mono font-bold">{masterSku.masterSku}</span> ({masterSku.productName})
+              <p className="text-xs text-slate-600 mt-0.5">
+                Master SKU: <span className="text-amber-700 font-mono font-bold">{masterSku.masterSku}</span> ({masterSku.productName})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white transition-colors"
+            className="p-2 rounded-xl bg-sky-50 hover:bg-slate-100 text-slate-600 hover:text-white transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -104,7 +104,7 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
           
           {/* Error Banner */}
           {errorMessage && (
-            <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-2.5 text-rose-400 text-xs font-medium animate-shake">
+            <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-2xl flex items-start gap-2.5 text-rose-700 text-xs font-medium animate-shake">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
               <span>{errorMessage}</span>
             </div>
@@ -112,7 +112,7 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
 
           {/* Success Banner */}
           {isSuccess && (
-            <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center gap-2.5 text-emerald-400 text-xs font-semibold">
+            <div className="p-3.5 bg-emerald-500/10 border border-emerald-500/30 rounded-2xl flex items-center gap-2.5 text-emerald-700 text-xs font-semibold">
               <CheckCircle2 className="w-4 h-4" />
               <span>✓ Đã lưu thành công quy cách quy đổi cho Master SKU!</span>
             </div>
@@ -122,7 +122,7 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
             
             {/* 1. Pack Unit */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Đơn Vị Nhập (Pack)
               </label>
               <input
@@ -130,30 +130,30 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
                 value={packUnit}
                 onChange={(e) => setPackUnit(e.target.value)}
                 placeholder="VD: Thùng"
-                className="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm font-semibold focus:outline-none focus:border-amber-500"
+                className="w-full px-3 py-2.5 bg-white border border-sky-200 rounded-xl text-white text-sm font-semibold focus:outline-none focus:border-amber-500"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">VD: Thùng, Hộp, Carton</span>
             </div>
 
             {/* Equals Multiplier Arrow */}
             <div className="flex flex-col items-center justify-center pt-2">
-              <span className="text-[10px] font-mono text-amber-400 font-bold mb-1">Quy Đổi (=)</span>
+              <span className="text-[10px] font-mono text-amber-700 font-bold mb-1">Quy Đổi (=)</span>
               <div className="flex items-center gap-1 w-full">
-                <span className="text-slate-400 text-xs font-mono font-bold">1 =</span>
+                <span className="text-slate-600 text-xs font-mono font-bold">1 =</span>
                 <input
                   type="number"
                   min="1"
                   step="1"
                   value={multiplier}
                   onChange={(e) => setMultiplier(Math.max(1, parseInt(e.target.value) || 1))}
-                  className="w-full text-center px-2 py-2.5 bg-slate-950 border border-amber-500/50 rounded-xl text-amber-300 text-sm font-mono font-black focus:outline-none focus:border-amber-400"
+                  className="w-full text-center px-2 py-2.5 bg-white border border-amber-500/50 rounded-xl text-amber-300 text-sm font-mono font-black focus:outline-none focus:border-amber-400"
                 />
               </div>
             </div>
 
             {/* 2. Base Unit */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider mb-1.5">
                 Đơn Vị Cơ Sở (Base)
               </label>
               <input
@@ -161,16 +161,16 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
                 value={baseUnit}
                 onChange={(e) => setBaseUnit(e.target.value)}
                 placeholder="VD: Lon"
-                className="w-full px-3 py-2.5 bg-slate-950 border border-slate-700 rounded-xl text-white text-sm font-semibold focus:outline-none focus:border-amber-500"
+                className="w-full px-3 py-2.5 bg-white border border-sky-200 rounded-xl text-white text-sm font-semibold focus:outline-none focus:border-amber-500"
               />
               <span className="text-[10px] text-slate-500 mt-1 block">Đơn vị bán lẻ trên sàn</span>
             </div>
           </div>
 
           {/* Dynamic Live Preview Box */}
-          <div className="bg-slate-950/80 border border-amber-500/20 p-4 rounded-2xl space-y-3">
+          <div className="bg-sky-50/70 border border-amber-500/20 p-4 rounded-2xl space-y-3">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-extrabold text-amber-400 flex items-center gap-1.5">
+              <span className="font-extrabold text-amber-700 flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5" />
                 Mô Phỏng Tính Giá Vốn Tự Động:
               </span>
@@ -181,7 +181,7 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
               <div>
-                <label className="text-[11px] text-slate-400 block mb-1">
+                <label className="text-[11px] text-slate-600 block mb-1">
                   Giá nhập 1 {packUnit || 'Thùng'} (VND):
                 </label>
                 <input
@@ -189,24 +189,24 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
                   step="1000"
                   value={samplePackPrice}
                   onChange={(e) => setSamplePackPrice(Math.max(0, parseInt(e.target.value) || 0))}
-                  className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-amber-500"
+                  className="w-full px-3 py-2 bg-white border border-sky-200 rounded-lg text-white font-mono text-xs focus:outline-none focus:border-amber-500"
                 />
               </div>
 
-              <div className="bg-slate-900/90 border border-emerald-500/30 p-2.5 rounded-lg flex flex-col justify-center">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold">
+              <div className="bg-sky-50/60 border border-emerald-500/30 p-2.5 rounded-lg flex flex-col justify-center">
+                <span className="text-[10px] text-slate-600 uppercase font-semibold">
                   Đơn giá cơ sở tự động tính (COGS / {baseUnit || 'Lon'}):
                 </span>
-                <span className="text-sm font-mono font-black text-emerald-400 mt-0.5">
+                <span className="text-sm font-mono font-black text-emerald-700 mt-0.5">
                   {calculatedBasePrice.toLocaleString('vi-VN')} đ / {baseUnit || 'Lon'}
                 </span>
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400 leading-relaxed italic border-t border-slate-800/80 pt-2">
+            <p className="text-[11px] text-slate-600 leading-relaxed italic border-t border-sky-200 pt-2">
               💡 Khi nhập kho 10 {packUnit || 'Thùng'}, hệ thống sẽ tự động ghi nhận vào Lô hàng (Batch) là{' '}
               <strong className="text-white font-mono">{10 * multiplier} {baseUnit || 'Lon'}</strong> với đơn giá vốn bình quân{' '}
-              <strong className="text-emerald-400 font-mono">{calculatedBasePrice.toLocaleString('vi-VN')}đ</strong>.
+              <strong className="text-emerald-700 font-mono">{calculatedBasePrice.toLocaleString('vi-VN')}đ</strong>.
             </p>
           </div>
 
@@ -215,7 +215,7 @@ export const UnitConversionModal: React.FC<UnitConversionModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-colors"
+              className="px-4 py-2.5 rounded-xl bg-sky-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-colors"
             >
               Hủy Bỏ
             </button>

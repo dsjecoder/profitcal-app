@@ -156,7 +156,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm animate-fade-in">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-sky-50/60 backdrop-blur-sm animate-fade-in">
       <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-5xl h-[88vh] flex flex-col shadow-2xl overflow-hidden relative">
         
         {/* Header */}
@@ -349,9 +349,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                       </span>
                     </div>
 
-                    <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+                    <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
                       <table className="w-full text-xs text-left">
-                        <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                        <thead className="bg-white text-slate-600 uppercase font-mono text-[11px] border-b border-sky-200">
                           <tr>
                             <th className="p-3">Khách Hàng / Email</th>
                             <th className="p-3">Gói Chọn Mua</th>
@@ -362,10 +362,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                         </thead>
                         <tbody className="divide-y divide-navy-800/60 font-medium">
                           {upgradeRequests.map((req) => (
-                            <tr key={req.id} className="hover:bg-navy-900/50">
+                            <tr key={req.id} className="hover:bg-white/50">
                               <td className="p-3">
                                 <div className="font-bold text-white">{req.userName}</div>
-                                <div className="text-slate-400 font-mono text-[11px]">{req.userEmail}</div>
+                                <div className="text-slate-600 font-mono text-[11px]">{req.userEmail}</div>
                               </td>
                               <td className="p-3">
                                 <span className="px-2 py-0.5 rounded bg-amber-500/10 text-amber-300 font-bold border border-amber-500/30 text-[11px] uppercase">
@@ -373,10 +373,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                 </span>
                               </td>
                               <td className="p-3 font-mono">
-                                <div className="font-bold text-emerald-400">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(req.amount)}</div>
-                                <div className="text-slate-400 text-[11px]">{req.paymentMethod}</div>
+                                <div className="font-bold text-emerald-700">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(req.amount)}</div>
+                                <div className="text-slate-600 text-[11px]">{req.paymentMethod}</div>
                               </td>
-                              <td className="p-3 text-slate-400 text-[11px] font-mono">
+                              <td className="p-3 text-slate-600 text-[11px] font-mono">
                                 {new Date(req.requestedAt).toLocaleTimeString()}
                               </td>
                               <td className="p-3 text-center">
@@ -396,11 +396,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                     </button>
                                   </div>
                                 ) : req.status === 'approved' ? (
-                                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30 text-[11px]">
+                                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-700 font-bold border border-emerald-500/30 text-[11px]">
                                     ✓ Đã Duyệt PRO 🟢
                                   </span>
                                 ) : (
-                                  <span className="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-400 font-bold border border-rose-500/30 text-[11px]">
+                                  <span className="px-2.5 py-1 rounded-lg bg-rose-500/20 text-rose-700 font-bold border border-rose-500/30 text-[11px]">
                                     ✗ Đã Từ Chối
                                   </span>
                                 )}
@@ -414,12 +414,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                   <div className="flex items-center justify-between">
                     <h3 className="font-bold text-white text-sm">Danh Sách Người Dùng & Phân Quyền</h3>
-                    <span className="text-xs text-slate-400">Tổng cộng: {usersList.length} tài khoản</span>
+                    <span className="text-xs text-slate-600">Tổng cộng: {usersList.length} tài khoản</span>
                   </div>
 
-                  <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+                  <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
                     <table className="w-full text-xs text-left">
-                      <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                      <thead className="bg-white text-slate-600 uppercase font-mono text-[11px] border-b border-sky-200">
                         <tr>
                           <th className="p-3">Họ Tên / Email</th>
                           <th className="p-3">Phân Quyền Gói</th>
@@ -433,14 +433,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                         {usersList.map((u) => {
                           const proInfo = getRemainingProDays(u.proExpiresAt);
                           return (
-                            <tr key={u.id} className="hover:bg-navy-900/50">
+                            <tr key={u.id} className="hover:bg-white/50">
                               <td className="p-3">
                                 <div className="font-bold text-white">{u.name}</div>
-                                <div className="text-slate-400 font-mono text-[11px]">{u.email}</div>
+                                <div className="text-slate-600 font-mono text-[11px]">{u.email}</div>
                               </td>
                               <td className="p-3">
                                 <span className={`px-2.5 py-1 rounded-lg font-bold uppercase text-[10px] ${
-                                  u.tier === 'pro' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-300'
+                                  u.tier === 'pro' ? 'bg-amber-500/20 text-amber-700 border border-amber-500/30' : 'bg-sky-50 text-slate-700'
                                 }`}>
                                   {u.tier.toUpperCase()}
                                 </span>
@@ -449,14 +449,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                 {u.tier === 'pro' ? (
                                   <div>
                                     <div className="font-bold text-amber-300 text-[11px]">{proInfo.formattedDate}</div>
-                                    <div className="text-emerald-400 text-[10px]">Còn {proInfo.daysLeft} ngày</div>
+                                    <div className="text-emerald-700 text-[10px]">Còn {proInfo.daysLeft} ngày</div>
                                   </div>
                                 ) : (
                                   <span className="text-slate-500 text-[11px]">Chưa kích hoạt</span>
                                 )}
                               </td>
-                              <td className="p-3 font-mono font-bold text-emerald-400">{u.tokensLeft} token</td>
-                              <td className="p-3 text-slate-400">{u.lastActive}</td>
+                              <td className="p-3 font-mono font-bold text-emerald-700">{u.tokensLeft} token</td>
+                              <td className="p-3 text-slate-600">{u.lastActive}</td>
                               <td className="p-3 text-center">
                                 <div className="flex items-center justify-center gap-1.5">
                                   <button
@@ -477,7 +477,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                     onClick={() => {
                                       setUsersList(usersList.map(x => x.id === u.id ? { ...x, tier: x.tier === 'free' ? 'pro' : 'free' } : x));
                                     }}
-                                    className="px-2 py-1 bg-navy-800 hover:bg-navy-700 rounded-lg border border-navy-600 text-[10px] font-bold text-slate-300"
+                                    className="px-2 py-1 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-300 text-[10px] font-bold text-slate-700"
                                   >
                                     {u.tier === 'free' ? 'Khởi Tạo' : 'Hạ Free'}
                                   </button>
@@ -498,22 +498,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   <h3 className="font-bold text-white text-sm">Cấu Hình Quy Định Gói Miễn Phí (FREE)</h3>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Số Đơn Tối Đa Cho Phép / Lượt Ghép (Free Tier):</label>
+                    <label className="text-slate-600 block mb-1">Số Đơn Tối Đa Cho Phép / Lượt Ghép (Free Tier):</label>
                     <input
                       type="number"
                       value={freemiumRule.maxFreeOrders || 20}
                       onChange={(e) => setFreemiumRule({ ...freemiumRule, maxFreeOrders: Number(e.target.value) })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold text-sm"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-emerald-700 font-mono font-bold text-sm"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Thời Gian Reset Token Tự Động (Ngày):</label>
+                    <label className="text-slate-600 block mb-1">Thời Gian Reset Token Tự Động (Ngày):</label>
                     <input
                       type="number"
                       value={freemiumRule.resetIntervalDays || 7}
                       onChange={(e) => setFreemiumRule({ ...freemiumRule, resetIntervalDays: Number(e.target.value) })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-white font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-white font-mono"
                     />
                     <p className="text-[10px] text-slate-500 mt-1">Mặc định: 7 ngày (tương đương 168 giờ).</p>
                   </div>
@@ -534,85 +534,85 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-400 block mb-1">Tên Ngân Hàng VietQR:</label>
+                      <label className="text-slate-600 block mb-1">Tên Ngân Hàng VietQR:</label>
                       <input
                         type="text"
                         value={paymentConfig.vietqrBank}
                         onChange={(e) => setPaymentConfig({ ...paymentConfig, vietqrBank: e.target.value })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Số tài khoản VietQR:</label>
+                      <label className="text-slate-600 block mb-1">Số tài khoản VietQR:</label>
                       <input
                         type="text"
                         value={paymentConfig.vietqrAccount}
                         onChange={(e) => setPaymentConfig({ ...paymentConfig, vietqrAccount: e.target.value })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono font-bold text-amber-400"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono font-bold text-amber-700"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Binance Pay ID (USDT Crypto):</label>
+                    <label className="text-slate-600 block mb-1">Binance Pay ID (USDT Crypto):</label>
                     <input
                       type="text"
                       value={paymentConfig.binancePayId}
                       onChange={(e) => setPaymentConfig({ ...paymentConfig, binancePayId: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Mạng Giao Dịch Crypto (Network TRC20 / BEP20):</label>
+                    <label className="text-slate-600 block mb-1">Mạng Giao Dịch Crypto (Network TRC20 / BEP20):</label>
                     <input
                       type="text"
                       value={paymentConfig.binanceNetwork}
                       onChange={(e) => setPaymentConfig({ ...paymentConfig, binanceNetwork: e.target.value })}
                       placeholder="TRC20 (Tron) & BEP20 (BSC)"
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-amber-300 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Địa Chỉ Ví USDT TRC20:</label>
+                    <label className="text-slate-600 block mb-1">Địa Chỉ Ví USDT TRC20:</label>
                     <input
                       type="text"
                       value={paymentConfig.binanceWalletAddress}
                       onChange={(e) => setPaymentConfig({ ...paymentConfig, binanceWalletAddress: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-mono text-[11px]"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-emerald-700 font-mono text-[11px]"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-400 block mb-1">OxaPay Merchant ID (https://oxapay.com/):</label>
+                      <label className="text-slate-600 block mb-1">OxaPay Merchant ID (https://oxapay.com/):</label>
                       <input
                         type="text"
                         value={paymentConfig.oxapayMerchantId}
                         onChange={(e) => setPaymentConfig({ ...paymentConfig, oxapayMerchantId: e.target.value })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-cyan-300 font-mono"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-sky-700 font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">OxaPay Merchant API Key:</label>
+                      <label className="text-slate-600 block mb-1">OxaPay Merchant API Key:</label>
                       <input
                         type="text"
                         value={paymentConfig.oxapayMerchantKey}
                         onChange={(e) => setPaymentConfig({ ...paymentConfig, oxapayMerchantKey: e.target.value })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Google OAuth Client ID (Google Cloud Console cho profitcal.tagki.com):</label>
+                    <label className="text-slate-600 block mb-1">Google OAuth Client ID (Google Cloud Console cho profitcal.tagki.com):</label>
                     <input
                       type="text"
                       value={paymentConfig.googleClientId || ''}
                       onChange={(e) => setPaymentConfig({ ...paymentConfig, googleClientId: e.target.value })}
                       placeholder="vd: 123456789-xyz.apps.googleusercontent.com"
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono text-[11px]"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-amber-300 font-mono text-[11px]"
                     />
                   </div>
 
@@ -631,42 +631,42 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                   <h3 className="font-bold text-white text-sm">Cấu Hình Kênh Liên Hệ Hỗ Trợ</h3>
                   
                   <div>
-                    <label className="text-slate-400 block mb-1">Link Zalo Chat:</label>
+                    <label className="text-slate-600 block mb-1">Link Zalo Chat:</label>
                     <input
                       type="text"
                       value={socialConfig.zaloLink}
                       onChange={(e) => setSocialConfig({ ...socialConfig, zaloLink: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Link Facebook Messenger:</label>
+                    <label className="text-slate-600 block mb-1">Link Facebook Messenger:</label>
                     <input
                       type="text"
                       value={socialConfig.facebookLink}
                       onChange={(e) => setSocialConfig({ ...socialConfig, facebookLink: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Link WhatsApp Chat:</label>
+                    <label className="text-slate-600 block mb-1">Link WhatsApp Chat:</label>
                     <input
                       type="text"
                       value={socialConfig.whatsappLink}
                       onChange={(e) => setSocialConfig({ ...socialConfig, whatsappLink: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Link Telegram CSKH:</label>
+                    <label className="text-slate-600 block mb-1">Link Telegram CSKH:</label>
                     <input
                       type="text"
                       value={socialConfig.telegramLink}
                       onChange={(e) => setSocialConfig({ ...socialConfig, telegramLink: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                     />
                   </div>
 
@@ -686,52 +686,52 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-400 block mb-1">SMTP Host Server:</label>
+                      <label className="text-slate-600 block mb-1">SMTP Host Server:</label>
                       <input
                         type="text"
                         value={emailConfig.smtpHost}
                         onChange={(e) => setEmailConfig({ ...emailConfig, smtpHost: e.target.value })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">SMTP Port:</label>
+                      <label className="text-slate-600 block mb-1">SMTP Port:</label>
                       <input
                         type="number"
                         value={emailConfig.smtpPort}
                         onChange={(e) => setEmailConfig({ ...emailConfig, smtpPort: Number(e.target.value) })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="text-slate-400 block mb-1">Resend.com API Key (Khuyên dùng):</label>
+                    <label className="text-slate-600 block mb-1">Resend.com API Key (Khuyên dùng):</label>
                     <input
                       type="text"
                       value={emailConfig.resendApiKey}
                       onChange={(e) => setEmailConfig({ ...emailConfig, resendApiKey: e.target.value })}
-                      className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono"
+                      className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-amber-300 font-mono"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-slate-400 block mb-1">Tên Người Gửi (Sender Name):</label>
+                      <label className="text-slate-600 block mb-1">Tên Người Gửi (Sender Name):</label>
                       <input
                         type="text"
                         value={emailConfig.senderName}
                         onChange={(e) => setEmailConfig({ ...emailConfig, senderName: e.target.value })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-slate-200 font-mono"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-slate-800 font-mono"
                       />
                     </div>
                     <div>
-                      <label className="text-slate-400 block mb-1">Email Người Gửi (From Email):</label>
+                      <label className="text-slate-600 block mb-1">Email Người Gửi (From Email):</label>
                       <input
                         type="email"
                         value={emailConfig.senderEmail}
                         onChange={(e) => setEmailConfig({ ...emailConfig, senderEmail: e.target.value })}
-                        className="w-full bg-navy-950 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-mono"
+                        className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-emerald-700 font-mono"
                       />
                     </div>
                   </div>
@@ -839,24 +839,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 return (
                   <div className="space-y-6">
                     {/* Header Controls & Filters */}
-                    <div className="bg-navy-950 border border-navy-800 p-5 rounded-3xl space-y-4">
+                    <div className="bg-white border border-sky-200 p-5 rounded-3xl space-y-4">
                       <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
                         <div>
                           <h3 className="font-bold text-white text-sm flex items-center gap-2">
                             <span>⚡ Nhật Ký Telemetry & Báo Cáo Thống Kê Sử Dụng Admin</span>
-                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-extrabold text-[11px] border border-emerald-500/30">
+                            <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-700 font-extrabold text-[11px] border border-emerald-500/30">
                               Real-Time Tracking 🟢
                             </span>
                           </h3>
-                          <p className="text-xs text-slate-400 mt-0.5">Lọc tìm kiếm theo User, xem báo cáo tổng hợp theo Tuần, Tháng & Nhật ký chi tiết.</p>
+                          <p className="text-xs text-slate-600 mt-0.5">Lọc tìm kiếm theo User, xem báo cáo tổng hợp theo Tuần, Tháng & Nhật ký chi tiết.</p>
                         </div>
 
                         {/* View Switcher Buttons */}
-                        <div className="flex items-center gap-1.5 bg-navy-900 p-1.5 rounded-2xl border border-navy-800 text-xs font-bold">
+                        <div className="flex items-center gap-1.5 bg-white p-1.5 rounded-2xl border border-sky-200 text-xs font-bold">
                           <button
                             onClick={() => setAnalyticsTimeView('all')}
                             className={`px-3 py-1.5 rounded-xl transition-all ${
-                              analyticsTimeView === 'all' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                              analyticsTimeView === 'all' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-600 hover:text-white'
                             }`}
                           >
                             📋 Nhật Ký Chi Tiết
@@ -864,7 +864,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           <button
                             onClick={() => setAnalyticsTimeView('weekly')}
                             className={`px-3 py-1.5 rounded-xl transition-all ${
-                              analyticsTimeView === 'weekly' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                              analyticsTimeView === 'weekly' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-600 hover:text-white'
                             }`}
                           >
                             📅 Thống Kê Theo Tuần ({weeklyStatsList.length})
@@ -872,7 +872,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           <button
                             onClick={() => setAnalyticsTimeView('monthly')}
                             className={`px-3 py-1.5 rounded-xl transition-all ${
-                              analyticsTimeView === 'monthly' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-400 hover:text-white'
+                              analyticsTimeView === 'monthly' ? 'bg-emerald-500 text-navy-950 shadow' : 'text-slate-600 hover:text-white'
                             }`}
                           >
                             📆 Thống Kê Theo Tháng ({monthlyStatsList.length})
@@ -881,22 +881,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                       </div>
 
                       {/* Filters Toolbar: User Search & Menu Dropdown */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-navy-800 text-xs">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2 border-t border-sky-200 text-xs">
                         {/* 1. User Search Input */}
                         <div>
-                          <label className="text-slate-400 font-bold block mb-1">🔍 Lọc Tìm Kiếm Theo User Email:</label>
+                          <label className="text-slate-600 font-bold block mb-1">🔍 Lọc Tìm Kiếm Theo User Email:</label>
                           <div className="relative">
                             <input
                               type="text"
                               value={userSearchTerm}
                               onChange={(e) => setUserSearchTerm(e.target.value)}
                               placeholder="Nhập email user (e.g. dsjecoder@gmail.com)..."
-                              className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
+                              className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-white font-mono placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
                             />
                             {userSearchTerm && (
                               <button
                                 onClick={() => setUserSearchTerm('')}
-                                className="absolute right-2.5 top-2 text-slate-400 hover:text-white font-bold"
+                                className="absolute right-2.5 top-2 text-slate-600 hover:text-white font-bold"
                               >
                                 ✕
                               </button>
@@ -906,11 +906,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                         {/* 2. Quick User Select Dropdown */}
                         <div>
-                          <label className="text-slate-400 font-bold block mb-1">👤 Chọn Nhanh User Trong Hệ Thống:</label>
+                          <label className="text-slate-600 font-bold block mb-1">👤 Chọn Nhanh User Trong Hệ Thống:</label>
                           <select
                             value={userSearchTerm}
                             onChange={(e) => setUserSearchTerm(e.target.value)}
-                            className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-amber-300 font-mono font-bold focus:outline-none"
+                            className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-amber-300 font-mono font-bold focus:outline-none"
                           >
                             <option value="">Tất cả Users ({uniqueUserEmails.length} Users)</option>
                             {uniqueUserEmails.map((email: any, idx: number) => (
@@ -923,11 +923,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                         {/* 3. Menu Filter Dropdown */}
                         <div>
-                          <label className="text-slate-400 font-bold block mb-1">📌 Lọc Theo Menu / Tính Năng:</label>
+                          <label className="text-slate-600 font-bold block mb-1">📌 Lọc Theo Menu / Tính Năng:</label>
                           <select
                             value={selectedMenuFilter}
                             onChange={(e) => setSelectedMenuFilter(e.target.value)}
-                            className="w-full bg-navy-900 border border-navy-700 rounded-xl px-3 py-2 text-emerald-400 font-bold focus:outline-none"
+                            className="w-full bg-white border border-sky-200 rounded-xl px-3 py-2 text-emerald-700 font-bold focus:outline-none"
                           >
                             <option value="ALL">Tất cả Menu (Full 5 Modules)</option>
                             <option value="Tính lợi nhuận">Tính lợi nhuận & Thuế (calc)</option>
@@ -942,30 +942,30 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                      <div className="bg-white border border-sky-200 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-600 text-xs font-bold">
                           <span>Tổng Phiên Truy Cập</span>
-                          <Eye className="w-4 h-4 text-cyan-400" />
+                          <Eye className="w-4 h-4 text-sky-700" />
                         </div>
                         <div className="text-2xl font-black text-white font-mono mt-2">{filteredTelemetryLogs.length}</div>
                         <p className="text-[10px] text-slate-500 mt-1">Đã lọc theo điều kiện tìm kiếm</p>
                       </div>
 
-                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                      <div className="bg-white border border-sky-200 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-600 text-xs font-bold">
                           <span>Số User Hoạt Động</span>
-                          <Users className="w-4 h-4 text-emerald-400" />
+                          <Users className="w-4 h-4 text-emerald-700" />
                         </div>
-                        <div className="text-2xl font-black text-emerald-400 font-mono mt-2">
+                        <div className="text-2xl font-black text-emerald-700 font-mono mt-2">
                           {new Set(filteredTelemetryLogs.map((l: any) => l.user_email)).size} Users
                         </div>
                         <p className="text-[10px] text-slate-500 mt-1">Số tài khoản duy nhất phát sinh log</p>
                       </div>
 
-                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                      <div className="bg-white border border-sky-200 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-600 text-xs font-bold">
                           <span>Tổng Đơn Hàng Kiểm Toán</span>
-                          <FileSpreadsheet className="w-4 h-4 text-amber-400" />
+                          <FileSpreadsheet className="w-4 h-4 text-amber-700" />
                         </div>
                         <div className="text-2xl font-black text-amber-300 font-mono mt-2">
                           {filteredTelemetryLogs.reduce((acc: number, l: any) => acc + (l.total_orders || 0), 0)} đơn
@@ -973,8 +973,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                         <p className="text-[10px] text-slate-500 mt-1">Ghi nhận từ các lượt chạy audit</p>
                       </div>
 
-                      <div className="bg-navy-950 border border-navy-800 p-4 rounded-2xl">
-                        <div className="flex justify-between items-center text-slate-400 text-xs font-bold">
+                      <div className="bg-white border border-sky-200 p-4 rounded-2xl">
+                        <div className="flex justify-between items-center text-slate-600 text-xs font-bold">
                           <span>Tổng Doanh Thu Audit</span>
                           <CreditCard className="w-4 h-4 text-indigo-400" />
                         </div>
@@ -989,17 +989,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                     {/* VIEW 1: WEEKLY REPORT TABLE */}
                     {analyticsTimeView === 'weekly' && (
-                      <div className="space-y-3 bg-navy-950 border border-navy-800 p-5 rounded-3xl animate-fade-in">
+                      <div className="space-y-3 bg-white border border-sky-200 p-5 rounded-3xl animate-fade-in">
                         <div className="flex items-center justify-between">
                           <h4 className="font-extrabold text-amber-300 text-xs flex items-center gap-2">
                             <span>📅 Báo Cáo Thống Kê Số Lượt & Hành Vi Theo Tuần (Weekly Summary Report)</span>
                           </h4>
-                          <span className="text-[11px] text-slate-400">Tự động tổng hợp theo ISO Week</span>
+                          <span className="text-[11px] text-slate-600">Tự động tổng hợp theo ISO Week</span>
                         </div>
 
-                        <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-900/50">
+                        <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white/50">
                           <table className="w-full text-xs text-left">
-                            <thead className="bg-navy-950 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                            <thead className="bg-white text-slate-600 uppercase font-mono text-[11px] border-b border-sky-200">
                               <tr>
                                 <th className="p-3">Khung Thời Gian Tuần</th>
                                 <th className="p-3">Số Lượt Truy Cập</th>
@@ -1012,27 +1012,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                             </thead>
                             <tbody className="divide-y divide-navy-800/60 font-medium">
                               {weeklyStatsList.map((row, idx) => (
-                                <tr key={idx} className="hover:bg-navy-900">
-                                  <td className="p-3 font-mono font-bold text-amber-400">
+                                <tr key={idx} className="hover:bg-white">
+                                  <td className="p-3 font-mono font-bold text-amber-700">
                                     {row.weekSlot}
                                   </td>
                                   <td className="p-3 font-mono font-bold text-white">
                                     {row.sessionCount} phiên
                                   </td>
-                                  <td className="p-3 font-mono text-emerald-400 font-bold">
+                                  <td className="p-3 font-mono text-emerald-700 font-bold">
                                     {row.uniqueUsersCount} users
                                   </td>
-                                  <td className="p-3 font-mono text-[11px] text-slate-300 max-w-[200px] truncate">
+                                  <td className="p-3 font-mono text-[11px] text-slate-700 max-w-[200px] truncate">
                                     {row.usersListStr || 'Khách Vô Danh'}
                                   </td>
-                                  <td className="p-3 font-mono text-cyan-300 font-bold">
+                                  <td className="p-3 font-mono text-sky-700 font-bold">
                                     {row.totalOrders} đơn
                                   </td>
-                                  <td className="p-3 font-mono text-slate-200">
+                                  <td className="p-3 font-mono text-slate-800">
                                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.grossRevenue)}
                                   </td>
                                   <td className="p-3">
-                                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400 font-bold border border-emerald-500/30 text-[10px]">
+                                    <span className="px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-700 font-bold border border-emerald-500/30 text-[10px]">
                                       {row.topFeature}
                                     </span>
                                   </td>
@@ -1046,17 +1046,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
 
                     {/* VIEW 2: MONTHLY REPORT TABLE */}
                     {analyticsTimeView === 'monthly' && (
-                      <div className="space-y-3 bg-navy-950 border border-navy-800 p-5 rounded-3xl animate-fade-in">
+                      <div className="space-y-3 bg-white border border-sky-200 p-5 rounded-3xl animate-fade-in">
                         <div className="flex items-center justify-between">
-                          <h4 className="font-extrabold text-cyan-300 text-xs flex items-center gap-2">
+                          <h4 className="font-extrabold text-sky-700 text-xs flex items-center gap-2">
                             <span>📆 Báo Cáo Thống Kê Số Lượt & Hành Vi Theo Tháng (Monthly Summary Report)</span>
                           </h4>
-                          <span className="text-[11px] text-slate-400">Tự động tổng hợp theo Tháng</span>
+                          <span className="text-[11px] text-slate-600">Tự động tổng hợp theo Tháng</span>
                         </div>
 
-                        <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-900/50">
+                        <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white/50">
                           <table className="w-full text-xs text-left">
-                            <thead className="bg-navy-950 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                            <thead className="bg-white text-slate-600 uppercase font-mono text-[11px] border-b border-sky-200">
                               <tr>
                                 <th className="p-3">Khung Thời Gian Tháng</th>
                                 <th className="p-3">Số Lượt Truy Cập</th>
@@ -1069,27 +1069,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                             </thead>
                             <tbody className="divide-y divide-navy-800/60 font-medium">
                               {monthlyStatsList.map((row, idx) => (
-                                <tr key={idx} className="hover:bg-navy-900">
-                                  <td className="p-3 font-mono font-bold text-cyan-400">
+                                <tr key={idx} className="hover:bg-white">
+                                  <td className="p-3 font-mono font-bold text-sky-700">
                                     {row.monthSlot}
                                   </td>
                                   <td className="p-3 font-mono font-bold text-white">
                                     {row.sessionCount} phiên
                                   </td>
-                                  <td className="p-3 font-mono text-emerald-400 font-bold">
+                                  <td className="p-3 font-mono text-emerald-700 font-bold">
                                     {row.uniqueUsersCount} users
                                   </td>
-                                  <td className="p-3 font-mono text-[11px] text-slate-300 max-w-[200px] truncate">
+                                  <td className="p-3 font-mono text-[11px] text-slate-700 max-w-[200px] truncate">
                                     {row.usersListStr || 'Khách Vô Danh'}
                                   </td>
                                   <td className="p-3 font-mono text-amber-300 font-bold">
                                     {row.totalOrders} đơn
                                   </td>
-                                  <td className="p-3 font-mono text-slate-200">
+                                  <td className="p-3 font-mono text-slate-800">
                                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(row.grossRevenue)}
                                   </td>
                                   <td className="p-3">
-                                    <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-bold border border-cyan-500/30 text-[10px]">
+                                    <span className="px-2 py-0.5 rounded bg-cyan-500/10 text-sky-700 font-bold border border-cyan-500/30 text-[10px]">
                                       {row.topFeature}
                                     </span>
                                   </td>
@@ -1108,9 +1108,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           <h4 className="font-bold text-white text-xs">📋 Chi Tiết Nhật Ký Telemetry Event Logs ({filteredTelemetryLogs.length} sự kiện)</h4>
                         </div>
 
-                        <div className="overflow-x-auto rounded-2xl border border-navy-800 bg-navy-950">
+                        <div className="overflow-x-auto rounded-2xl border border-sky-200 bg-white">
                           <table className="w-full text-xs text-left">
-                            <thead className="bg-navy-900 text-slate-400 uppercase font-mono text-[11px] border-b border-navy-800">
+                            <thead className="bg-white text-slate-600 uppercase font-mono text-[11px] border-b border-sky-200">
                               <tr>
                                 <th className="p-3">Sự Kiện & Menu</th>
                                 <th className="p-3">Tài Khoản User & Gói</th>
@@ -1124,47 +1124,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                             <tbody className="divide-y divide-navy-800/60 font-medium">
                               {filteredTelemetryLogs.length === 0 ? (
                                 <tr>
-                                  <td colSpan={7} className="p-8 text-center text-slate-400 font-mono">
+                                  <td colSpan={7} className="p-8 text-center text-slate-600 font-mono">
                                     Không tìm thấy nhật ký Telemetry phù hợp với từ khóa search "{userSearchTerm}".
                                   </td>
                                 </tr>
                               ) : (
                                 filteredTelemetryLogs.map((log: any, idx: number) => (
-                                  <tr key={idx} className="hover:bg-navy-900/50">
+                                  <tr key={idx} className="hover:bg-white/50">
                                     <td className="p-3">
                                       <div className="font-bold text-white uppercase flex items-center gap-1.5">
-                                        <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30 text-[10px]">
+                                        <span className="px-1.5 py-0.5 rounded bg-cyan-500/20 text-sky-700 font-bold border border-cyan-500/30 text-[10px]">
                                           {log.feature_name || log.platform || 'MENU'}
                                         </span>
                                         <span>{log.event_name}</span>
                                       </div>
-                                      <div className="text-slate-400 font-mono text-[11px] truncate max-w-[180px]">{log.session_id}</div>
+                                      <div className="text-slate-600 font-mono text-[11px] truncate max-w-[180px]">{log.session_id}</div>
                                     </td>
                                     <td className="p-3">
                                       <div className="font-bold text-amber-300">{log.user_email || 'Khách Vô Danh'}</div>
                                       <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                        log.user_tier === 'PRO' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-slate-800 text-slate-400'
+                                        log.user_tier === 'PRO' ? 'bg-amber-500/20 text-amber-700 border border-amber-500/30' : 'bg-sky-50 text-slate-600'
                                       }`}>
                                         {log.user_tier || 'FREE'}
                                       </span>
                                     </td>
                                     <td className="p-3 font-mono">
-                                      <div className="font-bold text-amber-400">{log.revisit_week_slot || 'Tuần 37, 2026'}</div>
-                                      <div className="text-cyan-400 text-[10px]">{log.revisit_month_slot || 'Tháng 09/2026'}</div>
+                                      <div className="font-bold text-amber-700">{log.revisit_week_slot || 'Tuần 37, 2026'}</div>
+                                      <div className="text-sky-700 text-[10px]">{log.revisit_month_slot || 'Tháng 09/2026'}</div>
                                     </td>
                                     <td className="p-3 font-mono">
-                                      <div className="font-bold text-emerald-400">{log.revisit_30min_slot || '09:30 - 10:00'}</div>
+                                      <div className="font-bold text-emerald-700">{log.revisit_30min_slot || '09:30 - 10:00'}</div>
                                       <div className="text-slate-500 text-[10px]">{log.revisit_hour_slot || '09:00 - 10:00'}</div>
                                     </td>
                                     <td className="p-3">
-                                      <div className="text-slate-200 font-bold">{log.location || 'Hà Nội, Việt Nam'}</div>
-                                      <div className="text-slate-400 font-mono text-[11px]">IP: {log.ip_address || '14.226.12.88'}</div>
+                                      <div className="text-slate-800 font-bold">{log.location || 'Hà Nội, Việt Nam'}</div>
+                                      <div className="text-slate-600 font-mono text-[11px]">IP: {log.ip_address || '14.226.12.88'}</div>
                                     </td>
                                     <td className="p-3">
-                                      <div className="text-slate-200 font-bold">{log.device_type} ({log.os} / {log.browser})</div>
-                                      <div className="text-slate-400 font-mono text-[10px]">Res: {log.screen_res || '1920x1080'} ({log.orientation || 'Ngang'})</div>
+                                      <div className="text-slate-800 font-bold">{log.device_type} ({log.os} / {log.browser})</div>
+                                      <div className="text-slate-600 font-mono text-[10px]">Res: {log.screen_res || '1920x1080'} ({log.orientation || 'Ngang'})</div>
                                     </td>
-                                    <td className="p-3 text-right font-mono text-slate-300 text-[11px]">
+                                    <td className="p-3 text-right font-mono text-slate-700 text-[11px]">
                                       {log.formatted_access_time || (log.access_timestamp ? new Date(log.access_timestamp).toLocaleString('vi-VN') : 'Vừa xong')}
                                     </td>
                                   </tr>

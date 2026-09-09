@@ -397,7 +397,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                     placeholder="Tên sản phẩm / Mã SKU (không bắt buộc)"
                     value={productName}
                     onChange={(e) => setProductName(e.target.value)}
-                    className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-sky-500 shadow-sm font-medium"
+                    className="w-full bg-white border border-sky-300 rounded-xl px-3 py-2 text-slate-900 placeholder:text-slate-600 focus:outline-none focus:border-sky-500 shadow-sm font-medium"
                   />
                 </div>
 
@@ -417,7 +417,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                           isSellPriceInvalid ? 'border-rose-500' : 'border-sky-300 focus:border-sky-500'
                         }`}
                       />
-                      <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">đ</span>
+                      <span className="absolute right-3 top-2 text-xs text-slate-600 pointer-events-none">đ</span>
                     </div>
                   </div>
 
@@ -457,7 +457,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       onChange={(e) => setCostPriceInput(e.target.value)}
                       className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">đ</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-600 pointer-events-none">đ</span>
                   </div>
                 </div>
 
@@ -474,7 +474,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       onChange={(e) => setSinglePackCostInput(e.target.value)}
                       className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">đ</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-600 pointer-events-none">đ</span>
                   </div>
                 </div>
 
@@ -492,7 +492,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       onChange={(e) => setPlatformFeePctInput(e.target.value)}
                       className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-extrabold text-xs text-amber-700 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">%</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-600 pointer-events-none">%</span>
                   </div>
                 </div>
 
@@ -510,7 +510,7 @@ export const ProfitCalculatorModule: React.FC<ProfitCalculatorModuleProps> = ({
                       onChange={(e) => setTaxPctInput(e.target.value)}
                       className="w-full bg-white border border-sky-300 rounded-xl px-3 py-1.5 text-right font-mono font-bold text-xs text-slate-900 focus:outline-none focus:border-sky-500 shadow-sm"
                     />
-                    <span className="absolute right-3 top-2 text-xs text-slate-400 pointer-events-none">%</span>
+                    <span className="absolute right-3 top-2 text-xs text-slate-600 pointer-events-none">%</span>
                   </div>
                 </div>
               </div>

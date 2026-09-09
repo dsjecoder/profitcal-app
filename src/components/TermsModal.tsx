@@ -7,34 +7,34 @@ interface TermsModalProps {
 
 export const TermsModal: React.FC<TermsModalProps> = ({ onClose }) => {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-navy-950/85 backdrop-blur-md animate-fade-in">
-      <div className="bg-navy-900 border border-navy-700 rounded-3xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden relative">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/85 backdrop-blur-md animate-fade-in">
+      <div className="bg-white border border-sky-200 rounded-3xl w-full max-w-3xl max-h-[88vh] flex flex-col shadow-2xl overflow-hidden relative">
         
         {/* Header */}
-        <div className="p-6 border-b border-navy-800 bg-navy-950 flex items-center justify-between">
+        <div className="p-6 border-b border-sky-200 bg-white flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-700 font-bold">
               <FileText className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-xl font-bold text-white">Điều Khoản Sử Dụng & Chính Sách Bảo Mật</h2>
-              <p className="text-xs text-slate-400">ProfitCal Ecom Audit Tool • Official https://profitcal.tagki.com</p>
+              <p className="text-xs text-slate-600">ProfitCal Ecom Audit Tool • Official https://profitcal.tagki.com</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-2 rounded-xl bg-navy-900 hover:bg-navy-800 text-slate-400">
+          <button onClick={onClose} className="p-2 rounded-xl bg-white hover:bg-sky-50 text-slate-600">
             <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Legal Text Content */}
-        <div className="p-6 overflow-y-auto flex-1 space-y-5 text-xs text-slate-300 leading-relaxed">
+        <div className="p-6 overflow-y-auto flex-1 space-y-5 text-xs text-slate-700 leading-relaxed">
           
           <div className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 space-y-1">
-            <div className="flex items-center gap-2 text-emerald-400 font-bold">
+            <div className="flex items-center gap-2 text-emerald-700 font-bold">
               <ShieldCheck className="w-4 h-4" />
               <span>CAM KẾT BẢO MẬT DỮ LIỆU TUYỆT ĐỐI (100% CLIENT-SIDE)</span>
             </div>
-            <p className="text-[11px] text-slate-300">
+            <p className="text-[11px] text-slate-700">
               ProfitCal hoạt động 100% trên Trình duyệt máy tính của bạn (Client-side Web Assembly). Chúng tôi KHÔNG lưu trữ, KHÔNG tải lên server bất kỳ file Excel đối soát, tên khách hàng, SĐT hay dữ liệu doanh thu shop nào của bạn.
             </p>
           </div>
@@ -66,7 +66,7 @@ export const TermsModal: React.FC<TermsModalProps> = ({ onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-navy-800 bg-navy-950 flex justify-end">
+        <div className="p-4 border-t border-sky-200 bg-white flex justify-end">
           <button
             onClick={onClose}
             className="px-6 py-2.5 bg-emerald-500 text-navy-950 font-bold text-xs rounded-xl shadow-lg hover:bg-emerald-400"

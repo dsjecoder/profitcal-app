@@ -135,9 +135,9 @@ export const ExcelTransformerModule: React.FC<ExcelTransformerModuleProps> = ({
             : 'bg-rose-950 border-rose-500 text-rose-300'
         }`}>
           {toastMessage.type === 'success' ? (
-            <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0" />
+            <CheckCircle2 className="w-5 h-5 text-emerald-700 shrink-0" />
           ) : (
-            <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 animate-bounce" />
+            <AlertCircle className="w-5 h-5 text-rose-700 shrink-0 animate-bounce" />
           )}
           <span>{toastMessage.text}</span>
         </div>
@@ -336,7 +336,7 @@ export const ExcelTransformerModule: React.FC<ExcelTransformerModuleProps> = ({
               type="button"
               disabled={orders.length === 0}
               onClick={handleExportSelectedCarrier}
-              className="px-6 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2"
+              className="px-6 py-3 rounded-2xl bg-sky-600 hover:bg-sky-700 disabled:bg-slate-200 disabled:text-slate-600 disabled:cursor-not-allowed text-white font-extrabold text-xs shadow-md transition-all flex items-center justify-center gap-2"
             >
               <Download className="w-4 h-4" />
               <span>Xuất file vận chuyển ({currentCarrierObj.name})</span>
