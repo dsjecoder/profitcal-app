@@ -489,6 +489,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                           );
                         })}
                       </tbody>
+                    </table>
                   </div>
 
                   {/* 2FA LOGIN HISTORY TELEMETRY TABLE */}
