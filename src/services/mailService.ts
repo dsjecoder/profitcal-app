@@ -139,27 +139,47 @@ export async function sendOtpEmail(params: {
   type: 'OTP_REGISTER' | 'OTP_LOGIN_2FA';
 }): Promise<{ success: boolean; message: string }> {
   const emailConfig: EmailServerConfig = getEmailServerConfig();
+  const apiKey = (import.meta as any).env?.VITE_RESEND_API_KEY || emailConfig.resendApiKey;
   const subject = '[Tagki] Mã xác thực tài khoản của bạn';
   const htmlBody = buildOtpEmailHtml(params.recipientName, params.otpCode, params.type === 'OTP_REGISTER');
-  const sender = `${emailConfig.senderName || 'Tagki System'} <${emailConfig.senderEmail || 'no-reply@tagki.com'}>`;
+  const sender = `${emailConfig.senderName || 'Tagki System'} <${emailConfig.senderEmail || 'onboarding@resend.dev'}>`;
 
-  try {
-    // 1. Check if SMTP / Resend API key is available
-    if (emailConfig.resendApiKey && emailConfig.resendApiKey.startsWith('re_') && !emailConfig.resendApiKey.includes('placeholder')) {
-      // Direct Dispatch via Resend API
-      const res = await fetch('https://api.resend.com/emails', {
+  // 1. Check if real Resend API key is available
+  if (apiKey && apiKey.startsWith('re_') && !apiKey.includes('placeholder') && !apiKey.includes('live_api_key')) {
+    try {
+      // First attempt with configured senderEmail
+      let fromEmail = emailConfig.senderEmail && emailConfig.senderEmail.includes('@') ? emailConfig.senderEmail : 'onboarding@resend.dev';
+      
+      let res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${emailConfig.resendApiKey}`,
+          'Authorization': `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: emailConfig.senderEmail || 'no-reply@tagki.com',
+          from: fromEmail,
           to: [params.recipientEmail],
           subject: subject,
           html: htmlBody,
         }),
       });
+
+      // If domain verification failed on custom fromEmail, fallback to onboarding@resend.dev
+      if (!res.ok && fromEmail !== 'onboarding@resend.dev') {
+        res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            from: 'onboarding@resend.dev',
+            to: [params.recipientEmail],
+            subject: subject,
+            html: htmlBody,
+          }),
+        });
+      }
 
       if (res.ok) {
         logSentEmail({
@@ -169,34 +189,47 @@ export async function sendOtpEmail(params: {
           status: 'DELIVERED',
           type: params.type,
         });
-        return { success: true, message: 'Mã OTP đã được gửi thành công tới hòm thư Email của bạn.' };
+        return { success: true, message: '🎉 Mã OTP đã được gửi thành công tới hòm thư Email thực tế của bạn!' };
+      } else {
+        const errorData = await res.json().catch(() => ({}));
+        logSentEmail({
+          recipient: params.recipientEmail,
+          subject: subject,
+          sender: sender,
+          status: 'FAILED',
+          type: params.type,
+        });
+        return {
+          success: false,
+          message: `Lỗi Server Email Resend API (${res.status}): ${errorData.message || 'API Key không hợp lệ hoặc hòm thư bị từ chối'}.`,
+        };
       }
+    } catch (err: any) {
+      logSentEmail({
+        recipient: params.recipientEmail,
+        subject: subject,
+        sender: sender,
+        status: 'FAILED',
+        type: params.type,
+      });
+      return {
+        success: false,
+        message: `Lỗi mạng khi kết nối Email Server: ${err.message || 'Không thể kết nối'}.`,
+      };
     }
-
-    // 2. Fallback SMTP Dispatcher Simulator & Sent Email Logger
-    logSentEmail({
-      recipient: params.recipientEmail,
-      subject: subject,
-      sender: sender,
-      status: 'DELIVERED',
-      type: params.type,
-    });
-
-    return {
-      success: true,
-      message: 'Mã OTP đã được gửi tới email của bạn (Vui lòng kiểm tra Hòm thư đến Inbox/Spam).',
-    };
-  } catch (err: any) {
-    logSentEmail({
-      recipient: params.recipientEmail,
-      subject: subject,
-      sender: sender,
-      status: 'FAILED',
-      type: params.type,
-    });
-    return {
-      success: true,
-      message: 'Mã OTP đã được khởi tạo và gửi tới hòm thư email của bạn.',
-    };
   }
+
+  // 2. Demo Mode when API key is not configured
+  logSentEmail({
+    recipient: params.recipientEmail,
+    subject: subject,
+    sender: sender,
+    status: 'QUEUED',
+    type: params.type,
+  });
+
+  return {
+    success: true,
+    message: 'Mã OTP xác thực đã được gửi tới email của bạn (Cần nhập Resend API Key trong Admin để gửi tới Gmail thực tế).',
+  };
 }
