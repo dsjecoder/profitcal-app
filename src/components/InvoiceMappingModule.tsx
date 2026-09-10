@@ -264,6 +264,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
       {/* Hidden File Input Elements for Browsing */}
       <input
+        id="invoice-file-input"
         type="file"
         ref={invoiceFileInputRef}
         onChange={handleInvoiceFileChange}
@@ -271,6 +272,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         className="hidden"
       />
       <input
+        id="declaration-file-input"
         type="file"
         ref={declarationFileInputRef}
         onChange={handleDeclarationFileChange}
@@ -291,22 +293,17 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <span className="text-[10px] text-slate-600 font-mono">Softdreams / EasyInvoice</span>
           </div>
 
-          <div
-            onClick={() => invoiceFileInputRef.current?.click()}
-            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors"
+          <label
+            htmlFor="invoice-file-input"
+            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors w-full"
           >
             <span className="text-slate-700 truncate font-mono text-[11px] font-medium">{invoiceFileName}</span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                invoiceFileInputRef.current?.click();
-              }}
+            <span
               className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors border border-sky-200 cursor-pointer"
             >
               Đổi file HĐ
-            </button>
-          </div>
+            </span>
+          </label>
         </div>
 
         {/* Dropzone 2: Tờ khai hải quan nhập khẩu Excel VNACCS */}
@@ -319,22 +316,17 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <span className="text-[10px] text-slate-600 font-mono">TKN / HANG</span>
           </div>
 
-          <div
-            onClick={() => declarationFileInputRef.current?.click()}
-            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors"
+          <label
+            htmlFor="declaration-file-input"
+            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors w-full"
           >
             <span className="text-slate-700 truncate font-mono text-[11px] font-medium">{declarationFileName}</span>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                declarationFileInputRef.current?.click();
-              }}
+            <span
               className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors border border-sky-200 cursor-pointer"
             >
               Đổi file Tờ khai
-            </button>
-          </div>
+            </span>
+          </label>
         </div>
 
       </div>
