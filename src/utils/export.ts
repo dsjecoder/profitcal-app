@@ -101,8 +101,8 @@ export function exportInvoiceMapping32ColsExcel(
       '28. Kênh Đối Soát': 'Tờ khai Hải Quan VNACCS ↔ GTGT',
       '29. Mã Đơn Hàng Sàn TMĐT': `ORD-${1000 + idx}`,
       '30. Thời Gian Khởi Tạo Log': new Date().toLocaleString('vi-VN'),
-      '31. Tên File Hóa Đơn Gốc': invoiceFileName,
-      '32. Tên File Tờ Khai Gốc': declarationFileName,
+      '31. Tên File Hóa Đơn Gốc': item.sourceInvoiceFileName || invoiceFileName,
+      '32. Tên File Tờ Khai Gốc': item.sourceDeclarationFileName || declarationFileName,
     };
   });
 

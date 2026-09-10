@@ -302,6 +302,8 @@ export interface InvoiceLineItem {
   matchScore?: number;
   matchStatus?: 'MATCHED' | 'SUGGESTED' | 'REVIEW_NEEDED' | 'CONFLICT' | 'UNMATCHED';
   matchReason?: string;
+  sourceInvoiceFileName?: string;
+  sourceDeclarationFileName?: string;
 }
 
 export interface InvoiceItem {

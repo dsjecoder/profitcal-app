@@ -17,11 +17,29 @@ import {
   Shield,
   Layers,
   Sparkles,
+  Trash2,
+  Plus,
+  Filter,
 } from 'lucide-react';
 import { UserState, OrderItem, InvoiceItem, InvoiceLineItem } from '../types';
 import { trackInvoiceMappingExecution, getStoredInvoiceMappingLogs } from '../utils/invoiceTracker';
 import { getStoredAnalyticsEvents } from '../utils/analytics';
 import { exportAuditedExcel, exportInvoiceMapping32ColsExcel } from '../utils/export';
+
+export interface FileListInfo {
+  id: string;
+  name: string;
+  size: number;
+  sizeFormatted: string;
+  type: string;
+  itemCount: number;
+  uploadedAt: string;
+}
+
+const MAX_INVOICE_FILES = 20;
+const MAX_DECLARATION_FILES = 10;
+const MAX_SINGLE_FILE_SIZE_BYTES = 25 * 1024 * 1024; // 25MB
+const MAX_TOTAL_BATCH_SIZE_BYTES = 100 * 1024 * 1024; // 100MB
 
 interface InvoiceMappingModuleProps {
   user: UserState;
@@ -36,9 +54,32 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
   orders = [],
   platform = 'shopee',
 }) => {
-  // Parsing & File upload state
-  const [invoiceFileName, setInvoiceFileName] = useState<string>('Hoa_Don_GTGT_Demo_092026.pdf');
-  const [declarationFileName, setDeclarationFileName] = useState<string>('To_Khai_Hai_Quan_VNACCS_1081.xlsx');
+  // Multi-file Upload State
+  const [invoiceFiles, setInvoiceFiles] = useState<FileListInfo[]>([
+    {
+      id: 'inv_file_demo_1',
+      name: 'Hoa_Don_GTGT_Demo_092026.pdf',
+      size: 458752,
+      sizeFormatted: '448 KB',
+      type: 'pdf',
+      itemCount: 5,
+      uploadedAt: new Date().toISOString(),
+    },
+  ]);
+
+  const [declarationFiles, setDeclarationFiles] = useState<FileListInfo[]>([
+    {
+      id: 'dec_file_demo_1',
+      name: 'To_Khai_Hai_Quan_VNACCS_1081.xlsx',
+      size: 1258291,
+      sizeFormatted: '1.2 MB',
+      type: 'xlsx',
+      itemCount: 4,
+      uploadedAt: new Date().toISOString(),
+    },
+  ]);
+
+  const [selectedFileFilter, setSelectedFileFilter] = useState<string>('ALL');
   const [isProcessing, setIsProcessing] = useState<boolean>(false);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
@@ -48,19 +89,167 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
   const invoiceFileInputRef = React.useRef<HTMLInputElement>(null);
   const declarationFileInputRef = React.useRef<HTMLInputElement>(null);
 
+  const formatFileSize = (bytes: number): string => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleInvoiceFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setInvoiceFileName(file.name);
-      e.target.value = '';
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const validFiles: FileListInfo[] = [];
+    const rejectedOverSize: string[] = [];
+
+    let currentTotalSize = invoiceFiles.reduce((sum, f) => sum + f.size, 0);
+
+    for (const f of fileArray) {
+      if (f.size > MAX_SINGLE_FILE_SIZE_BYTES) {
+        rejectedOverSize.push(`${f.name} (${formatFileSize(f.size)})`);
+        continue;
+      }
+      if (currentTotalSize + f.size > MAX_TOTAL_BATCH_SIZE_BYTES) {
+        alert(`⚠️ Tổng dung lượng đợt file vượt quá 100MB cho phép! Đã dừng nhận thêm từ file "${f.name}".`);
+        break;
+      }
+      if (invoiceFiles.length + validFiles.length >= MAX_INVOICE_FILES) {
+        alert(`⚠️ Đã đạt giới hạn tối đa ${MAX_INVOICE_FILES} file Hóa đơn GTGT!`);
+        break;
+      }
+
+      currentTotalSize += f.size;
+      const fileId = `inv_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`;
+      const generatedLinesCount = Math.floor(4 + Math.random() * 8);
+
+      validFiles.push({
+        id: fileId,
+        name: f.name,
+        size: f.size,
+        sizeFormatted: formatFileSize(f.size),
+        type: f.name.split('.').pop()?.toLowerCase() || 'file',
+        itemCount: generatedLinesCount,
+        uploadedAt: new Date().toISOString(),
+      });
+
+      // Append generated batch items from new invoice file
+      const sampleNames = [
+        'Áo Nam Polo Cotton Co Giãn 4 Chiều (Màu Đen XL)',
+        'Giày Thể Thao Nam Sneaker Trắng Thể Thao (Size 42)',
+        'Váy Đầm Suông Họa Tiết Vintage TikTok Viral (Size M)',
+        'Balo Đi Học Nam Nữ Chống Nước Đa Năng 15.6 Inch',
+        'Đồng Hồ Nam Quartz Chống Nước 3ATM Dây Da Thật',
+      ];
+
+      const newBatchItems: InvoiceLineItem[] = Array.from({ length: generatedLinesCount }).map((_, i) => {
+        const qty = Math.floor(10 + Math.random() * 90);
+        const price = Math.floor(80 + Math.random() * 400) * 1000;
+        const totalAmount = qty * price;
+        const taxRate = 10;
+        const taxAmount = Math.round(totalAmount * (taxRate / 100));
+        const matchStatus = i % 3 === 0 ? 'MATCHED' : i % 3 === 1 ? 'SUGGESTED' : 'CONFLICT';
+
+        return {
+          id: `inv_item_${fileId}_${i + 1}`,
+          lineNumber: i + 1,
+          productName: `${sampleNames[i % sampleNames.length]} (Lô ${f.name.slice(0, 8)})`,
+          spec: `Lô #${Math.floor(100 + Math.random() * 900)} - Chuẩn ISO 9001`,
+          unit: 'Cái',
+          quantity: qty,
+          unitPrice: price,
+          totalAmount,
+          taxRate,
+          taxAmount,
+          matchedDeclarationId: declarationFiles[0]?.name ? `TK-${Math.floor(100000000000 + Math.random() * 900000000000)}` : undefined,
+          matchedDeclarationLineId: `TK_LINE_${i + 1}`,
+          matchScore: Number((80 + Math.random() * 19).toFixed(1)),
+          matchStatus,
+          matchReason: matchStatus === 'MATCHED'
+            ? 'Tên hàng, ĐVT & quy cách trùng khớp 100%'
+            : matchStatus === 'SUGGESTED'
+            ? 'Khớp 85.5% - Cần rà soát lại đơn giá ngoại tệ'
+            : '⚠️ MÂU THUẪN: Chênh lệch quy cách sản phẩm giữa hóa đơn và tờ khai',
+          sourceInvoiceFileName: f.name,
+          sourceDeclarationFileName: declarationFiles[0]?.name || 'To_Khai_Hai_Quan_VNACCS_1081.xlsx',
+        };
+      });
+
+      setInvoiceItems((prev) => [...prev, ...newBatchItems]);
     }
+
+    if (rejectedOverSize.length > 0) {
+      alert(`⚠️ Các file sau vượt quá giới hạn 25MB cho phép:\n- ${rejectedOverSize.join('\n- ')}`);
+    }
+
+    if (validFiles.length > 0) {
+      setInvoiceFiles((prev) => [...prev, ...validFiles]);
+    }
+
+    e.target.value = '';
   };
 
   const handleDeclarationFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setDeclarationFileName(file.name);
-      e.target.value = '';
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    const fileArray = Array.from(files);
+    const validFiles: FileListInfo[] = [];
+    const rejectedOverSize: string[] = [];
+
+    let currentTotalSize = declarationFiles.reduce((sum, f) => sum + f.size, 0);
+
+    for (const f of fileArray) {
+      if (f.size > MAX_SINGLE_FILE_SIZE_BYTES) {
+        rejectedOverSize.push(`${f.name} (${formatFileSize(f.size)})`);
+        continue;
+      }
+      if (currentTotalSize + f.size > MAX_TOTAL_BATCH_SIZE_BYTES) {
+        alert(`⚠️ Tổng dung lượng đợt file vượt quá 100MB cho phép! Đã dừng nhận thêm từ file "${f.name}".`);
+        break;
+      }
+      if (declarationFiles.length + validFiles.length >= MAX_DECLARATION_FILES) {
+        alert(`⚠️ Đã đạt giới hạn tối đa ${MAX_DECLARATION_FILES} file Tờ khai Hải quan!`);
+        break;
+      }
+
+      currentTotalSize += f.size;
+      validFiles.push({
+        id: `dec_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+        name: f.name,
+        size: f.size,
+        sizeFormatted: formatFileSize(f.size),
+        type: f.name.split('.').pop()?.toLowerCase() || 'xlsx',
+        itemCount: Math.floor(4 + Math.random() * 8),
+        uploadedAt: new Date().toISOString(),
+      });
+    }
+
+    if (rejectedOverSize.length > 0) {
+      alert(`⚠️ Các file sau bị từ chối do vượt quá 25MB cho phép:\n- ${rejectedOverSize.join('\n- ')}`);
+    }
+
+    if (validFiles.length > 0) {
+      setDeclarationFiles((prev) => [...prev, ...validFiles]);
+    }
+
+    e.target.value = '';
+  };
+
+  const handleRemoveInvoiceFile = (id: string, name: string) => {
+    setInvoiceFiles((prev) => prev.filter((f) => f.id !== id));
+    setInvoiceItems((prev) => prev.filter((item) => item.sourceInvoiceFileName !== name));
+  };
+
+  const handleRemoveDeclarationFile = (id: string) => {
+    setDeclarationFiles((prev) => prev.filter((f) => f.id !== id));
+  };
+
+  const handleClearAllFiles = () => {
+    if (confirm('Bạn có chắc chắn muốn xóa toàn bộ danh sách file Hóa đơn & Tờ khai hiện tại?')) {
+      setInvoiceFiles([]);
+      setDeclarationFiles([]);
+      setInvoiceItems([]);
     }
   };
 
@@ -181,12 +370,18 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
   // Filtered Lines for Data Grid
   const filteredLines = useMemo(() => {
     return invoiceItems.filter((line) => {
+      // Filter by selected invoice file
+      if (selectedFileFilter !== 'ALL' && line.sourceInvoiceFileName) {
+        if (line.sourceInvoiceFileName !== selectedFileFilter) return false;
+      }
+
       if (searchTerm.trim()) {
         const term = searchTerm.toLowerCase();
         const matchName = line.productName.toLowerCase().includes(term);
         const matchSpec = (line.spec || '').toLowerCase().includes(term);
         const matchReason = (line.matchReason || '').toLowerCase().includes(term);
-        if (!matchName && !matchSpec && !matchReason) return false;
+        const matchFile = (line.sourceInvoiceFileName || '').toLowerCase().includes(term);
+        if (!matchName && !matchSpec && !matchReason && !matchFile) return false;
       }
 
       if (statusFilter === 'matched') return line.matchStatus === 'MATCHED';
@@ -196,15 +391,22 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
       return true;
     });
-  }, [invoiceItems, searchTerm, statusFilter]);
+  }, [invoiceItems, selectedFileFilter, searchTerm, statusFilter]);
 
   // Handle Execute Mapping Event & Telemetry
   const handleExecuteMapping = () => {
+    if (invoiceFiles.length === 0) {
+      alert('⚠️ Vui lòng nạp ít nhất 1 file Hóa đơn GTGT để thực hiện ánh xạ!');
+      return;
+    }
+
     setIsProcessing(true);
 
     setTimeout(() => {
-      // Re-run matching algorithm simulation
       setIsProcessing(false);
+
+      const batchInvoiceNames = invoiceFiles.map((f) => f.name).join(', ');
+      const batchDeclarationNames = declarationFiles.map((f) => f.name).join(', ');
 
       trackInvoiceMappingExecution(user, {
         invoiceCount: summaryStats.totalLines,
@@ -213,12 +415,18 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         matchedCount: summaryStats.matchedCount,
         discrepancyCount: summaryStats.conflictCount,
         unmatchedCount: summaryStats.unmatchedCount,
-        fileName: invoiceFileName,
-        sourceType: 'Hóa đơn GTGT PDF ↔ Tờ khai Excel VNACCS',
+        fileName: batchInvoiceNames || 'Batch_Invoices',
+        sourceType: `Multi-File Batch: ${invoiceFiles.length} HĐ ↔ ${declarationFiles.length} Tờ khai`,
       });
 
       setTelemetryLogs(getStoredAnalyticsEvents());
-      alert(`🎉 Đã thực hiện ánh xạ tờ khai hóa đơn GTGT thành công!\n\n• Tổng số dòng: ${summaryStats.totalLines}\n• Khớp 100%: ${summaryStats.matchedCount} dòng\n• Mâu thuẫn/Cảnh báo: ${summaryStats.conflictCount} dòng\n\nNhật ký telemetry đã được lưu vết tự động.`);
+      alert(
+        `🎉 Đã thực hiện ánh xạ hàng loạt (${invoiceFiles.length} HĐ ↔ ${declarationFiles.length} Tờ khai) thành công!\n\n` +
+        `• Tổng số dòng hàng: ${summaryStats.totalLines} dòng\n` +
+        `• Khớp 100%: ${summaryStats.matchedCount} dòng\n` +
+        `• Mâu thuẫn/Cảnh báo: ${summaryStats.conflictCount} dòng\n\n` +
+        `Nhật ký telemetry đã được lưu vết tự động.`
+      );
     }, 600);
   };
 
@@ -269,6 +477,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         ref={invoiceFileInputRef}
         onChange={handleInvoiceFileChange}
         accept=".pdf,.xlsx,.xls,.xml,.csv"
+        multiple
         className="hidden"
       />
       <input
@@ -277,56 +486,156 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         ref={declarationFileInputRef}
         onChange={handleDeclarationFileChange}
         accept=".xlsx,.xls,.csv,.xml"
+        multiple
         className="hidden"
       />
 
-      {/* 2. DUAL INPUT FILE SOURCE PANEL (COMPACT DROPZONE) */}
-      <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+      {/* 2. DUAL INPUT FILE SOURCE PANEL (COMPACT MULTI-FILE DROPZONE) */}
+      <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-lg space-y-4 text-xs">
         
-        {/* Dropzone 1: Hóa đơn bán hàng PDF/Excel */}
-        <div className="p-3.5 rounded-xl bg-sky-50/50 border border-sky-200/80 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-slate-900 tracking-wider text-[11px] flex items-center gap-1.5">
-              <FileText className="w-3.5 h-3.5 text-sky-700" />
-              <span>1. Hóa đơn bán hàng GTGT (PDF / Excel / XML)</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-sky-100 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="font-extrabold text-slate-900 text-xs flex items-center gap-1.5">
+              <Layers className="w-4 h-4 text-sky-600" />
+              <span>Nạp File Hàng Loạt (Multi-File Batch Queue)</span>
             </span>
-            <span className="text-[10px] text-slate-600 font-mono">Softdreams / EasyInvoice</span>
+            <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-mono font-bold text-[10px]">
+              Tối đa 20 file HĐ & 10 file Tờ khai (&le; 25MB/file)
+            </span>
           </div>
 
-          <label
-            htmlFor="invoice-file-input"
-            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors w-full"
-          >
-            <span className="text-slate-700 truncate font-mono text-[11px] font-medium">{invoiceFileName}</span>
-            <span
-              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors border border-sky-200 cursor-pointer"
+          {(invoiceFiles.length > 0 || declarationFiles.length > 0) && (
+            <button
+              type="button"
+              onClick={handleClearAllFiles}
+              className="px-2.5 py-1 rounded-lg text-rose-700 bg-rose-50 hover:bg-rose-100 font-bold border border-rose-200 text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
             >
-              Đổi file HĐ
-            </span>
-          </label>
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Xóa tất cả file</span>
+            </button>
+          )}
         </div>
 
-        {/* Dropzone 2: Tờ khai hải quan nhập khẩu Excel VNACCS */}
-        <div className="p-3.5 rounded-xl bg-sky-50/50 border border-sky-200/80 space-y-2">
-          <div className="flex items-center justify-between">
-            <span className="font-bold text-slate-900 tracking-wider text-[11px] flex items-center gap-1.5">
-              <FileSpreadsheet className="w-3.5 h-3.5 text-sky-700" />
-              <span>2. Tờ khai hải quan nhập khẩu (Excel VNACCS / Ví Sàn)</span>
-            </span>
-            <span className="text-[10px] text-slate-600 font-mono">TKN / HANG</span>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          
+          {/* Dropzone 1: Multi-File Hóa đơn GTGT */}
+          <div className="p-3.5 rounded-xl bg-sky-50/50 border border-sky-200/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 tracking-wider text-[11px] flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-sky-700" />
+                <span>1. File Hóa đơn GTGT ({invoiceFiles.length}/20 file)</span>
+              </span>
+              <span className="text-[10px] text-slate-600 font-mono font-bold">
+                {formatFileSize(invoiceFiles.reduce((sum, f) => sum + f.size, 0))}
+              </span>
+            </div>
+
+            {/* List of Uploaded Invoice Files */}
+            <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
+              {invoiceFiles.length === 0 ? (
+                <div className="p-3 text-center border border-dashed border-sky-200 rounded-xl bg-white text-slate-500 font-mono text-[11px]">
+                  Chưa có file Hóa đơn nào. Nhấn "+ Thêm file HĐ" để nạp file.
+                </div>
+              ) : (
+                invoiceFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="p-2 rounded-xl bg-white border border-sky-200 flex items-center justify-between gap-2 shadow-sm hover:border-sky-300"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="px-1.5 py-0.5 rounded bg-sky-100 text-sky-800 font-mono text-[9px] font-bold uppercase shrink-0">
+                        {file.type}
+                      </span>
+                      <span className="text-slate-800 font-mono text-[11px] truncate font-medium" title={file.name}>
+                        {file.name}
+                      </span>
+                      <span className="text-slate-400 font-mono text-[10px] shrink-0">
+                        ({file.sizeFormatted})
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveInvoiceFile(file.id, file.name)}
+                      className="text-slate-400 hover:text-rose-600 p-0.5 rounded hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
+                      title="Xóa file này"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Add File Button */}
+            <label
+              htmlFor="invoice-file-input"
+              className="w-full py-2 px-3 rounded-xl bg-white hover:bg-sky-100 text-sky-800 font-extrabold text-[11px] border border-dashed border-sky-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
+            >
+              <Plus className="w-3.5 h-3.5 text-sky-600" />
+              <span>+ Thêm file Hóa đơn (PDF/Excel/XML)</span>
+            </label>
           </div>
 
-          <label
-            htmlFor="declaration-file-input"
-            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors w-full"
-          >
-            <span className="text-slate-700 truncate font-mono text-[11px] font-medium">{declarationFileName}</span>
-            <span
-              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors border border-sky-200 cursor-pointer"
+          {/* Dropzone 2: Multi-File Tờ khai hải quan nhập khẩu */}
+          <div className="p-3.5 rounded-xl bg-sky-50/50 border border-sky-200/80 space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="font-bold text-slate-900 tracking-wider text-[11px] flex items-center gap-1.5">
+                <FileSpreadsheet className="w-3.5 h-3.5 text-sky-700" />
+                <span>2. File Tờ khai hải quan ({declarationFiles.length}/10 file)</span>
+              </span>
+              <span className="text-[10px] text-slate-600 font-mono font-bold">
+                {formatFileSize(declarationFiles.reduce((sum, f) => sum + f.size, 0))}
+              </span>
+            </div>
+
+            {/* List of Uploaded Declaration Files */}
+            <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
+              {declarationFiles.length === 0 ? (
+                <div className="p-3 text-center border border-dashed border-sky-200 rounded-xl bg-white text-slate-500 font-mono text-[11px]">
+                  Chưa có file Tờ khai nào. Nhấn "+ Thêm file Tờ khai" để nạp file.
+                </div>
+              ) : (
+                declarationFiles.map((file) => (
+                  <div
+                    key={file.id}
+                    className="p-2 rounded-xl bg-white border border-sky-200 flex items-center justify-between gap-2 shadow-sm hover:border-sky-300"
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <span className="px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 font-mono text-[9px] font-bold uppercase shrink-0">
+                        {file.type}
+                      </span>
+                      <span className="text-slate-800 font-mono text-[11px] truncate font-medium" title={file.name}>
+                        {file.name}
+                      </span>
+                      <span className="text-slate-400 font-mono text-[10px] shrink-0">
+                        ({file.sizeFormatted})
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDeclarationFile(file.id)}
+                      className="text-slate-400 hover:text-rose-600 p-0.5 rounded hover:bg-rose-50 transition-colors shrink-0 cursor-pointer"
+                      title="Xóa file này"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Add Declaration File Button */}
+            <label
+              htmlFor="declaration-file-input"
+              className="w-full py-2 px-3 rounded-xl bg-white hover:bg-sky-100 text-sky-800 font-extrabold text-[11px] border border-dashed border-sky-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
             >
-              Đổi file Tờ khai
-            </span>
-          </label>
+              <Plus className="w-3.5 h-3.5 text-sky-600" />
+              <span>+ Thêm file Tờ khai (Excel VNACCS)</span>
+            </label>
+          </div>
+
         </div>
 
       </div>
@@ -397,7 +706,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 text-xs">
           
           <div className="flex flex-wrap items-center gap-2">
-            <div className="relative min-w-[220px]">
+            <div className="relative min-w-[200px]">
               <Search className="w-3.5 h-3.5 text-slate-600 absolute left-2.5 top-2 pointer-events-none" />
               <input
                 type="text"
@@ -407,6 +716,26 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
                 className="w-full bg-white border border-sky-200 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 focus:outline-none focus:border-sky-500"
               />
             </div>
+
+            {/* File Filter Dropdown */}
+            {invoiceFiles.length > 0 && (
+              <div className="flex items-center gap-1.5 bg-white border border-sky-200 rounded-lg px-2.5 py-1 text-xs">
+                <Filter className="w-3.5 h-3.5 text-sky-600 shrink-0" />
+                <span className="font-bold text-slate-700 whitespace-nowrap text-[11px]">Lọc theo file HĐ:</span>
+                <select
+                  value={selectedFileFilter}
+                  onChange={(e) => setSelectedFileFilter(e.target.value)}
+                  className="bg-transparent font-medium text-slate-800 focus:outline-none text-xs cursor-pointer max-w-[180px] truncate"
+                >
+                  <option value="ALL">Tất cả ({invoiceFiles.length} file)</option>
+                  {invoiceFiles.map((f) => (
+                    <option key={f.id} value={f.name}>
+                      📄 {f.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="flex items-center gap-1 bg-white p-0.5 rounded-lg border border-sky-200 font-medium">
               <button
@@ -443,10 +772,12 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           <button
             type="button"
             onClick={() => {
+              const invNamesStr = invoiceFiles.map((f) => f.name).join(', ') || 'Hoa_Don_GTGT';
+              const decNamesStr = declarationFiles.map((f) => f.name).join(', ') || 'To_Khai_VNACCS';
               exportInvoiceMapping32ColsExcel(
                 invoiceItems,
-                invoiceFileName,
-                declarationFileName
+                invNamesStr,
+                decNamesStr
               );
             }}
             className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm self-end sm:self-auto cursor-pointer"
@@ -494,8 +825,8 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
                               <span className="font-extrabold text-slate-900 block font-sans truncate" title={line.productName}>
                                 #{line.lineNumber}. {line.productName}
                               </span>
-                              <span className="text-[10px] text-slate-500 block font-mono">
-                                HĐ: HĐGTGT-69 • Ngày: 11/04/2026
+                              <span className="text-[10px] text-slate-500 block font-mono truncate" title={line.sourceInvoiceFileName || 'Hoa_Don_GTGT_Demo_092026.pdf'}>
+                                HĐ: {line.sourceInvoiceFileName || 'Hoa_Don_GTGT_Demo_092026.pdf'}
                               </span>
                             </div>
                           </div>
