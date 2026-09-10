@@ -21,7 +21,7 @@ import {
 import { UserState, OrderItem, InvoiceItem, InvoiceLineItem } from '../types';
 import { trackInvoiceMappingExecution, getStoredInvoiceMappingLogs } from '../utils/invoiceTracker';
 import { getStoredAnalyticsEvents } from '../utils/analytics';
-import { exportAuditedExcel } from '../utils/export';
+import { exportAuditedExcel, exportInvoiceMapping32ColsExcel } from '../utils/export';
 
 interface InvoiceMappingModuleProps {
   user: UserState;
@@ -443,11 +443,11 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
           <button
             type="button"
             onClick={() => {
-              if (orders && orders.length > 0) {
-                exportAuditedExcel(orders, `ProfitCal_AnhXa_HoaDon_${new Date().toISOString().slice(0, 10)}.xlsx`);
-              } else {
-                alert('🎉 Đã xuất file báo cáo kiểm toán Ánh xạ hóa đơn 32 cột Excel thành công!');
-              }
+              exportInvoiceMapping32ColsExcel(
+                invoiceItems,
+                invoiceFileName,
+                declarationFileName
+              );
             }}
             className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm self-end sm:self-auto cursor-pointer"
           >
