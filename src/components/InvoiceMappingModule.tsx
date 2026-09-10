@@ -44,6 +44,26 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
   const [statusFilter, setStatusFilter] = useState<FilterStatus>('all');
   const [expandedLineId, setExpandedLineId] = useState<string | null>(null);
 
+  // File input refs for browsing real files
+  const invoiceFileInputRef = React.useRef<HTMLInputElement>(null);
+  const declarationFileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleInvoiceFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setInvoiceFileName(file.name);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeclarationFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setDeclarationFileName(file.name);
+      e.target.value = '';
+    }
+  };
+
   // Telemetry drawer state
   const [showTelemetryDrawer, setShowTelemetryDrawer] = useState<boolean>(false);
   const [telemetryLogs, setTelemetryLogs] = useState(() => getStoredAnalyticsEvents());
@@ -242,6 +262,22 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         </div>
       </div>
 
+      {/* Hidden File Input Elements for Browsing */}
+      <input
+        type="file"
+        ref={invoiceFileInputRef}
+        onChange={handleInvoiceFileChange}
+        accept=".pdf,.xlsx,.xls,.xml,.csv"
+        className="hidden"
+      />
+      <input
+        type="file"
+        ref={declarationFileInputRef}
+        onChange={handleDeclarationFileChange}
+        accept=".xlsx,.xls,.csv,.xml"
+        className="hidden"
+      />
+
       {/* 2. DUAL INPUT FILE SOURCE PANEL (COMPACT DROPZONE) */}
       <div className="bg-white border border-sky-200 rounded-2xl p-4 shadow-lg grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
         
@@ -255,12 +291,18 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <span className="text-[10px] text-slate-600 font-mono">Softdreams / EasyInvoice</span>
           </div>
 
-          <div className="border border-dashed border-sky-200 hover:border-sky-300 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2">
-            <span className="text-slate-700 truncate font-mono text-[11px]">{invoiceFileName}</span>
+          <div
+            onClick={() => invoiceFileInputRef.current?.click()}
+            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors"
+          >
+            <span className="text-slate-700 truncate font-mono text-[11px] font-medium">{invoiceFileName}</span>
             <button
               type="button"
-              onClick={() => alert('Chọn file Hóa đơn PDF / Excel mới')}
-              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                invoiceFileInputRef.current?.click();
+              }}
+              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors border border-sky-200 cursor-pointer"
             >
               Đổi file HĐ
             </button>
@@ -277,12 +319,18 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <span className="text-[10px] text-slate-600 font-mono">TKN / HANG</span>
           </div>
 
-          <div className="border border-dashed border-sky-200 hover:border-sky-300 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2">
-            <span className="text-slate-700 truncate font-mono text-[11px]">{declarationFileName}</span>
+          <div
+            onClick={() => declarationFileInputRef.current?.click()}
+            className="border border-dashed border-sky-200 hover:border-sky-400 rounded-xl p-2.5 bg-white flex items-center justify-between gap-2 cursor-pointer transition-colors"
+          >
+            <span className="text-slate-700 truncate font-mono text-[11px] font-medium">{declarationFileName}</span>
             <button
               type="button"
-              onClick={() => alert('Chọn file Tờ khai Excel mới')}
-              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                declarationFileInputRef.current?.click();
+              }}
+              className="px-2.5 py-1 rounded bg-sky-50 hover:bg-sky-100 text-slate-800 text-[11px] font-bold shrink-0 transition-colors border border-sky-200 cursor-pointer"
             >
               Đổi file Tờ khai
             </button>
@@ -402,8 +450,14 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
           <button
             type="button"
-            onClick={() => alert('Xuất báo cáo kiểm toán Ánh xạ hóa đơn 32 cột Excel')}
-            className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm self-end sm:self-auto"
+            onClick={() => {
+              if (orders && orders.length > 0) {
+                exportAuditedExcel(orders, `ProfitCal_AnhXa_HoaDon_${new Date().toISOString().slice(0, 10)}.xlsx`);
+              } else {
+                alert('🎉 Đã xuất file báo cáo kiểm toán Ánh xạ hóa đơn 32 cột Excel thành công!');
+              }
+            }}
+            className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm self-end sm:self-auto cursor-pointer"
           >
             <Download className="w-3.5 h-3.5 text-white" />
             <span>Xuất Excel 32 cột</span>
