@@ -499,9 +499,6 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
               <Layers className="w-4 h-4 text-sky-600" />
               <span>Nạp File Hàng Loạt (Multi-File Batch Queue)</span>
             </span>
-            <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-mono font-bold text-[10px]">
-              Tối đa 20 file HĐ & 10 file Tờ khai (&le; 25MB/file)
-            </span>
           </div>
 
           {(invoiceFiles.length > 0 || declarationFiles.length > 0) && (
@@ -534,7 +531,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
               {invoiceFiles.length === 0 ? (
                 <div className="p-3 text-center border border-dashed border-sky-200 rounded-xl bg-white text-slate-500 font-mono text-[11px]">
-                  Chưa có file Hóa đơn nào. Nhấn "+ Thêm file HĐ" để nạp file.
+                  Chưa có file Hóa đơn nào. Nhấn "Thêm Hóa đơn" để nạp file.
                 </div>
               ) : (
                 invoiceFiles.map((file) => (
@@ -573,7 +570,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
               className="w-full py-2 px-3 rounded-xl bg-white hover:bg-sky-100 text-sky-800 font-extrabold text-[11px] border border-dashed border-sky-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Plus className="w-3.5 h-3.5 text-sky-600" />
-              <span>+ Thêm file Hóa đơn (PDF/Excel/XML)</span>
+              <span>Thêm Hóa đơn (PDF/Excel/XML)</span>
             </label>
           </div>
 
@@ -593,7 +590,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
               {declarationFiles.length === 0 ? (
                 <div className="p-3 text-center border border-dashed border-sky-200 rounded-xl bg-white text-slate-500 font-mono text-[11px]">
-                  Chưa có file Tờ khai nào. Nhấn "+ Thêm file Tờ khai" để nạp file.
+                  Chưa có file Tờ khai nào. Nhấn "Thêm Tờ khai" để nạp file.
                 </div>
               ) : (
                 declarationFiles.map((file) => (
@@ -632,7 +629,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
               className="w-full py-2 px-3 rounded-xl bg-white hover:bg-sky-100 text-sky-800 font-extrabold text-[11px] border border-dashed border-sky-300 transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-sm"
             >
               <Plus className="w-3.5 h-3.5 text-sky-600" />
-              <span>+ Thêm file Tờ khai (Excel VNACCS)</span>
+              <span>Thêm Tờ khai (Excel)</span>
             </label>
           </div>
 
