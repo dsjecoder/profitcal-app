@@ -1,9 +1,7 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import {
   FileText,
   FileSpreadsheet,
-  CheckCircle2,
-  AlertTriangle,
   RefreshCw,
   Search,
   ChevronDown,
@@ -13,10 +11,10 @@ import {
   Trash2,
   Plus,
   Filter,
+  Sparkles,
 } from 'lucide-react';
-import { UserState, OrderItem, InvoiceLineItem } from '../types';
+import { UserState, OrderItem } from '../types';
 import { trackInvoiceMappingExecution } from '../utils/invoiceTracker';
-import { getStoredAnalyticsEvents } from '../utils/analytics';
 import { exportInvoiceMapping32ColsExcel } from '../utils/export';
 import { DeclarationParser } from '../utils/declarationParser';
 import { InvoiceParser } from '../utils/invoiceParser';
@@ -52,7 +50,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
   // Store uploaded raw File handles
   const rawFileMapRef = useRef<Map<string, File>>(new Map());
 
-  // Multi-file Upload State
+  // Multi-file Upload State - Clean Slate Initial State (Empty)
   const [invoiceFiles, setInvoiceFiles] = useState<FileListInfo[]>([]);
   const [declarationFiles, setDeclarationFiles] = useState<FileListInfo[]>([]);
   const [invoiceItems, setInvoiceItems] = useState<any[]>([]);
@@ -78,18 +76,6 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
   const totalFilesCount = invoiceFiles.length + declarationFiles.length;
   const totalBatchSizeBytes = invoiceFiles.reduce((sum, f) => sum + f.size, 0) + declarationFiles.reduce((sum, f) => sum + f.size, 0);
-
-  // Run initial mapping on ground truth data when component mounts
-  useEffect(() => {
-    runGroundTruthMapping();
-  }, []);
-
-  const runGroundTruthMapping = () => {
-    const defaultDeclLines = DeclarationParser.getGroundTruthDeclarations('To_Khai.xlsx');
-    const defaultInv = InvoiceParser.parseInvoiceFile(new ArrayBuffer(0), 'Hoa don khach hàng.pdf');
-    const mapped = processMatching(defaultInv.lines, defaultDeclLines);
-    setInvoiceItems(mapped);
-  };
 
   const processMatching = (invLines: InvoiceLineInput[], declLines: DeclarationLineInput[]) => {
     let globalIndex = 1;
@@ -282,9 +268,25 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
       rawFileMapRef.current.clear();
       setInvoiceFiles([]);
       setDeclarationFiles([]);
-      runGroundTruthMapping();
+      setInvoiceItems([]);
       setSelectedFileFilter('ALL');
     }
+  };
+
+  const handleLoadSampleDataset = () => {
+    setIsProcessing(true);
+    setProcessingProgress(20);
+    setProcessingStepText('Đang nạp bộ dữ liệu mẫu chuẩn (20 dòng HĐ #69 ↔ 50 dòng Tờ khai VNACCS)...');
+
+    setTimeout(() => {
+      const defaultDeclLines = DeclarationParser.getGroundTruthDeclarations('To_Khai.xlsx');
+      const defaultInv = InvoiceParser.parseInvoiceFile(new ArrayBuffer(0), 'Hoa don khach hàng.pdf');
+      const mapped = processMatching(defaultInv.lines, defaultDeclLines);
+
+      setProcessingProgress(100);
+      setInvoiceItems(mapped);
+      setIsProcessing(false);
+    }, 400);
   };
 
   // Summary Statistics
@@ -336,6 +338,12 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
   // Batch Mapping Execution with Realtime Progress Modal & Real File Parsers
   const handleExecuteMapping = async () => {
+    if (invoiceFiles.length === 0 && declarationFiles.length === 0) {
+      // If no files uploaded, run sample case
+      handleLoadSampleDataset();
+      return;
+    }
+
     setIsProcessing(true);
     setProcessingProgress(15);
     setProcessingStepText('Đang bóc tách dữ liệu danh sách file Hóa đơn & Tờ khai...');
@@ -436,6 +444,16 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         <div className="flex items-center gap-2">
           <button
             type="button"
+            onClick={handleLoadSampleDataset}
+            className="px-3.5 py-2 rounded-xl bg-white hover:bg-sky-50 text-sky-700 border border-sky-300 font-bold text-xs flex items-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+            title="Thử nghiệm với dữ liệu mẫu chuẩn 20 dòng HĐ & 50 dòng Tờ khai"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-sky-600" />
+            <span>Nạp dữ liệu mẫu</span>
+          </button>
+
+          <button
+            type="button"
             disabled={isProcessing}
             onClick={handleExecuteMapping}
             className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-md disabled:opacity-50 cursor-pointer"
@@ -510,7 +528,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
               {invoiceFiles.length === 0 ? (
                 <div className="p-3 text-center border border-dashed border-sky-200 rounded-xl bg-white text-slate-500 font-mono text-[11px]">
-                  Đang dùng bộ dữ liệu Hóa đơn GTGT thực tế (Hoa don khach hàng.pdf). Nhấn "Thêm Hóa đơn" để nạp file mới.
+                  Chưa có file Hóa đơn nào. Nhấn "Thêm Hóa đơn" để nạp file (PDF/Excel/XML).
                 </div>
               ) : (
                 invoiceFiles.map((file) => (
@@ -569,7 +587,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
             <div className="space-y-1.5 max-h-[140px] overflow-y-auto pr-1">
               {declarationFiles.length === 0 ? (
                 <div className="p-3 text-center border border-dashed border-sky-200 rounded-xl bg-white text-slate-500 font-mono text-[11px]">
-                  Đang dùng bộ dữ liệu Tờ khai VNACCS thực tế (#108105996134). Nhấn "Thêm Tờ khai" để nạp file mới.
+                  Chưa có file Tờ khai nào. Nhấn "Thêm Tờ khai" để nạp file (Excel).
                 </div>
               ) : (
                 declarationFiles.map((file) => (
@@ -747,6 +765,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
 
           <button
             type="button"
+            disabled={invoiceItems.length === 0}
             onClick={() => {
               const invNamesStr = invoiceFiles.map((f) => f.name).join(', ') || 'Hoa_Don_GTGT.pdf';
               const decNamesStr = declarationFiles.map((f) => f.name).join(', ') || 'To_Khai_VNACCS.xlsx';
@@ -757,7 +776,7 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
                 'Bang_Mapping_Hang_Nhap_Khau_case_2026_q2.xlsx'
               );
             }}
-            className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm self-end sm:self-auto cursor-pointer"
+            className="px-3.5 py-1.5 rounded-lg bg-sky-600 hover:bg-sky-700 text-white font-extrabold text-xs flex items-center gap-1.5 transition-colors shadow-sm self-end sm:self-auto cursor-pointer disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5 text-white" />
             <span>Xuất Excel 32 cột</span>
@@ -769,13 +788,18 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         <div className="border border-sky-200 rounded-xl overflow-hidden bg-white shadow-sm">
           <div className="overflow-x-auto max-h-[500px] overflow-y-auto">
             {filteredLines.length === 0 ? (
-              <div className="p-8 text-center bg-white rounded-xl space-y-2">
-                <div className="w-10 h-10 rounded-full bg-sky-50 text-sky-600 flex items-center justify-center mx-auto">
-                  <Layers className="w-5 h-5 text-sky-600" />
+              <div className="p-10 text-center bg-white rounded-xl space-y-3">
+                <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-600 border border-sky-200 flex items-center justify-center mx-auto shadow-sm">
+                  <Layers className="w-6 h-6 text-sky-600" />
                 </div>
-                <p className="text-xs text-slate-600 font-medium">
-                  Chưa có dữ liệu. Vui lòng nạp file Hóa đơn GTGT & Tờ khai Hải quan và bấm <span className="font-bold text-sky-700">"Thực hiện ánh xạ"</span>.
-                </p>
+                <div className="space-y-1">
+                  <p className="text-sm font-extrabold text-slate-800">
+                    Chưa có dữ liệu đối soát
+                  </p>
+                  <p className="text-xs text-slate-600 max-w-md mx-auto">
+                    Vui lòng nạp file Hóa đơn GTGT & Tờ khai Hải quan phía trên và bấm <span className="font-extrabold text-sky-700">"⚡ Thực hiện ánh xạ"</span>, hoặc bấm <span className="font-extrabold text-sky-700">"✨ Nạp dữ liệu mẫu"</span> để thử nghiệm.
+                  </p>
+                </div>
               </div>
             ) : (
               <table className="w-full text-left text-xs font-mono border-collapse">
