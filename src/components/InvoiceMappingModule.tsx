@@ -181,6 +181,9 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
   const handleRemoveInvoiceFile = (id: string, name: string) => {
     setInvoiceFiles((prev) => prev.filter((f) => f.id !== id));
     setInvoiceItems((prev) => prev.filter((item) => item.sourceInvoiceFileName !== name));
+    if (selectedFileFilter === name) {
+      setSelectedFileFilter('ALL');
+    }
   };
 
   const handleRemoveDeclarationFile = (id: string) => {
