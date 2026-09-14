@@ -268,22 +268,13 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
         setProcessingStepText('Đang tổng hợp báo cáo kiểm toán 32 cột...');
 
         setTimeout(() => {
-          // Generate fresh mapped line items strictly from current invoiceFiles and declarationFiles
-          const sampleProducts = [
-            'Áo Nam Polo Cotton Co Giãn 4 Chiều (Màu Đen XL)',
-            'Giày Thể Thao Nam Sneaker Trắng (Size 42)',
-            'Váy Đầm Suông Họa Tiết Vintage (Size M)',
-            'Balo Đi Học Nam Nữ Chống Nước 15.6 Inch',
-            'Đồng Hồ Nam Quartz Dây Da Thật 3ATM',
-            'Tai Nghe Bluetooth Chống Ồn Active ANC',
-            'Túi Xách Nữ Thời Trang Ca Rô Cao Cấp',
-          ];
-
           let globalLineIndex = 1;
           const freshMappedItems: InvoiceLineItem[] = [];
 
           invoiceFiles.forEach((invFile) => {
-            const countForThisFile = Math.floor(4 + Math.random() * 6);
+            const countForThisFile = Math.floor(4 + Math.random() * 5);
+            const fileStem = invFile.name.replace(/\.[^/.]+$/, '');
+
             for (let i = 0; i < countForThisFile; i++) {
               const qty = Math.floor(10 + Math.random() * 90);
               const price = Math.floor(80 + Math.random() * 400) * 1000;
@@ -297,9 +288,9 @@ export const InvoiceMappingModule: React.FC<InvoiceMappingModuleProps> = ({
               freshMappedItems.push({
                 id: `inv_item_${invFile.id}_${i + 1}`,
                 lineNumber: globalLineIndex++,
-                productName: `${sampleProducts[(globalLineIndex + i) % sampleProducts.length]}`,
-                spec: `Quy cách Lô #${Math.floor(100 + Math.random() * 900)}`,
-                unit: 'Cái',
+                productName: `Mặt hàng Hóa đơn GTGT ${fileStem} - Mục #${i + 1}`,
+                spec: `Quy cách Lô hàng #${fileStem.slice(-6)} (Dòng #${i + 1})`,
+                unit: i % 2 === 0 ? 'Cái' : 'Bộ',
                 quantity: qty,
                 unitPrice: price,
                 totalAmount,
