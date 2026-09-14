@@ -47,6 +47,17 @@ export function exportAuditedExcel(orders: OrderItem[], fileName: string = 'Prof
   XLSX.writeFile(workbook, fileName);
 }
 
+const getVietnameseStatus = (rawStatus: string): string => {
+  if (!rawStatus) return '🔴 Chưa match';
+  const s = String(rawStatus).toUpperCase();
+  if (s === 'HIGH_CONFIDENCE' || s === 'MATCHED' || s === 'CONFIRMED') return '🟢 Khớp 100%';
+  if (s === 'SUGGESTED') return '🟡 Gợi ý';
+  if (s === 'CONFLICT') return '⚠️ Mâu thuẫn';
+  if (s === 'UNMATCHED') return '🔴 Chưa match';
+  if (s === 'REVIEW_REQUIRED' || s === 'REVIEW_NEEDED') return 'Cần rà soát';
+  return rawStatus;
+};
+
 export function exportInvoiceMapping32ColsExcel(
   items: any[],
   invoiceFileName: string = 'Hoa_Don_GTGT.pdf',
@@ -131,7 +142,8 @@ export function exportInvoiceMapping32ColsExcel(
     const origin = item.matchedDeclarationLine?.origin || item.origin || 'CN';
 
     const score = item.overallScore !== undefined ? `${item.overallScore.toFixed(1)}%` : item.matchScore ? `${item.matchScore.toFixed(1)}%` : '95.0%';
-    const status = item.status || (item.matchStatus === 'MATCHED' ? 'HIGH_CONFIDENCE' : item.matchStatus === 'SUGGESTED' ? 'SUGGESTED' : item.matchStatus === 'CONFLICT' ? 'CONFLICT' : 'UNMATCHED');
+    const rawStatus = item.status || (item.matchStatus === 'MATCHED' ? 'HIGH_CONFIDENCE' : item.matchStatus === 'SUGGESTED' ? 'SUGGESTED' : item.matchStatus === 'CONFLICT' ? 'CONFLICT' : 'UNMATCHED');
+    const viStatus = getVietnameseStatus(rawStatus);
 
     const supportingNotes = item.supportingEvidence && item.supportingEvidence.length > 0 ? `Ủng hộ: ${item.supportingEvidence.join('; ')}` : '';
     const contradictingNotes = item.contradictingEvidence && item.contradictingEvidence.length > 0 ? `Mâu thuẫn: ${item.contradictingEvidence.join('; ')}` : '';
@@ -167,7 +179,7 @@ export function exportInvoiceMapping32ColsExcel(
       vatTax,
       origin,
       score,
-      status,
+      viStatus,
       'Chưa xác nhận',
       '—',
       notesStr,
@@ -195,6 +207,40 @@ export function exportInvoiceMapping32ColsExcel(
     return { wch: Math.min(Math.max(maxLen + 4, 12), 60) };
   });
   worksheet['!cols'] = colWidths;
+
+  // Format Header Styles (Row index 3 = Row 4 in Excel)
+  // Cols 0..9 (A..J): Hóa đơn - Dark Blue 1E40AF
+  // Cols 10..25 (K..Z): Tờ khai - Dark Green 047857
+  // Cols 26..31 (AA..AF): Audit & Status - Dark Indigo 4338CA
+  for (let colIdx = 0; colIdx < columns32.length; colIdx++) {
+    const cellRef = XLSX.utils.encode_cell({ r: 3, c: colIdx });
+    if (worksheet[cellRef]) {
+      let fillRgb = '1E40AF'; // Hóa đơn (Xanh lam đậm)
+      if (colIdx >= 10 && colIdx <= 25) {
+        fillRgb = '047857'; // Tờ khai (Xanh lá đậm)
+      } else if (colIdx >= 26) {
+        fillRgb = '4338CA'; // Match & Audit (Tím chàm)
+      }
+
+      worksheet[cellRef].s = {
+        fill: { patternType: 'solid', fgColor: { rgb: fillRgb }, bgColor: { rgb: fillRgb } },
+        font: { color: { rgb: 'FFFFFF' }, bold: true, name: 'Calibri', sz: 11 },
+        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
+      };
+    }
+  }
+
+  // Format Title Block fonts
+  if (worksheet['A1']) {
+    worksheet['A1'].s = {
+      font: { name: 'Calibri', sz: 15, bold: true, color: { rgb: '1E3A8A' } },
+    };
+  }
+  if (worksheet['A2']) {
+    worksheet['A2'].s = {
+      font: { name: 'Calibri', sz: 11, italic: true, color: { rgb: '4B5563' } },
+    };
+  }
 
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, 'BẢNG MAPPING HÓA ĐƠN - TỜ KHAI');
