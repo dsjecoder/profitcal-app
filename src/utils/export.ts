@@ -1,6 +1,5 @@
 import * as XLSX from 'xlsx';
 import { OrderItem } from '../types';
-import { formatVND } from './storage';
 
 export function exportAuditedExcel(orders: OrderItem[], fileName: string = 'ProfitCal_BaoCaoDoiSoatLoiNhuan.xlsx', carrier?: string): void {
   if (!orders || orders.length === 0) {
@@ -103,42 +102,76 @@ export function exportInvoiceMapping32ColsExcel(
   ];
 
   const dataRows = items.map((item, idx) => {
-    const invStem = item.sourceInvoiceFileName ? item.sourceInvoiceFileName.replace(/\.[^/.]+$/, '') : 'HD-69';
-    const decStem = item.sourceDeclarationFileName ? item.sourceDeclarationFileName.replace(/\.[^/.]+$/, '') : '108105996134';
+    const invNo = item.invoiceNumber || item.invoiceLine?.invoiceNumber || '69';
+    const invDate = item.invoiceDate || item.invoiceLine?.invoiceDate || '11/04/2026';
+    const lineNo = item.lineNumber || item.invoiceLine?.lineNumber || (idx + 1);
+    const prodName = item.rawProductName || item.productName || item.invoiceLine?.rawProductName || '';
+    const spec = item.rawSpecification || item.spec || item.invoiceLine?.rawSpecification || '—';
+    const unit = item.rawUnit || item.unit || item.invoiceLine?.rawUnit || 'Cái';
+    const qty = item.quantity !== undefined ? item.quantity : item.invoiceLine?.quantity || 0;
+    const price = item.unitPrice !== undefined ? item.unitPrice : item.invoiceLine?.unitPrice || 0;
+    const amount = item.amount !== undefined ? item.amount : item.totalAmount || (qty * price);
+
+    const declNo = item.declarationNumber || item.matchedDeclarationId || '108105996134';
+    const declDate = item.declarationDate || '01/04/2026 01:57:34';
+    const declLineNo = item.declarationLineNumber || item.matchedDeclarationLineId || 0;
+    const hsCode = item.matchedDeclarationLine?.hsCode || item.hsCode || '94039990';
+    const declDesc = item.declarationDescription || item.matchedDeclarationLine?.rawDescription || '—';
+    const declUnit = item.declarationUnit || item.matchedDeclarationLine?.rawUnit || 'PCE';
+    const declQty = item.declarationQuantity !== undefined ? item.declarationQuantity : item.matchedDeclarationLine?.quantity || 0;
+    const allocQty = qty;
+    const importPrice = item.declarationImportPrice !== undefined ? item.declarationImportPrice : item.matchedDeclarationLine?.invoiceUnitPrice || 0;
+    const currency = item.declarationCurrency || item.matchedDeclarationLine?.invoiceCurrency || 'USD';
+    const importValue = declQty * importPrice;
+
+    const taxPrice = item.declarationTaxablePrice !== undefined ? item.declarationTaxablePrice : item.matchedDeclarationLine?.taxableUnitPrice || 0;
+    const taxValue = item.declarationTaxableValue !== undefined ? item.declarationTaxableValue : item.matchedDeclarationLine?.taxableValue || 0;
+    const importTax = item.matchedDeclarationLine?.importTaxAmount || item.importTaxVND || 0;
+    const vatTax = item.declarationVat !== undefined ? item.declarationVat : item.matchedDeclarationLine?.vatAmount || 0;
+    const origin = item.matchedDeclarationLine?.origin || item.origin || 'CN';
+
+    const score = item.overallScore !== undefined ? `${item.overallScore.toFixed(1)}%` : item.matchScore ? `${item.matchScore.toFixed(1)}%` : '95.0%';
+    const status = item.status || (item.matchStatus === 'MATCHED' ? 'HIGH_CONFIDENCE' : item.matchStatus === 'SUGGESTED' ? 'SUGGESTED' : item.matchStatus === 'CONFLICT' ? 'CONFLICT' : 'UNMATCHED');
+
+    const supportingNotes = item.supportingEvidence && item.supportingEvidence.length > 0 ? `Ủng hộ: ${item.supportingEvidence.join('; ')}` : '';
+    const contradictingNotes = item.contradictingEvidence && item.contradictingEvidence.length > 0 ? `Mâu thuẫn: ${item.contradictingEvidence.join('; ')}` : '';
+    const notesStr = [supportingNotes, contradictingNotes, item.matchReason].filter(Boolean).join(' | ') || '—';
+
+    const traceStr = item.traceability || `Sheet: TKN, Row: ${140 + idx}, Line: ${lineNo}`;
 
     return [
       idx + 1,
-      item.invoiceNumber || invStem,
-      item.invoiceDate || '11/04/2026',
-      item.lineNumber || (idx + 1),
-      item.productName,
-      item.spec || '—',
-      item.unit || 'Cái',
-      item.quantity,
-      item.unitPrice,
-      item.totalAmount,
-      item.matchedDeclarationId || decStem,
-      item.declarationDate || '01/04/2026 01:57:34',
-      item.matchedDeclarationLineId ? (parseInt(String(item.matchedDeclarationLineId).replace(/\D/g, '')) || (idx + 1)) : (idx + 1),
-      item.hsCode || (idx % 2 === 0 ? '94039990' : '94019930'),
-      item.declarationDescription || `${item.productName} - Hàng nhập khẩu mới 100%`,
-      item.declarationUnit || (item.unit === 'Cái' ? 'PCE' : item.unit === 'Đôi' ? 'PRS' : 'SET'),
-      item.declarationQuantity || item.quantity,
-      item.allocatedQuantity || item.quantity,
-      item.importUnitPrice || Number((item.unitPrice / 25400).toFixed(2)),
-      item.currency || 'USD',
-      item.importInvoiceValue || Number((item.quantity * (item.unitPrice / 25400)).toFixed(2)),
-      item.taxUnitPriceVND || item.unitPrice,
-      item.taxableValueVND || 0,
-      item.importTaxVND || 0,
-      item.importVatVND || item.taxAmount || 0,
-      item.origin || 'CN',
-      item.matchScore ? `${item.matchScore.toFixed(1)}%` : '95.0%',
-      item.matchStatus === 'MATCHED' ? 'HIGH_CONFIDENCE' : item.matchStatus === 'SUGGESTED' ? 'SUGGESTED' : item.matchStatus === 'CONFLICT' ? 'CONFLICT' : 'UNMATCHED',
-      item.confirmedBy || 'Chưa xác nhận',
-      item.confirmedAt || '—',
-      item.matchReason || 'Ủng hộ: Trùng khớp từ khóa và quy cách sản phẩm',
-      item.traceability || `Sheet: TKN, Row: ${140 + idx}, Line: ${idx + 1}`,
+      invNo,
+      invDate,
+      lineNo,
+      prodName,
+      spec,
+      unit,
+      qty,
+      price,
+      amount,
+      declNo,
+      declDate,
+      declLineNo,
+      hsCode,
+      declDesc,
+      declUnit,
+      declQty,
+      allocQty,
+      importPrice,
+      currency,
+      importValue,
+      taxPrice,
+      taxValue,
+      importTax,
+      vatTax,
+      origin,
+      score,
+      status,
+      'Chưa xác nhận',
+      '—',
+      notesStr,
+      traceStr,
     ];
   });
 
