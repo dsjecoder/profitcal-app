@@ -436,6 +436,14 @@ export const GROUND_TRUTH_DECLARATION_ITEMS: Omit<DeclarationLineInput, 'lineId'
   },
 ];
 
+const safeCleanNum = (val: any): number => {
+  if (val === null || val === undefined) return 0;
+  if (typeof val === 'number') return val;
+  const str = String(val).replace(/\./g, '').replace(',', '.');
+  const num = parseFloat(str);
+  return isNaN(num) ? 0 : num;
+};
+
 export class DeclarationParser {
   public static parseExcelDeclaration(arrayBuffer: ArrayBuffer, fileName: string): ParsedDeclaration {
     const data = new Uint8Array(arrayBuffer);
@@ -468,7 +476,7 @@ export class DeclarationParser {
         if (!declNumber && vals.includes('Số tờ khai')) {
           vals.forEach((v, idx) => {
             if (v === 'Số tờ khai' && idx + 2 < vals.length && vals[idx + 2]) {
-              declNumber = vals[idx + 2];
+              declNumber = String(vals[idx + 2]).replace(/-/g, '').trim();
             }
           });
         }
@@ -531,32 +539,27 @@ export class DeclarationParser {
       if (currentItem) {
         vals.forEach((v, idx) => {
           if (v === 'Mô tả hàng hóa' && idx + 4 < vals.length && vals[idx + 4]) {
-            currentItem.description = vals[idx + 4];
+            currentItem.description = String(vals[idx + 4]).trim();
           } else if (v === 'Số lượng (1)' && idx + 3 < vals.length && vals[idx + 3]) {
-            const parsedQ = parseFloat(vals[idx + 3].replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(parsedQ)) currentItem.quantity = parsedQ;
+            currentItem.quantity = safeCleanNum(vals[idx + 3]);
 
             for (let uIdx = idx + 10; uIdx < Math.min(vals.length, idx + 16); uIdx++) {
-              if (['PCE', 'SET', 'KGM', 'PKG', 'MTR', 'UNT', 'PR', 'Cái', 'Bộ', 'Kg'].includes(vals[uIdx])) {
+              if (vals[uIdx] && ['PCE', 'SET', 'KGM', 'PKG', 'MTR', 'UNT', 'PR', 'Cái', 'Bộ', 'Kg'].includes(vals[uIdx])) {
                 currentItem.unit = vals[uIdx];
                 break;
               }
             }
           } else if (v === 'Đơn giá hóa đơn' && idx + 3 < vals.length && vals[idx + 3]) {
-            const parsedP = parseFloat(vals[idx + 3].replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(parsedP)) currentItem.invoice_unit_price = parsedP;
+            currentItem.invoice_unit_price = safeCleanNum(vals[idx + 3]);
           } else if (v === 'Trị giá hóa đơn' && idx + 6 < vals.length && vals[idx + 6] && !currentItem.invoice_value) {
-            const parsedV = parseFloat(vals[idx + 6].replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(parsedV)) currentItem.invoice_value = parsedV;
+            currentItem.invoice_value = safeCleanNum(vals[idx + 6]);
           } else if (v === 'Trị giá tính thuế(S)' && idx + 6 < vals.length && vals[idx + 6]) {
-            const parsedTV = parseFloat(vals[idx + 6].replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(parsedTV)) currentItem.taxable_value = parsedTV;
+            currentItem.taxable_value = safeCleanNum(vals[idx + 6]);
           } else if (v === 'Đơn giá tính thuế' && idx + 3 < vals.length && vals[idx + 3]) {
-            const parsedTP = parseFloat(vals[idx + 3].replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(parsedTP)) currentItem.taxable_unit_price = parsedTP;
+            currentItem.taxable_unit_price = safeCleanNum(vals[idx + 3]);
           } else if (v === 'Số tiền thuế' && idx + 6 < vals.length && vals[idx + 6]) {
-            const tVal = parseFloat(vals[idx + 6].replace(/\./g, '').replace(',', '.'));
-            if (!isNaN(tVal)) {
+            const tVal = safeCleanNum(vals[idx + 6]);
+            if (tVal > 0) {
               if (!currentItem.import_tax_amount) {
                 currentItem.import_tax_amount = tVal;
               } else {
@@ -566,7 +569,7 @@ export class DeclarationParser {
           } else if (v === 'Nước xuất xứ') {
             for (let subVIdx = idx + 1; subVIdx < vals.length; subVIdx++) {
               const subV = vals[subVIdx];
-              if (subV.length === 2 && subV === subV.toUpperCase() && !['PK', 'KG', 'VN', 'ST'].includes(subV)) {
+              if (subV && typeof subV === 'string' && subV.length === 2 && subV === subV.toUpperCase() && !['PK', 'KG', 'VN', 'ST'].includes(subV)) {
                 currentItem.origin = subV;
                 break;
               }
@@ -617,7 +620,7 @@ export class DeclarationParser {
     sheetName: string,
     fileName: string
   ): DeclarationLineInput {
-    const rawDesc = item.description.trim();
+    const rawDesc = String(item.description || '').trim();
     let rawSpec = '';
     const specM = rawDesc.match(/(\([^\)]+\)(?:mm|cm|m)?)/i);
     if (specM) {

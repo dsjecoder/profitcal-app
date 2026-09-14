@@ -60,7 +60,7 @@ export class ProductNormalizer {
 
   public static normalizeText(text: string): string {
     if (!text) return '';
-    let res = text.toLowerCase().trim();
+    let res = String(text).toLowerCase().trim();
     res = res.replace(/[\t\r\n]+/g, ' ');
     res = res.replace(/[\*x×]+/g, '*');
     res = res.replace(/\s+/g, ' ');
@@ -69,7 +69,7 @@ export class ProductNormalizer {
 
   public static removeVietnameseAccents(str: string): string {
     if (!str) return '';
-    return str
+    return String(str)
       .normalize('NFD')
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/đ/g, 'd')
@@ -83,14 +83,14 @@ export class ProductNormalizer {
   } {
     if (!text) return { dimensionsNormalized: '', dimensionTuple: [], dimensionsRaw: '' };
 
-    const lower = text.toLowerCase();
+    const lower = String(text).toLowerCase();
     if (lower.includes('túi ngũ kim') || lower.includes('hardware bag')) {
       return { dimensionsNormalized: '', dimensionTuple: [], dimensionsRaw: '' };
     }
 
     // 1. 3D / 2D dimensions in parentheses or plain: (1420*1130*60)mm or 440*540*430
     const dim3dMatch = text.match(/\(?(\d+(?:\.\d+)?)\s*[\*x×]\s*(\d+(?:\.\d+)?)\s*[\*x×]\s*(\d+(?:\.\d+)?)\)?\s*(?:mm|cm|m)?/i);
-    if (dim3dMatch) {
+    if (dim3dMatch && dim3dMatch[1] && dim3dMatch[2] && dim3dMatch[3]) {
       const d1 = parseFloat(dim3dMatch[1]);
       const d2 = parseFloat(dim3dMatch[2]);
       const d3 = parseFloat(dim3dMatch[3]);
@@ -100,11 +100,10 @@ export class ProductNormalizer {
     }
 
     // 2. Diameter + length: (fi 50*265)mm, Φ50*265, Ø50×265, D50×265, fi13*3.0Tmm
-    const fiMatch = text.match(/\(? (?:fi|phi|Ø|Φ|[Dd])\s*(\d+(?:[\.,]\d+)?)\s*[\*x×]\s*(\d+(?:[\.,]\d+)?)(?:T)?\)?\s*(?:mm)?/i) ||
-                    text.match(/\(?(fi|phi|Ø|Φ|[Dd])\s*(\d+(?:[\.,]\d+)?)\s*[\*x×]\s*(\d+(?:[\.,]\d+)?)(?:T)?\)?\s*(?:mm)?/i);
-    if (fiMatch) {
-      const d1 = parseFloat(fiMatch[2].replace(',', '.'));
-      const d2 = parseFloat(fiMatch[3].replace(',', '.'));
+    const fiMatch = text.match(/\(?(?:fi|phi|Ø|Φ|[Dd])\s*(\d+(?:[\.,]\d+)?)\s*[\*x×]\s*(\d+(?:[\.,]\d+)?)(?:T)?\)?\s*(?:mm)?/i);
+    if (fiMatch && fiMatch[1] && fiMatch[2]) {
+      const d1 = parseFloat(String(fiMatch[1]).replace(',', '.'));
+      const d2 = parseFloat(String(fiMatch[2]).replace(',', '.'));
       const rawS = fiMatch[0];
       const normS = `fi${Number.isInteger(d1) ? d1 : d1}x${Number.isInteger(d2) ? d2 : d2}`;
       return { dimensionsNormalized: normS, dimensionTuple: [d1, d2], dimensionsRaw: rawS };
@@ -112,20 +111,20 @@ export class ProductNormalizer {
 
     // 3. Metric screw: M8*40mm or M6*12 or 18*18*9.0*M6
     const mScrew4d = text.match(/\(?(\d+(?:[\.,]\d+)?)\s*[\*x×]\s*(\d+(?:[\.,]\d+)?)\s*[\*x×]\s*(\d+(?:[\.,]\d+)?)\s*[\*x×]\s*M(\d+)\)?\s*(?:mm)?/i);
-    if (mScrew4d) {
-      const d1 = parseFloat(mScrew4d[1].replace(',', '.'));
-      const d2 = parseFloat(mScrew4d[2].replace(',', '.'));
-      const d3 = parseFloat(mScrew4d[3].replace(',', '.'));
-      const d4 = parseFloat(mScrew4d[4].replace(',', '.'));
+    if (mScrew4d && mScrew4d[1] && mScrew4d[2] && mScrew4d[3] && mScrew4d[4]) {
+      const d1 = parseFloat(String(mScrew4d[1]).replace(',', '.'));
+      const d2 = parseFloat(String(mScrew4d[2]).replace(',', '.'));
+      const d3 = parseFloat(String(mScrew4d[3]).replace(',', '.'));
+      const d4 = parseFloat(String(mScrew4d[4]).replace(',', '.'));
       const rawS = mScrew4d[0];
       const normS = `${Number.isInteger(d1) ? d1 : d1}x${Number.isInteger(d2) ? d2 : d2}x${Number.isInteger(d3) ? d3 : d3}xM${Math.round(d4)}`;
       return { dimensionsNormalized: normS, dimensionTuple: [d1, d2, d3, d4], dimensionsRaw: rawS };
     }
 
     const mScrew = text.match(/\(?M(\d+)\s*[\*x×]\s*(\d+(?:[\.,]\d+)?)\)?\s*(?:mm)?/i);
-    if (mScrew) {
-      const d1 = parseFloat(mScrew[1].replace(',', '.'));
-      const d2 = parseFloat(mScrew[2].replace(',', '.'));
+    if (mScrew && mScrew[1] && mScrew[2]) {
+      const d1 = parseFloat(String(mScrew[1]).replace(',', '.'));
+      const d2 = parseFloat(String(mScrew[2]).replace(',', '.'));
       const rawS = mScrew[0];
       const normS = `M${Math.round(d1)}x${Number.isInteger(d2) ? d2 : d2}`;
       return { dimensionsNormalized: normS, dimensionTuple: [d1, d2], dimensionsRaw: rawS };
@@ -133,7 +132,7 @@ export class ProductNormalizer {
 
     // 4. Thickness + Dimensions: (3T*20*420)mm
     const tMatch = text.match(/\(?(\d+(?:\.\d+)?)T\s*[\*x×]\s*(\d+(?:\.\d+)?)\s*[\*x×]\s*(\d+(?:\.\d+)?)\)?\s*(?:mm)?/i);
-    if (tMatch) {
+    if (tMatch && tMatch[1] && tMatch[2] && tMatch[3]) {
       const d1 = parseFloat(tMatch[1]);
       const d2 = parseFloat(tMatch[2]);
       const d3 = parseFloat(tMatch[3]);
@@ -144,7 +143,7 @@ export class ProductNormalizer {
 
     // 5. 2D dimensions: (340*170)mm or (6*18)mm
     const dimScrew25 = text.match(/\(?(\d+)\s*[\*x×]\s*(\d+)\s*[\*x×]\s*M(\d+)\)?\s*(?:mm)?/i);
-    if (dimScrew25) {
+    if (dimScrew25 && dimScrew25[1] && dimScrew25[2] && dimScrew25[3]) {
       const d1 = parseFloat(dimScrew25[1]);
       const d2 = parseFloat(dimScrew25[2]);
       const d3 = parseFloat(dimScrew25[3]);
@@ -154,7 +153,7 @@ export class ProductNormalizer {
     }
 
     const dim2dMatch = text.match(/\(?(\d+(?:\.\d+)?)\s*[\*x×]\s*(\d+(?:\.\d+)?)\)?\s*(?:mm|cm|m)?/i);
-    if (dim2dMatch) {
+    if (dim2dMatch && dim2dMatch[1] && dim2dMatch[2]) {
       const d1 = parseFloat(dim2dMatch[1]);
       const d2 = parseFloat(dim2dMatch[2]);
       const rawS = dim2dMatch[0];
@@ -179,7 +178,7 @@ export class ProductNormalizer {
 
   public static normalizeUnit(unitStr: string): string {
     if (!unitStr) return 'PCE';
-    const u = unitStr.toLowerCase().trim();
+    const u = String(unitStr).toLowerCase().trim();
     return ProductNormalizer.UNIT_MAPPING[u] || u.toUpperCase();
   }
 
@@ -197,7 +196,7 @@ export class ProductNormalizer {
 
   public static extractHardwareBagComponents(text: string): SubComponent[] {
     const subItems: SubComponent[] = [];
-    const lower = text.toLowerCase();
+    const lower = String(text || '').toLowerCase();
     if (!lower.includes('túi ngũ kim') && !lower.includes('hardware bag') && !lower.includes('ngũ kim')) {
       return subItems;
     }
@@ -207,7 +206,7 @@ export class ProductNormalizer {
     let match;
     while ((match = boltRegex.exec(text)) !== null) {
       const count = parseFloat(match[1]);
-      const spec = match[2].replace(/[\*x×]+/g, '*').toLowerCase().replace('mm', '').trim();
+      const spec = match[2] ? String(match[2]).replace(/[\*x×]+/g, '*').toLowerCase().replace('mm', '').trim() : '';
       subItems.push({ name: 'bulong', spec, quantity: count, unit: 'c' });
     }
 
@@ -245,7 +244,7 @@ export class ProductNormalizer {
   }
 
   public static extractKeywords(text: string): string[] {
-    const cleaned = text.replace(/[\(\)\[\]\,\.\-\:\*\/\d\+]+/g, ' ');
+    const cleaned = String(text || '').replace(/[\(\)\[\]\,\.\-\:\*\/\d\+]+/g, ' ');
     const words = cleaned.toLowerCase().split(/\s+/);
     const stopwords = new Set([
       'bằng', 'của', 'và', 'có', 'cho', 'được', 'hàng', 'mới', 'trên', 'co', 'stt', 'part', 'dành', 'linh', 'kiện',
@@ -260,7 +259,7 @@ export class ProductNormalizer {
     rawUnit: string = '',
     hsCode: string = ''
   ): NormalizedAttributes {
-    const fullText = `${rawName} ${rawSpec}`.trim();
+    const fullText = `${rawName || ''} ${rawSpec || ''}`.trim();
     const { dimensionsNormalized, dimensionTuple, dimensionsRaw } = ProductNormalizer.extractDimensions(fullText);
     const mat = ProductNormalizer.extractMaterial(fullText);
     const cat = ProductNormalizer.extractCategory(fullText);
