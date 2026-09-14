@@ -62,57 +62,101 @@ export function exportInvoiceMapping32ColsExcel(
   items: any[],
   invoiceFileName: string = 'Hoa_Don_GTGT.pdf',
   declarationFileName: string = 'To_Khai_Hai_Quan.xlsx',
-  outputFileName: string = 'Bang_Mapping_Hang_Nhap_Khau_case_2026_q2.xlsx'
+  outputFileName: string = 'Bang_Mapping_Hang_Nhap_Khau_case_2026_q2.xls'
 ): void {
   if (!items || items.length === 0) {
     alert('⚠️ Chưa có dữ liệu đối soát để xuất Excel!');
     return;
   }
 
-  // Row 1 & Row 2 Header Block matching docs/product/Bang_Mapping_Hang_Nhap_Khau_case_2026_q2.xlsx
-  const headerBlock = [
-    ['BẢNG ĐỐI CHIẾU NGUỒN HÀNG HÓA ĐƠN BÁN HÀNG ↔ TỜ KHAI NHẬP KHẨU'],
-    [`Khách hàng: Doanh Nghiệp | Case: Mapping Hóa Đơn | Kỳ đối chiếu: ${new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' })}`],
-    [], // Row 3 Empty separator
-  ];
+  const currentDateStr = new Date().toLocaleDateString('vi-VN', { month: '2-digit', year: 'numeric' });
 
-  // Exact 32 Column Headers matching docs/product/Bang_Mapping_Hang_Nhap_Khau_case_2026_q2.xlsx
-  const columns32 = [
-    'STT',
-    'Số Hóa Đơn',
-    'Ngày HĐ',
-    'Dòng HĐ',
-    'Tên Hàng Hóa (HĐ)',
-    'Quy Cách (HĐ)',
-    'ĐVT (HĐ)',
-    'Số Lượng (HĐ)',
-    'Đơn Giá Bán (VNĐ)',
-    'Thành Tiền (VNĐ)',
-    'Số Tờ Khai',
-    'Ngày Tờ Khai',
-    'Dòng TK',
-    'Mã HS',
-    'Mô Tả Hàng Hóa (Tờ Khai)',
-    'ĐVT (TK)',
-    'Số Lượng (TK)',
-    'Số Lượng Phân Bổ',
-    'Đơn Giá Nhập',
-    'Loại Tiền',
-    'Trị Giá Hóa Đơn',
-    'Đơn Giá Tính Thuế (VNĐ)',
-    'Trị Giá Tính Thuế (VNĐ)',
-    'Thuế NK',
-    'Thuế GTGT',
-    'Xuất Xứ',
-    'Điểm Match',
-    'Đánh Giá / Trạng Thái',
-    'Người Xác Nhận',
-    'Thời Điểm Xác Nhận',
-    'Bằng Chứng / Ghi Chú Đối Chiếu',
-    'Vị Trí Nguồn (Traceability)',
-  ];
+  // Build HTML Excel Spreadsheet string with full 100% cell styling, colors, and borders
+  let html = `
+<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+  <meta charset="utf-8" />
+  <!--[if gte mso 9]>
+  <xml>
+    <x:ExcelWorkbook>
+      <x:ExcelWorksheets>
+        <x:ExcelWorksheet>
+          <x:Name>BẢNG MAPPING HÓA ĐƠN - TỜ KHAI</x:Name>
+          <x:WorksheetOptions>
+            <x:DisplayGridlines/>
+          </x:WorksheetOptions>
+        </x:ExcelWorksheet>
+      </x:ExcelWorksheets>
+    </x:ExcelWorkbook>
+  </xml>
+  <![endif]-->
+  <style>
+    table { border-collapse: collapse; font-family: Calibri, sans-serif; font-size: 10pt; }
+    td, th { border: 1px solid #D1D5DB; padding: 6px 8px; vertical-align: middle; }
+    .title-row { font-size: 15pt; font-weight: bold; color: #1E3A8A; border: none; padding: 4px 0; }
+    .sub-row { font-size: 11pt; font-style: italic; color: #4B5563; border: none; padding: 2px 0; }
+    .hdr-inv { background-color: #1E40AF !important; color: #FFFFFF !important; font-weight: bold; text-align: center; height: 36px; font-size: 11pt; }
+    .hdr-decl { background-color: #047857 !important; color: #FFFFFF !important; font-weight: bold; text-align: center; height: 36px; font-size: 11pt; }
+    .hdr-audit { background-color: #4338CA !important; color: #FFFFFF !important; font-weight: bold; text-align: center; height: 36px; font-size: 11pt; }
+    .center { text-align: center; }
+    .right { text-align: right; }
+    .st-matched { background-color: #DCFCE7; color: #166534; font-weight: bold; text-align: center; }
+    .st-suggested { background-color: #FEF9C3; color: #854D0E; font-weight: bold; text-align: center; }
+    .st-conflict { background-color: #FEE2E2; color: #991B1B; font-weight: bold; text-align: center; }
+    .st-unmatched { background-color: #F3F4F6; color: #374151; text-align: center; }
+  </style>
+</head>
+<body>
+  <table>
+    <tr>
+      <td colspan="32" class="title-row">BẢNG ĐỐI CHIẾU NGUỒN HÀNG HÓA ĐƠN BÁN HÀNG ↔ TỜ KHAI NHẬP KHẨU</td>
+    </tr>
+    <tr>
+      <td colspan="32" class="sub-row">Khách hàng: Doanh Nghiệp | Case: Mapping Hóa Đơn | Kỳ đối chiếu: ${currentDateStr}</td>
+    </tr>
+    <tr><td colspan="32" style="border:none; height:10px;"></td></tr>
+    <tr>
+      <!-- Invoice Headers (1..10) - Dark Blue #1E40AF -->
+      <th class="hdr-inv">STT</th>
+      <th class="hdr-inv">Số Hóa Đơn</th>
+      <th class="hdr-inv">Ngày HĐ</th>
+      <th class="hdr-inv">Dòng HĐ</th>
+      <th class="hdr-inv">Tên Hàng Hóa (HĐ)</th>
+      <th class="hdr-inv">Quy Cách (HĐ)</th>
+      <th class="hdr-inv">ĐVT (HĐ)</th>
+      <th class="hdr-inv">Số Lượng (HĐ)</th>
+      <th class="hdr-inv">Đơn Giá Bán (VNĐ)</th>
+      <th class="hdr-inv">Thành Tiền (VNĐ)</th>
 
-  const dataRows = items.map((item, idx) => {
+      <!-- Declaration Headers (11..26) - Dark Green #047857 -->
+      <th class="hdr-decl">Số Tờ Khai</th>
+      <th class="hdr-decl">Ngày Tờ Khai</th>
+      <th class="hdr-decl">Dòng TK</th>
+      <th class="hdr-decl">Mã HS</th>
+      <th class="hdr-decl">Mô Tả Hàng Hóa (Tờ Khai)</th>
+      <th class="hdr-decl">ĐVT (TK)</th>
+      <th class="hdr-decl">Số Lượng (TK)</th>
+      <th class="hdr-decl">Số Lượng Phân Bổ</th>
+      <th class="hdr-decl">Đơn Giá Nhập</th>
+      <th class="hdr-decl">Loại Tiền</th>
+      <th class="hdr-decl">Trị Giá Hóa Đơn</th>
+      <th class="hdr-decl">Đơn Giá Tính Thuế (VNĐ)</th>
+      <th class="hdr-decl">Trị Giá Tính Thuế (VNĐ)</th>
+      <th class="hdr-decl">Thuế NK</th>
+      <th class="hdr-decl">Thuế GTGT</th>
+      <th class="hdr-decl">Xuất Xứ</th>
+
+      <!-- Audit & Status Headers (27..32) - Dark Indigo #4338CA -->
+      <th class="hdr-audit">Điểm Match</th>
+      <th class="hdr-audit">Đánh Giá / Trạng Thái</th>
+      <th class="hdr-audit">Người Xác Nhận</th>
+      <th class="hdr-audit">Thời Điểm Xác Nhận</th>
+      <th class="hdr-audit">Bằng Chứng / Ghi Chú Đối Chiếu</th>
+      <th class="hdr-audit">Vị Trí Nguồn (Traceability)</th>
+    </tr>
+`;
+
+  items.forEach((item, idx) => {
     const invNo = item.invoiceNumber || item.invoiceLine?.invoiceNumber || '69';
     const invDate = item.invoiceDate || item.invoiceLine?.invoiceDate || '11/04/2026';
     const lineNo = item.lineNumber || item.invoiceLine?.lineNumber || (idx + 1);
@@ -145,105 +189,75 @@ export function exportInvoiceMapping32ColsExcel(
     const rawStatus = item.status || (item.matchStatus === 'MATCHED' ? 'HIGH_CONFIDENCE' : item.matchStatus === 'SUGGESTED' ? 'SUGGESTED' : item.matchStatus === 'CONFLICT' ? 'CONFLICT' : 'UNMATCHED');
     const viStatus = getVietnameseStatus(rawStatus);
 
+    let statusCssClass = 'st-unmatched';
+    if (viStatus.includes('Khớp 100%')) statusCssClass = 'st-matched';
+    else if (viStatus.includes('Gợi ý')) statusCssClass = 'st-suggested';
+    else if (viStatus.includes('Mâu thuẫn')) statusCssClass = 'st-conflict';
+
     const supportingNotes = item.supportingEvidence && item.supportingEvidence.length > 0 ? `Ủng hộ: ${item.supportingEvidence.join('; ')}` : '';
     const contradictingNotes = item.contradictingEvidence && item.contradictingEvidence.length > 0 ? `Mâu thuẫn: ${item.contradictingEvidence.join('; ')}` : '';
     const notesStr = [supportingNotes, contradictingNotes, item.matchReason].filter(Boolean).join(' | ') || '—';
 
     const traceStr = item.traceability || `Sheet: TKN, Row: ${140 + idx}, Line: ${lineNo}`;
 
-    return [
-      idx + 1,
-      invNo,
-      invDate,
-      lineNo,
-      prodName,
-      spec,
-      unit,
-      qty,
-      price,
-      amount,
-      declNo,
-      declDate,
-      declLineNo,
-      hsCode,
-      declDesc,
-      declUnit,
-      declQty,
-      allocQty,
-      importPrice,
-      currency,
-      importValue,
-      taxPrice,
-      taxValue,
-      importTax,
-      vatTax,
-      origin,
-      score,
-      viStatus,
-      'Chưa xác nhận',
-      '—',
-      notesStr,
-      traceStr,
-    ];
+    html += `
+    <tr>
+      <td class="center">${idx + 1}</td>
+      <td class="center">${invNo}</td>
+      <td class="center">${invDate}</td>
+      <td class="center">${lineNo}</td>
+      <td>${prodName}</td>
+      <td>${spec}</td>
+      <td class="center">${unit}</td>
+      <td class="right">${qty.toLocaleString('vi-VN')}</td>
+      <td class="right">${price.toLocaleString('vi-VN')}</td>
+      <td class="right">${amount.toLocaleString('vi-VN')}</td>
+      <td class="center">${declNo}</td>
+      <td class="center">${declDate}</td>
+      <td class="center">${declLineNo}</td>
+      <td class="center">${hsCode}</td>
+      <td>${declDesc}</td>
+      <td class="center">${declUnit}</td>
+      <td class="right">${declQty.toLocaleString('vi-VN')}</td>
+      <td class="right">${allocQty.toLocaleString('vi-VN')}</td>
+      <td class="right">${importPrice.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      <td class="center">${currency}</td>
+      <td class="right">${importValue.toLocaleString('vi-VN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</td>
+      <td class="right">${taxPrice.toLocaleString('vi-VN')}</td>
+      <td class="right">${taxValue.toLocaleString('vi-VN')}</td>
+      <td class="right">${importTax.toLocaleString('vi-VN')}</td>
+      <td class="right">${vatTax.toLocaleString('vi-VN')}</td>
+      <td class="center">${origin}</td>
+      <td class="center">${score}</td>
+      <td class="${statusCssClass}">${viStatus}</td>
+      <td class="center">Chưa xác nhận</td>
+      <td class="center">—</td>
+      <td>${notesStr}</td>
+      <td>${traceStr}</td>
+    </tr>
+`;
   });
 
-  const fullSheetData = [
-    ...headerBlock,
-    columns32,
-    ...dataRows,
-  ];
+  html += `
+  </table>
+</body>
+</html>
+`;
 
-  const worksheet = XLSX.utils.aoa_to_sheet(fullSheetData);
-
-  // Auto-fit column widths for 32 columns
-  const colWidths = columns32.map((colName, colIdx) => {
-    let maxLen = colName.length;
-    dataRows.forEach((row) => {
-      const valStr = String(row[colIdx] ?? '');
-      if (valStr.length > maxLen) {
-        maxLen = valStr.length;
-      }
-    });
-    return { wch: Math.min(Math.max(maxLen + 4, 12), 60) };
-  });
-  worksheet['!cols'] = colWidths;
-
-  // Format Header Styles (Row index 3 = Row 4 in Excel)
-  // Cols 0..9 (A..J): Hóa đơn - Dark Blue 1E40AF
-  // Cols 10..25 (K..Z): Tờ khai - Dark Green 047857
-  // Cols 26..31 (AA..AF): Audit & Status - Dark Indigo 4338CA
-  for (let colIdx = 0; colIdx < columns32.length; colIdx++) {
-    const cellRef = XLSX.utils.encode_cell({ r: 3, c: colIdx });
-    if (worksheet[cellRef]) {
-      let fillRgb = '1E40AF'; // Hóa đơn (Xanh lam đậm)
-      if (colIdx >= 10 && colIdx <= 25) {
-        fillRgb = '047857'; // Tờ khai (Xanh lá đậm)
-      } else if (colIdx >= 26) {
-        fillRgb = '4338CA'; // Match & Audit (Tím chàm)
-      }
-
-      worksheet[cellRef].s = {
-        fill: { patternType: 'solid', fgColor: { rgb: fillRgb }, bgColor: { rgb: fillRgb } },
-        font: { color: { rgb: 'FFFFFF' }, bold: true, name: 'Calibri', sz: 11 },
-        alignment: { horizontal: 'center', vertical: 'center', wrapText: true },
-      };
-    }
+  // Create Blob with UTF-8 BOM to guarantee proper Vietnamese encoding and colors in Excel / Google Sheets
+  const blob = new Blob(['\ufeff' + html], { type: 'application/vnd.ms-excel;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  
+  let targetFileName = outputFileName;
+  if (!targetFileName.endsWith('.xls') && !targetFileName.endsWith('.xlsx')) {
+    targetFileName += '.xls';
   }
-
-  // Format Title Block fonts
-  if (worksheet['A1']) {
-    worksheet['A1'].s = {
-      font: { name: 'Calibri', sz: 15, bold: true, color: { rgb: '1E3A8A' } },
-    };
-  }
-  if (worksheet['A2']) {
-    worksheet['A2'].s = {
-      font: { name: 'Calibri', sz: 11, italic: true, color: { rgb: '4B5563' } },
-    };
-  }
-
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, 'BẢNG MAPPING HÓA ĐƠN - TỜ KHAI');
-
-  XLSX.writeFile(workbook, outputFileName);
+  a.download = targetFileName;
+  
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
