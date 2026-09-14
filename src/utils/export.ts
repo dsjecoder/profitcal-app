@@ -52,10 +52,10 @@ export function exportInvoiceMapping32ColsExcel(
   items: any[],
   invoiceFileName: string = 'Hoa_Don_GTGT.pdf',
   declarationFileName: string = 'To_Khai_Hai_Quan.xlsx',
-  outputFileName: string = `ProfitCal_AnhXa_HoaDon_32Cot_${new Date().toISOString().slice(0, 10)}.xlsx`
+  outputFileName: string = 'Bang_Mapping_Hang_Nhap_Khau_case_2026_q2.xlsx'
 ): void {
   if (!items || items.length === 0) {
-    alert('Không có dữ liệu dòng hàng hóa đơn để xuất Excel!');
+    alert('⚠️ Chưa có dữ liệu đối soát để xuất Excel!');
     return;
   }
 
