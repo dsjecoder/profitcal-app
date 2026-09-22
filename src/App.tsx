@@ -43,6 +43,7 @@ import { SkuSettingsModule } from './components/SkuSettingsModule';
 import { InvoiceMappingModule } from './components/InvoiceMappingModule';
 import { LandingIntro } from './components/LandingIntro';
 import { parseOAuthRedirectHash } from './utils/oauthHandler';
+import { registerOrUpdateGoogleUser } from './services/authService';
 import { submitUpgradeRequest, checkEmailProRecord } from './utils/upgradeTracker';
 
 import { getActiveDataset, saveDataset, switchPlatform as switchPlatformDataset, switchSource as switchSourceDataset, switchActiveShop } from './services/datasetManager';
@@ -94,6 +95,9 @@ export function App() {
     // Catch Real Google OAuth Token Callback
     const oauthUser = parseOAuthRedirectHash();
     if (oauthUser) {
+      // Auto-register / sync Google OAuth user in registered user database
+      registerOrUpdateGoogleUser(oauthUser.email, oauthUser.name);
+
       const proRecord = checkEmailProRecord(oauthUser.email);
       const isPro = proRecord.isPro || user.tier === 'pro';
 

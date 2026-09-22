@@ -15,12 +15,14 @@ import {
   getUpgradeRequests,
   approveUpgradeRequest,
   rejectUpgradeRequest,
+  checkEmailProRecord,
+  setApprovedProUserRecord,
 } from '../utils/upgradeTracker';
 import { calculateExtendedProExpiration, getRemainingProDays } from '../utils/storage';
 import { getFreemiumRule, saveFreemiumRule, FreemiumRule } from '../utils/freemium';
 import { getStoredAnalyticsEvents } from '../utils/analytics';
 import { getSentEmailLogs, sendOtpEmail } from '../services/mailService';
-import { getLoginHistory, getRegisteredUsers } from '../services/authService';
+import { getLoginHistory, getRegisteredUsers, saveRegisteredUsers } from '../services/authService';
 
 interface AdminDashboardProps {
   onClose: () => void;
@@ -54,53 +56,50 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const [selectedMenuFilter, setSelectedMenuFilter] = useState('ALL');
   const [analyticsTimeView, setAnalyticsTimeView] = useState<'all' | 'weekly' | 'monthly'>('all');
 
-  // Sample Users List with Expiration Date Tracking
-  const [usersList, setUsersList] = useState([
-    { id: '1', email: 'owner.shop1@gmail.com', name: 'Chủ Shop Thời Trang', tier: 'free', tokensLeft: 18, lastActive: '10 phút trước', proExpiresAt: undefined as string | undefined },
-    { id: '2', email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', tier: 'pro', tokensLeft: 9999, lastActive: 'Vừa xong', proExpiresAt: new Date(Date.now() + 45 * 86400000).toISOString() },
-    { id: '3', email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', tier: 'pro', tokensLeft: 9999, lastActive: '5 phút trước', proExpiresAt: new Date(Date.now() + 365 * 86400000).toISOString() },
-  ]);
+  // Dynamically load registered users (including Google OAuth users) & merge with Pro records
+  const loadUsersList = () => {
+    const registered = getRegisteredUsers();
+    return registered.map((u) => {
+      const proRecord = checkEmailProRecord(u.email);
+      const isPro = proRecord.isPro;
+      return {
+        id: u.id,
+        email: u.email,
+        name: u.name,
+        tier: (isPro ? 'pro' : 'free') as 'pro' | 'free',
+        tokensLeft: isPro ? 9999 : 20,
+        lastActive: u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleTimeString('vi-VN') : 'Vừa xong',
+        proExpiresAt: proRecord.proExpiresAt,
+        authType: u.passwordHash === 'GOOGLE_OAUTH_SSO' ? 'Google OAuth' : 'Email/Password',
+      };
+    });
+  };
+
+  const [usersList, setUsersList] = useState(loadUsersList);
+
+  const refreshUsersList = () => {
+    setUsersList(loadUsersList());
+  };
 
   const handleApproveRequest = (reqId: string, email: string, durationDays: number = 30) => {
     approveUpgradeRequest(reqId);
     setUpgradeRequests(getUpgradeRequests());
+    refreshUsersList();
 
-    // Calculate cumulative expiration date (+30 days or +365 days)
-    let updatedExpDate = '';
-    setUsersList(usersList.map(u => {
-      if (u.email === email || u.id === reqId) {
-        const newExp = calculateExtendedProExpiration(u.proExpiresAt, durationDays);
-        updatedExpDate = new Date(newExp).toLocaleDateString('vi-VN');
-        return {
-          ...u,
-          tier: 'pro',
-          tokensLeft: 9999,
-          proExpiresAt: newExp,
-        };
-      }
-      return u;
-    }));
+    const proRecord = checkEmailProRecord(email);
+    const updatedExpDate = proRecord.proExpiresAt ? new Date(proRecord.proExpiresAt).toLocaleDateString('vi-VN') : '';
 
     alert(`🎉 Đã duyệt cộng dồn +${durationDays} ngày thành công cho ${email}!\n\nThời hạn PRO mới của khách hàng: ${updatedExpDate || 'Kích hoạt ngay'}`);
   };
 
-  const handleAddDaysToUser = (userId: string, daysToAdd: number) => {
-    let updatedExpDate = '';
-    setUsersList(usersList.map(u => {
-      if (u.id === userId) {
-        const newExp = calculateExtendedProExpiration(u.proExpiresAt, daysToAdd);
-        updatedExpDate = new Date(newExp).toLocaleDateString('vi-VN');
-        return {
-          ...u,
-          tier: 'pro',
-          tokensLeft: 9999,
-          proExpiresAt: newExp,
-        };
-      }
-      return u;
-    }));
+  const handleAddDaysToUser = (userId: string, userEmail: string, daysToAdd: number) => {
+    const existing = checkEmailProRecord(userEmail);
+    const newExp = calculateExtendedProExpiration(existing.proExpiresAt, daysToAdd);
+    setApprovedProUserRecord(userEmail, newExp);
+    refreshUsersList();
 
-    alert(`🎉 Đã cộng dồn +${daysToAdd} ngày thành công!\nThời hạn PRO mới: ${updatedExpDate}`);
+    const updatedExpDate = new Date(newExp).toLocaleDateString('vi-VN');
+    alert(`🎉 Đã cộng dồn +${daysToAdd} ngày thành công cho ${userEmail}!\nThời hạn PRO mới: ${updatedExpDate}`);
   };
 
   const handleRejectRequest = (reqId: string) => {
@@ -433,6 +432,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                       <thead className="bg-sky-50 text-slate-700 uppercase font-mono text-[11px] border-b border-sky-200">
                         <tr>
                           <th className="p-3">Họ Tên / Email</th>
+                          <th className="p-3">Kênh Đăng Nhập</th>
                           <th className="p-3">Phân Quyền Gói</th>
                           <th className="p-3">Thời Hạn PRO (Cộng Dồn)</th>
                           <th className="p-3">Token Còn Lại</th>
@@ -450,8 +450,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                 <div className="text-slate-600 font-mono text-[11px]">{u.email}</div>
                               </td>
                               <td className="p-3">
+                                <span className={`px-2 py-0.5 rounded font-mono font-bold text-[10px] ${
+                                  u.authType?.includes('Google') ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-sky-100 text-sky-800 border border-sky-300'
+                                }`}>
+                                  {u.authType || 'Email/Password'}
+                                </span>
+                              </td>
+                              <td className="p-3">
                                 <span className={`px-2.5 py-1 rounded-lg font-bold uppercase text-[10px] ${
-                                  u.tier === 'pro' ? 'bg-amber-500/20 text-amber-700 border border-amber-500/30' : 'bg-sky-50 text-slate-700'
+                                  u.tier === 'pro' ? 'bg-amber-100 text-amber-800 border border-amber-300' : 'bg-slate-100 text-slate-700'
                                 }`}>
                                   {u.tier.toUpperCase()}
                                 </span>
@@ -459,7 +466,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                               <td className="p-3 font-mono">
                                 {u.tier === 'pro' ? (
                                   <div>
-                                    <div className="font-bold text-amber-300 text-[11px]">{proInfo.formattedDate}</div>
+                                    <div className="font-bold text-amber-800 text-[11px]">{proInfo.formattedDate}</div>
                                     <div className="text-emerald-700 text-[10px]">Còn {proInfo.daysLeft} ngày</div>
                                   </div>
                                 ) : (
@@ -467,30 +474,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                                 )}
                               </td>
                               <td className="p-3 font-mono font-bold text-emerald-700">{u.tokensLeft} token</td>
-                              <td className="p-3 text-slate-600">{u.lastActive}</td>
+                              <td className="p-3 text-slate-600 font-mono">{u.lastActive}</td>
                               <td className="p-3 text-center">
                                 <div className="flex items-center justify-center gap-1.5">
                                   <button
-                                    onClick={() => handleAddDaysToUser(u.id, 30)}
-                                    className="px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 rounded-lg border border-amber-500/40 text-[11px] font-bold"
+                                    onClick={() => handleAddDaysToUser(u.id, u.email, 30)}
+                                    className="px-2.5 py-1 bg-amber-100 hover:bg-amber-200 text-amber-900 rounded-lg border border-amber-300 text-[11px] font-bold transition-colors"
                                     title="Cộng dồn +30 ngày PRO (Gói 1 Tháng)"
                                   >
                                     +30 Ngày
                                   </button>
                                   <button
-                                    onClick={() => handleAddDaysToUser(u.id, 365)}
-                                    className="px-2.5 py-1 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 rounded-lg border border-emerald-500/40 text-[11px] font-bold"
+                                    onClick={() => handleAddDaysToUser(u.id, u.email, 365)}
+                                    className="px-2.5 py-1 bg-emerald-100 hover:bg-emerald-200 text-emerald-900 rounded-lg border border-emerald-300 text-[11px] font-bold transition-colors"
                                     title="Cộng dồn +365 ngày PRO (Gói 1 Năm)"
                                   >
                                     +365 Ngày
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setUsersList(usersList.map(x => x.id === u.id ? { ...x, tier: x.tier === 'free' ? 'pro' : 'free' } : x));
-                                    }}
-                                    className="px-2 py-1 bg-sky-50 hover:bg-sky-100 rounded-lg border border-sky-300 text-[10px] font-bold text-slate-700"
-                                  >
-                                    {u.tier === 'free' ? 'Khởi Tạo' : 'Hạ Free'}
                                   </button>
                                 </div>
                               </td>

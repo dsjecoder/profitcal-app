@@ -81,6 +81,41 @@ export function saveRegisteredUsers(users: RegisteredUser[]): void {
   } catch (e) {}
 }
 
+/**
+ * Auto-registers or updates Google OAuth users in system database / storage
+ */
+export function registerOrUpdateGoogleUser(email: string, name: string): RegisteredUser {
+  const cleanEmail = email.trim().toLowerCase();
+  const users = getRegisteredUsers();
+  
+  const existingIndex = users.findIndex((u) => u.email.toLowerCase() === cleanEmail);
+  let user: RegisteredUser;
+
+  if (existingIndex >= 0) {
+    user = {
+      ...users[existingIndex],
+      name: name || users[existingIndex].name,
+      lastLoginAt: new Date().toISOString(),
+    };
+    users[existingIndex] = user;
+  } else {
+    user = {
+      id: `usr_google_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      email: cleanEmail,
+      name: name || cleanEmail.split('@')[0],
+      passwordHash: 'GOOGLE_OAUTH_SSO',
+      status: 'ACTIVE',
+      createdAt: new Date().toISOString(),
+      lastLoginAt: new Date().toISOString(),
+    };
+    users.unshift(user);
+  }
+
+  saveRegisteredUsers(users);
+  recordLoginHistory(cleanEmail, 'SUCCESS');
+  return user;
+}
+
 // Get login history logs
 export function getLoginHistory(): LoginHistoryRecord[] {
   try {
