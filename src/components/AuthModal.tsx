@@ -31,6 +31,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
 
   // Demo Google accounts for selector fallback
   const googleAccounts = [
+    { email: 'ecoder108@gmail.com', name: 'Ecoder 108', avatar: 'E', bg: 'bg-indigo-600' },
     { email: 'ecodervn@gmail.com', name: 'Ecodervn Alan Vu', avatar: 'E', bg: 'bg-blue-600' },
     { email: 'dsjecoder@gmail.com', name: 'Dsj Ecoder Vu', avatar: 'D', bg: 'bg-teal-600' },
   ];
@@ -73,11 +74,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
       } catch (e) {}
     }
 
-    if (SUPABASE_URL && SUPABASE_URL.includes('supabase.co')) {
-      signInWithGoogleOAuth();
-      return;
-    }
-
+    // Always open in-app Google selector to prevent 401 error page redirects
     setShowGooglePicker(true);
   };
 
@@ -238,6 +235,19 @@ export const AuthModal: React.FC<AuthModalProps> = ({ user, onClose, onLoginSucc
                 <PlusCircle className="w-5 h-5 text-blue-600" />
                 <span>Sử dụng một tài khoản Google khác...</span>
               </button>
+
+              {SUPABASE_URL && SUPABASE_URL.includes('supabase.co') && (
+                <div className="pt-2 text-center border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => signInWithGoogleOAuth()}
+                    className="text-[10px] text-slate-600 hover:text-blue-600 font-semibold underline"
+                    title="Yêu cầu dự án Supabase đã bật Google OAuth Provider trong Supabase Dashboard"
+                  >
+                    🔗 Chuyển hướng trang Supabase OAuth Server (Dev Mode)
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ) : (
